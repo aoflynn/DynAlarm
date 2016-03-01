@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,34 +6,58 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="me.adamoflynn.dynalarm.MainActivity"
-    android:background="#ffffff">
+    tools:context=".MainActivity"
+    android:id="@+id/relative" >
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="40dp"
+        android:text="@string/start"
+        android:onClick="onStartClick"
+        android:layout_marginStart="54dp"
+        android:layout_marginTop="117dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="37dp"
+        android:text="@string/stop"
+        android:onClick="onStopClick"
+        android:layout_alignTop="@+id/button1"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="57dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:textSize="40sp"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/textView" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="X"
+        android:id="@+id/acclX"
+        android:layout_below="@+id/button1"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="62dp" />
 
-    <Button
-        android:onClick="showTimePicker"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/button"
-        android:layout_below="@+id/textView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="35dp" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Y"
+        android:id="@+id/acclY"
+        android:layout_alignTop="@+id/acclX"
+        android:layout_toEndOf="@+id/button1" />
 
-    <Chronometer
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/chronometer"
-        android:layout_below="@+id/button"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="60dp" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Z"
+        android:id="@+id/acclZ"
+        android:layout_alignTop="@+id/acclY"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
