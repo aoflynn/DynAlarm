@@ -26,4 +26,5 @@ dependencies {
     compile 'com.android.support:design:23.1.1'
     compile 'io.realm:realm-android:0.87.4'
     compile 'com.google.android.gms:play-services:8.4.0'
+    compile 'com.github.PhilJay:MPAndroidChart:v2.2.3'
 }

@@ -17,9 +17,9 @@
         android:text="@string/start"
         android:onClick="onStartClick"
         android:layout_marginStart="54dp"
-        android:layout_marginTop="117dp"
+        android:layout_marginTop="71dp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"/>
 
     <Button
         android:id="@+id/button2"
@@ -38,26 +38,33 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="X"
         android:id="@+id/acclX"
+        android:layout_marginTop="69dp"
         android:layout_below="@+id/button1"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="62dp" />
+        android:layout_alignStart="@+id/button1"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Y"
-        android:id="@+id/acclY"
+        android:text="Motion?"
+        android:id="@+id/motion"
         android:layout_alignTop="@+id/acclX"
-        android:layout_toEndOf="@+id/button1" />
+        android:layout_alignEnd="@+id/button2"/>
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/chart"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="false"
+        android:layout_below="@+id/textView"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Z"
-        android:id="@+id/acclZ"
-        android:layout_alignTop="@+id/acclY"
-        android:layout_alignParentEnd="true" />
+        android:id="@+id/textView"
+        android:layout_below="@+id/motion"
+        android:layout_toStartOf="@+id/motion"
+        android:layout_marginTop="30dp"/>
 
 </RelativeLayout>
