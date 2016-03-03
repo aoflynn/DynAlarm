@@ -6,9 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.DropBoxManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.FloatMath;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -19,15 +17,10 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import io.realm.RealmResults;
-import me.adamoflynn.dynalarm.model.AccelerometerData;
-import me.adamoflynn.dynalarm.model.Location;
+
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -37,7 +30,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 	private final String FILE_DIR = "data/data/me.adamoflynn.dynalarm/files/";
 	private final String FILE_NAME = "sleep_file";
 	private int i = 0;
-	private long lastUpdate = 0;
+	private long lastUpdate, lastUpdate5secs = 0;
+	private int seconds, motions = 0;
 	private float[] mGravity;
 	private float accel, accelCurrent, accelLast;
 	private TextView acclX, acclY, acclZ, motion;
@@ -148,16 +142,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 			Log.d("Accel data: ", Float.toString(accel));
 			Log.d("Delta data: ", Float.toString(variance));
 
+			// This number allows for small motion detection, but none when laying still. (.06)
 			if(accel > 0.06){
 				motion.setText("Motion!!!");
+				motions++;
 				acclX.setText(Float.toString(accel));
-				entries.add(new Entry(accel, i++));
-				labels.add(Long.toString(curTimeSec));
+				if((curTime - lastUpdate5secs) > 5000) {
+					lastUpdate5secs = curTime;
+					entries.add(new Entry(motions, i++));
+					labels.add(Long.toString(seconds+=5));
+					motions = 0;
+				}
 			}
 			else{
 				motion.setText("No motion!!");
 			}
-
 		}
 	}
 }
