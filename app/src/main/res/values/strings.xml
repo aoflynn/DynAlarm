@@ -4,4 +4,18 @@
     <string name="title_activity_maps">Map</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
+    <string name="nav_item_alarm">Alarm</string>
+    <string name="nav_item_analysis">Analysis</string>
+    <string name="nav_item_settings">Settings</string>
+
+    <string-array name="nav_drawer_labels">
+        <item>@string/nav_item_alarm</item>
+        <item>@string/nav_item_analysis</item>
+        <item>@string/nav_item_settings</item>
+    </string-array>
+
+    <!-- TODO: Remove or change this placeholder text -->s
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="accelButton">Accelerometer</string>
+    <string name="insight">Insight</string>
 </resources>
