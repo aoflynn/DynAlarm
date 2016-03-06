@@ -8,7 +8,7 @@ import android.support.v7.widget.Toolbar;
 
 
 import io.realm.Realm;
-import io.realm.RealmConfiguration;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		dbSetup();
+		db = Realm.getDefaultInstance();
 
 		tb = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(tb);
@@ -57,16 +57,6 @@ public class MainActivity extends AppCompatActivity {
 		tabLayout.getTabAt(0).setIcon(tabsIcons[0]);
 		tabLayout.getTabAt(1).setIcon(tabsIcons[1]);
 		tabLayout.getTabAt(2).setIcon(tabsIcons[2]);
-	}
-
-	protected void dbSetup(){
-		RealmConfiguration config = new RealmConfiguration.Builder(this)
-				.name("default")
-				.schemaVersion(1)
-				.deleteRealmIfMigrationNeeded()
-				.build();
-
-		db = Realm.getInstance(config);
 	}
 
 

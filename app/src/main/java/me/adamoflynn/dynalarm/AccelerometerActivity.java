@@ -49,23 +49,6 @@ public class AccelerometerActivity extends Activity implements SensorEventListen
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
 	}
-	/*
-	@Override
-	public void onSaveInstanceState(Bundle savedInstanceState) {
-		super.onSaveInstanceState(savedInstanceState);
-		savedInstanceState.putSerializable("entries", entries);
-		savedInstanceState.putSerializable("labels", labels);
-		Log.d("Datataat", "Should have saved state");
-
-	}
-
-	public void onRestoreInstanceState(Bundle savedInstanceState){
-		entries = (ArrayList<Entry>) savedInstanceState.getSerializable("entries");
-		labels = (ArrayList<String>) savedInstanceState.getSerializable("labels");
-		Log.d("MM","Should have entries");
-		super.onRestoreInstanceState(savedInstanceState);
-	}*/
-
 
 	public void onStartClick(View v){
 		mSensorManager.registerListener(this , mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
