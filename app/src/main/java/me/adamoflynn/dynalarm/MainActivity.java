@@ -9,8 +9,6 @@ import android.support.v7.widget.Toolbar;
 
 import io.realm.Realm;
 
-
-
 public class MainActivity extends AppCompatActivity {
 
 	private Toolbar tb;
@@ -66,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
 	}
 
-    protected void onPause() {
+	protected void onPause() {
 		super.onPause();
 	}
 

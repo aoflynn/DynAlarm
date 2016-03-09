@@ -1,22 +1,73 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="me.adamoflynn.dynalarm.SettingsFragment"
     >
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/timeframe"
+        android:id="@+id/timeframe"
+        android:layout_marginTop="47dp"
+        android:textColor="#ffffff"
+        android:singleLine="false"
+        android:layout_marginStart="33dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Settings"
-        android:id="@+id/textView2"
-        android:layout_marginTop="33dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/timeframe_val"
+        android:layout_alignBottom="@+id/timeframe"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="32dp"
+        android:textColor="#ffffff"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/tone"
+        android:id="@+id/tone"
+        android:layout_below="@+id/timeframe"
+        android:layout_alignStart="@+id/timeframe"
+        android:layout_marginTop="42dp"
+        android:textColor="#ffffff"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/tone_val"
+        android:layout_alignBottom="@+id/tone"
+        android:layout_alignEnd="@+id/timeframe_val"
+        android:textColor="#ffffff"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/vibration"
+        android:id="@+id/vibration"
+        android:layout_marginTop="45dp"
+        android:layout_below="@+id/tone"
+        android:layout_alignStart="@+id/tone"
         android:textColor="#ffffff"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="40dp"/>
+        android:layout_alignEnd="@+id/tone"/>
+
+    <RadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/vibRadio"
+        android:checked="false"
+        android:layout_alignTop="@+id/vibration"
+        android:layout_toStartOf="@+id/tone_val"/>
 
 </RelativeLayout>

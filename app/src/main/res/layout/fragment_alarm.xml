@@ -13,9 +13,9 @@
         android:layout_height="wrap_content"
         android:text="@string/accelButton"
         android:id="@+id/accelButton"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/timePicker"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="133dp"/>
+        android:layout_marginTop="66dp"/>
 
     <TimePicker
         android:layout_width="wrap_content"

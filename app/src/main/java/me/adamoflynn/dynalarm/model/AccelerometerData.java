@@ -10,54 +10,72 @@ import io.realm.annotations.PrimaryKey;
  */
 public class AccelerometerData extends RealmObject {
 
-	private Date date;
-	private double xValue;
-	private double yValue;
-	private double zValue;
+	@PrimaryKey
+	private long timestamp;
+	private int sleepId;
+	private int amtMotion;
+	private float maxAccel;
+	private float minAccel;
+	private String sleepState;
 
 	public AccelerometerData(){}
 
-	public AccelerometerData( Date date, double x, double y, double z){
-		this.setDate(date);
-		this.setxValue(x);
-		this.setyValue(y);
-		this.setzValue(z);
+	public AccelerometerData(long timestamp, int sleepId, int amtMotion, float maxAccel, float minAccel, String sleepState){
+		this.setTimestamp(timestamp);
+		this.setSleepId(sleepId);
+		this.setAmtMotion(amtMotion);
+		this.setMaxAccel(maxAccel);
+		this.setMinAccel(minAccel);
+		this.setSleepState(sleepState);
 	}
 
-	public Date getDate() {
-		return date;
+
+	public long getTimestamp() {
+		return timestamp;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
 	}
 
-	public double getxValue() {
-		return xValue;
+	public int getSleepId() {
+		return sleepId;
 	}
 
-	public void setxValue(double xValue) {
-		this.xValue = xValue;
+	public void setSleepId(int sleepId) {
+		this.sleepId = sleepId;
 	}
 
-	public double getyValue() {
-		return yValue;
+	public int getAmtMotion() {
+		return amtMotion;
 	}
 
-	public void setyValue(double yValue) {
-		this.yValue = yValue;
+	public void setAmtMotion(int amtMotion) {
+		this.amtMotion = amtMotion;
 	}
 
-	public double getzValue() {
-		return zValue;
+	public float getMaxAccel() {
+		return maxAccel;
 	}
 
-	public void setzValue(double zValue) {
-		this.zValue = zValue;
+	public void setMaxAccel(float maxAccel) {
+		this.maxAccel = maxAccel;
 	}
-/**
-	public String toString(){
-		return "Time: " + date.getHours() + ":"+ date.getMinutes() + "." + date.getSeconds()
-				+ " - X = " + xValue + " Y = " + yValue + " Z = " + zValue;
-	}**/
+
+	public float getMinAccel() {
+		return minAccel;
+	}
+
+	public void setMinAccel(float minAccel) {
+		this.minAccel = minAccel;
+	}
+
+	public String getSleepState() {
+		return sleepState;
+	}
+
+	public void setSleepState(String sleepState) {
+		this.sleepState = sleepState;
+	}
+
 }
