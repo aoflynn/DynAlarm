@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmQuery;
+import me.adamoflynn.dynalarm.model.Routine;
 import me.adamoflynn.dynalarm.model.Settings;
 import me.adamoflynn.dynalarm.model.Sleep;
 import me.adamoflynn.dynalarm.model.User;
@@ -20,6 +21,7 @@ import me.adamoflynn.dynalarm.model.User;
 public class Application extends android.app.Application {
 
 	public static AtomicInteger sleepIDValue;
+	public static AtomicInteger routineID;
  // Set up Stetho Debugging and Set up Realm DB for application
 	@Override
 	public void onCreate() {
@@ -53,13 +55,20 @@ public class Application extends android.app.Application {
 		}
 
 		Number query = db.where(Sleep.class).max("id");
-		if(query == null){
+		Number query2 = db.where(Routine.class).max("id");
+		if(query == null ){
 			sleepIDValue = new AtomicInteger(0);
-		}else{
+		}
+		else if(query2 == null){
+			routineID = new AtomicInteger(0);
+		}
+		else{
 			sleepIDValue = new AtomicInteger(query.intValue());
+			routineID = new AtomicInteger(query2.intValue());
 		}
 
-		Log.d("Value ", Integer.toString(sleepIDValue.intValue()));
+		Log.d("Value Sleep ", Integer.toString(sleepIDValue.intValue()));
+		Log.d("Value Routine ", Integer.toString(routineID.intValue()));
 
 	}
 }

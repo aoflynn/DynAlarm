@@ -1,16 +1,20 @@
 package me.adamoflynn.dynalarm;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
@@ -25,7 +29,7 @@ import io.realm.Realm;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
 
-public class AccelerometerActivity extends Activity implements SensorEventListener {
+public class AccelerometerService extends Service implements SensorEventListener{
 
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
@@ -37,30 +41,34 @@ public class AccelerometerActivity extends Activity implements SensorEventListen
 	private float accel, accelCurrent, accelLast;
 	private TextView acclX, acclY, acclZ, motion;
 	private int sleepId;
-
-	private ArrayList<Entry> entries = new ArrayList<>();
-	private ArrayList<String> labels = new ArrayList<>();
+	private Boolean first = true;
 
 	private float x, y, z;
 
 	private Realm db;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_accelerometer);
+	public AccelerometerService() {
+	}
 
-		initializeViews();
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO: Return the communication channel to the service.
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+
+
+	@Override
+	public void onCreate() {
 		db = Realm.getDefaultInstance();
 		mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 		sleepId = Application.sleepIDValue.incrementAndGet();
-
+		Log.d("Service? ", " Created");
 	}
 
-	public void onStartClick(View v){
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId){
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-		Log.d("Value ", Integer.toString(sleepId));
 		Sleep sleep = new Sleep();
 		sleep.setId(sleepId);
 		sleep.setStartTime(Calendar.getInstance().getTimeInMillis());
@@ -68,63 +76,22 @@ public class AccelerometerActivity extends Activity implements SensorEventListen
 		db.beginTransaction();
 		db.copyToRealm(sleep);
 		db.commitTransaction();
+		Log.d("Service? ", " Started");
+		return START_STICKY;
 	}
 
-	public void onStopClick(View view) {
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
 		mSensorManager.unregisterListener(this);
-		initializeChart();
-
 		db.beginTransaction();
 		Sleep sleep = db.where(Sleep.class).equalTo("id", sleepId).findFirst();
 		sleep.setEndTime(Calendar.getInstance().getTimeInMillis());
 		db.commitTransaction();
 		// Increment for next trial/sleep
 		sleepId++;
-		Log.d("KFKF", Integer.toString(sleepId));
-	}
-
-	public void initializeViews(){
-		acclX = (TextView) findViewById(R.id.acclX);
-		motion = (TextView) findViewById(R.id.motion);
-	}
-
-	public void initializeChart(){
-		LineChart chart = (LineChart)findViewById(R.id.chart);
-		LineDataSet dataSet = new LineDataSet(entries, "movement/time");
-
-
-		dataSet.setDrawCubic(true);
-		dataSet.setDrawFilled(true);
-		dataSet.setFillColor(ContextCompat.getColor(this, R.color.colorAccent));
-		dataSet.setFillAlpha(255);
-
-
-		chart.setTouchEnabled(true);
-		chart.setDragEnabled(true);
-		chart.setScaleEnabled(true);
-		chart.setPinchZoom(true);
-
-
-		LineData data = new LineData(labels, dataSet);
-		chart.setData(data);
-		chart.invalidate();
-	}
-
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-	}
-
-	protected void onPause() {
-		super.onPause();
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		mSensorManager.unregisterListener(this);
+		Log.d("Service? ", " Stopped");
+		Toast.makeText(this, "Service stopped!", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -153,16 +120,17 @@ public class AccelerometerActivity extends Activity implements SensorEventListen
 				motions++;
 			}
 
-			if((curTime - lastUpdate5secs) >= 60000) {
+
+			if((curTime - lastUpdate5secs) >= 60000  && first == false) {
 				lastUpdate5secs = curTime;
-				entries.add(new Entry(motions, i++));
-				labels.add(DateFormat.getTimeInstance().format(Calendar.getInstance().getTime()));
 				writeToDB(Calendar.getInstance().getTimeInMillis(), motions);
+				Log.d("Motion: ", Integer.toString(motions));
 				motions = 0;
 			}
+
+			first = false;
 		}
 	}
-
 
 	protected void writeToDB(long timestamp, int amtMotion){
 		db.beginTransaction();
@@ -172,4 +140,5 @@ public class AccelerometerActivity extends Activity implements SensorEventListen
 		acc.setAmtMotion(amtMotion);
 		db.commitTransaction();
 	}
+
 }

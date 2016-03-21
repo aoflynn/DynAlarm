@@ -7,4 +7,5 @@
     <color name="colorBackground">#303030</color>
     <color name="background_material_light">#303030</color>
     <color name="primary_text_default_material_light">#deffffff</color>
+    <color name="graph_bg">#a8a8a8</color>
 </resources>

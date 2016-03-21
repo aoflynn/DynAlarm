@@ -13,15 +13,42 @@
         android:layout_height="wrap_content"
         android:text="@string/accelButton"
         android:id="@+id/accelButton"
-        android:layout_below="@+id/timePicker"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="66dp"/>
+        android:layout_marginBottom="255dp"
+        android:backgroundTint="@color/colorAccent"
+        />
 
-    <TimePicker
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/timePicker"
+        android:text="Set Alarm"
+        android:id="@+id/alarm"
+        android:layout_marginBottom="112dp"
+        android:layout_marginStart="81dp"
+        android:layout_above="@+id/accelButton"
+        android:layout_alignParentStart="true"
+        android:backgroundTint="@color/colorAccent"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start"
+        android:id="@+id/start"
+        android:layout_alignTop="@+id/alarm"
+        android:layout_toEndOf="@+id/alarm"
+        android:layout_marginStart="42dp"
+        android:backgroundTint="@color/colorAccent"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Current Time"
+        android:id="@+id/time"
+        android:layout_marginTop="67dp"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="72dp"/>
+        android:textColor="#ffffff"/>
 
 </RelativeLayout>
