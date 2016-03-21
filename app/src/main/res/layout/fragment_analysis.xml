@@ -39,4 +39,31 @@
         android:id="@+id/textView2"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/textView2"
+        android:layout_alignStart="@+id/chart"
+        android:layout_alignEnd="@+id/insight"
+        android:id="@+id/linearLayout">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Previous"
+            android:id="@+id/previous"/>
+
+
+    </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Next"
+        android:id="@+id/next"
+        android:layout_alignTop="@+id/linearLayout"
+        android:layout_alignEnd="@+id/chart"/>
+
 </RelativeLayout>
