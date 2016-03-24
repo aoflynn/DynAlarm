@@ -51,4 +51,14 @@
         android:layout_centerHorizontal="true"
         android:textColor="#ffffff"/>
 
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:id="@+id/cancel"
+        android:layout_alignTop="@+id/accelButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="114dp"/>
+
 </RelativeLayout>

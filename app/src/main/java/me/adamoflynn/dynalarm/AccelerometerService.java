@@ -1,6 +1,5 @@
 package me.adamoflynn.dynalarm;
 
-import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -8,21 +7,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-
-import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 
 import io.realm.Realm;
@@ -34,16 +22,13 @@ public class AccelerometerService extends Service implements SensorEventListener
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 
-	private int i = 0;
 	private long lastUpdate, lastUpdate5secs = 0;
-	private int seconds, motions = 0;
+	private int motions = 0;
 
-	private float accel, accelCurrent, accelLast;
-	private TextView acclX, acclY, acclZ, motion;
+	private float accelCurrent;
 	private int sleepId;
 	private Boolean first = true;
 
-	private float x, y, z;
 
 	private Realm db;
 
@@ -52,7 +37,6 @@ public class AccelerometerService extends Service implements SensorEventListener
 
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO: Return the communication channel to the service.
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
@@ -63,6 +47,8 @@ public class AccelerometerService extends Service implements SensorEventListener
 		mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 		sleepId = Application.sleepIDValue.incrementAndGet();
+		lastUpdate = System.currentTimeMillis();
+		lastUpdate5secs = System.currentTimeMillis();
 		Log.d("Service? ", " Created");
 	}
 
@@ -84,6 +70,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 	public void onDestroy() {
 		super.onDestroy();
 		mSensorManager.unregisterListener(this);
+		writeToDB(Calendar.getInstance().getTimeInMillis(), motions);
 		db.beginTransaction();
 		Sleep sleep = db.where(Sleep.class).equalTo("id", sleepId).findFirst();
 		sleep.setEndTime(Calendar.getInstance().getTimeInMillis());
@@ -101,27 +88,29 @@ public class AccelerometerService extends Service implements SensorEventListener
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		x = event.values[0];
-		y = event.values[1];
-		z = event.values[2];
+		float x = event.values[0];
+		float y = event.values[1];
+		float z = event.values[2];
 		long curTime = System.currentTimeMillis();
 
+		// Was 100...
 		if ((curTime - lastUpdate) > 100) {
-			lastUpdate = curTime;
-			long curTimeSec = curTime/1000;
+			//lastUpdate = curTime;
 
-			accelLast = accelCurrent;
-			accelCurrent = (float)Math.sqrt(x*x + y*y + z*z);
+			//Get history to check for variance
+			float accelLast = accelCurrent;
+
+			accelCurrent = (float)Math.sqrt(Math.pow(x,2) + Math.pow(y,2) + Math.pow(z,2));
 			float variance = accelCurrent - accelLast;
-			accel = accel * 0.9f + variance; //.1
+			float abs_var = Math.abs(variance);
 
-			// This number allows for small motion detection, but none when laying still. (.06)
-			if(accel > 0.05){
+			if(abs_var > 0.05){
 				motions++;
+				Log.d("Motion: ", Float.toString(abs_var));
 			}
 
-
-			if((curTime - lastUpdate5secs) >= 60000  && first == false) {
+			//Commit every 1 minute
+			if((curTime - lastUpdate5secs) >= 60000  && !first) {
 				lastUpdate5secs = curTime;
 				writeToDB(Calendar.getInstance().getTimeInMillis(), motions);
 				Log.d("Motion: ", Integer.toString(motions));
@@ -132,12 +121,14 @@ public class AccelerometerService extends Service implements SensorEventListener
 		}
 	}
 
-	protected void writeToDB(long timestamp, int amtMotion){
+	private void writeToDB(long timestamp, int amtMotion){
 		db.beginTransaction();
+
 		AccelerometerData acc = db.createObject(AccelerometerData.class);
 		acc.setTimestamp(timestamp);
 		acc.setSleepId(sleepId);
 		acc.setAmtMotion(amtMotion);
+
 		db.commitTransaction();
 	}
 

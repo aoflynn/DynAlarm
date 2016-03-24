@@ -125,9 +125,6 @@ public class RoutineActivity extends AppCompatActivity {
 			return;
 		}
 		Routine routine = new Routine(routineID, name, desc);
-		/*routine.setId(routineID);
-		routine.setName(name);
-		routine.setDesc(desc);*/
 		realm.beginTransaction();
 		realm.copyToRealm(routine);
 		realm.commitTransaction();

@@ -2,11 +2,9 @@ package me.adamoflynn.dynalarm;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.widget.Toast;
@@ -21,7 +19,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Toast.makeText(context, "Alarm!", Toast.LENGTH_SHORT).show();
 		Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
 
-		long[] vib = {600,600,600};
+		long[] vib = {600,600,600, 200, 200, 900, 200};
 
 		Notification not = new Notification.Builder(context)
 		  .setContentTitle("Alarm! Wake Up!")
