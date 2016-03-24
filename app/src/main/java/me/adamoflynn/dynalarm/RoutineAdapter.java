@@ -55,9 +55,7 @@ public class RoutineAdapter extends RealmBaseAdapter<Routine> implements ListAda
 		viewHolder.name.setTextColor(Color.WHITE);
 		//viewHolder.desc.setText(item.getDesc());
 		//viewHolder.checkBox.setOnCheckedChangeListener(mListener);*/
-		Log.d("OO: ", Integer.toString(item.getId()));
-		Log.d("OO: ", item.getName());
-		Log.d("OO: ", item.getDesc());
+
 		return convertView;
 	}
 

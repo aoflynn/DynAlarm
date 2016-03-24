@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -21,10 +22,14 @@ import com.github.mikephil.charting.components.YAxis;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
+import me.adamoflynn.dynalarm.model.Sleep;
 
 public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
@@ -34,9 +39,11 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	private Number newestData;
 	private int lastId;
 	private Button previous, next;
+	private TextView date;
 	private LineChart chart;
 	private LineDataSet dataSet;
 	private final DateFormat format = new SimpleDateFormat("HH:mm");
+	private final DateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd", Locale.ENGLISH);
 
 	public AnalysisFragment() {
 		// Required empty public constructor
@@ -54,6 +61,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		getData(lastId);
 		initializeChart();
+		initializeDate(v);
 		initializeButtons(v);
 		return v;
 	}
@@ -102,7 +110,24 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		chart.invalidate();
 	}
 
+	// Initialize the view
+	public void initializeDate(View v){
+		TextView date = (TextView) v.findViewById(R.id.date);
+		Sleep s = realm.where(Sleep.class).equalTo("id", lastId).findFirst();
+		Log.d("MEH", s.toString());
+		Date d = s.getDate();
+		Log.d("MEH", dateFormat.format(d));
+		date.setText(dateFormat.format(d));
+	}
 
+	// Have to implement this method to change the date as fragments are weird
+	public void changeText(){
+		TextView date = (TextView) getView().findViewById(R.id.date);
+		Sleep s = realm.where(Sleep.class).equalTo("id", lastId).findFirst();
+		Date d = s.getDate();
+		if(d == null) date.setText("No date");
+		date.setText(dateFormat.format(d));
+	}
 
 	private void getData(int sleepId){
 		Log.d("Sleep id", Integer.toString(sleepId));
@@ -138,6 +163,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 					Log.d("State: ", " previous sleep cycle...");
 					getData(lastId - 1);
 					initializeChart();
+					changeText();
 					break;
 				}
 			case R.id.next:
@@ -150,6 +176,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				else{
 					getData(lastId + 1);
 					initializeChart();
+					initializeDate(v);
+					changeText();
 					Log.d("State: ", " next sleep cycle...");
 					break;
 				}

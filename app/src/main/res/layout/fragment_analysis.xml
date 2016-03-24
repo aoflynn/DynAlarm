@@ -4,66 +4,74 @@
              android:layout_height="match_parent"
              tools:context="me.adamoflynn.dynalarm.AnalysisFragment">
 
-    <!-- TODO: Update blank fragment layout -->
 
-    <TextView
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/insight"
-        android:id="@+id/insight"
-        android:layout_marginTop="33dp"
-        android:textColor="#ffffff"
+        android:weightSum="1"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="40dp"/>
+        android:layout_alignParentEnd="true"
+        android:orientation="vertical"
+        android:id="@+id/linearLayout2">
 
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/chart"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/insight"
-        android:layout_alignParentEnd="false"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_horizontal_margin"
-        android:layout_above="@+id/textView2"
-        android:background="@color/graph_bg"
-        />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="260dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_horizontal_margin"
+            android:background="@color/graph_bg"
+            android:layout_weight="0.09"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/textView2"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"/>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.00">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Previous"
+                android:id="@+id/previous"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date of Sleep"
+                android:id="@+id/date"
+                android:textColor="#ffffff"
+                android:typeface="normal"
+                android:width="200dp"
+                android:textSize="14dp"
+                android:textStyle="bold"
+                android:padding="16dp"
+                android:textAlignment="center"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Next"
+                android:id="@+id/next"
+                android:layout_alignTop="@+id/linearLayout"
+                android:layout_alignEnd="@+id/chart"
+                />
+        </LinearLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/textView2"
-        android:layout_alignStart="@+id/chart"
-        android:layout_alignEnd="@+id/insight"
-        android:id="@+id/linearLayout">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Previous"
-            android:id="@+id/previous"/>
-
+        android:layout_below="@+id/linearLayout2"
+        android:layout_alignParentStart="true"
+        android:weightSum="1">
 
     </LinearLayout>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Next"
-        android:id="@+id/next"
-        android:layout_alignTop="@+id/linearLayout"
-        android:layout_alignEnd="@+id/chart"/>
 
 </RelativeLayout>
