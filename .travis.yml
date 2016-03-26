@@ -13,5 +13,8 @@ android:
     - extra-android-m2repository
     - extra-google-m2repository
 
+before_install:
+ - chmod +x gradlew
+
 script:
    - ./gradlew build connectedCheck
