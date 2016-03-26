@@ -109,7 +109,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 			float variance = accelCurrent - accelLast;
 			float abs_var = Math.abs(variance);
 
-			if(abs_var > 0.05){
+			if(abs_var > 0.04){
 				motions++;
 				Log.d("Motion: ", Float.toString(abs_var));
 			}
