@@ -34,6 +34,7 @@ import me.adamoflynn.dynalarm.model.Sleep;
 public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	private ArrayList<Entry> entries;
+	private ArrayList<Integer> motion;
 	private ArrayList<String> labels;
 	private Realm realm;
 	private Number newestData;
@@ -69,8 +70,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	private void initializeChart(){
 		dataSet = new LineDataSet(entries, "Movements");
 
-		dataSet.setDrawCubic(true);
-		dataSet.setCubicIntensity(0.08f);
+		dataSet.setDrawCubic(false);
+		//dataSet.setCubicIntensity(0.08f);
 		dataSet.setDrawCircles(true);
 		dataSet.setDrawFilled(true);
 		dataSet.setFillColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
@@ -86,7 +87,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		YAxis leftAxis = chart.getAxisLeft();
 		leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-		leftAxis.setAxisMaxValue(500f);
+		leftAxis.setAxisMaxValue(100f);
 		leftAxis.setDrawLabels(true); // no axis labels
 		leftAxis.setStartAtZero(true);
 		leftAxis.setDrawGridLines(false); // no grid lineschart.setData(data);
@@ -114,9 +115,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	public void initializeDate(View v){
 		TextView date = (TextView) v.findViewById(R.id.date);
 		Sleep s = realm.where(Sleep.class).equalTo("id", lastId).findFirst();
-		Log.d("MEH", s.toString());
 		Date d = s.getDate();
-		Log.d("MEH", dateFormat.format(d));
 		date.setText(dateFormat.format(d));
 	}
 
@@ -134,13 +133,16 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		int i = 0;
 		entries = new ArrayList<>();
 		labels = new ArrayList<>();
+		motion = new ArrayList<>();
 		RealmResults<AccelerometerData> results = realm.where(AccelerometerData.class)
 				.equalTo("sleepId", sleepId).findAll();
 		for (AccelerometerData a: results) {
+			motion.add(a.getAmtMotion());
 			entries.add(new Entry(a.getAmtMotion(), i++));
 			labels.add(format.format(a.getTimestamp()));
 		}
-
+		Log.d("Motion ", motion.toString());
+		Log.d("Labels ", labels.toString());
 		lastId = sleepId;
 		Log.d("Sleep size", Integer.toString(entries.size()));
 	}
@@ -176,7 +178,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				else{
 					getData(lastId + 1);
 					initializeChart();
-					initializeDate(v);
 					changeText();
 					Log.d("State: ", " next sleep cycle...");
 					break;

@@ -28,6 +28,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 	private float accelCurrent;
 	private int sleepId;
 	private Boolean first = true;
+	private float maxVar = 0f;
 
 
 	private Realm db;
@@ -40,15 +41,19 @@ public class AccelerometerService extends Service implements SensorEventListener
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
-
 	@Override
 	public void onCreate() {
 		db = Realm.getDefaultInstance();
 		mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+
+		// Get most recent sleep ID + inc to get new unique iD.
 		sleepId = Application.sleepIDValue.incrementAndGet();
+
+		//Get times
 		lastUpdate = System.currentTimeMillis();
 		lastUpdate5secs = System.currentTimeMillis();
+
 		Log.d("Service? ", " Created");
 	}
 
@@ -70,7 +75,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 	public void onDestroy() {
 		super.onDestroy();
 		mSensorManager.unregisterListener(this);
-		writeToDB(Calendar.getInstance().getTimeInMillis(), motions);
+		writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar);
 		db.beginTransaction();
 		Sleep sleep = db.where(Sleep.class).equalTo("id", sleepId).findFirst();
 		sleep.setEndTime(Calendar.getInstance().getTimeInMillis());
@@ -112,22 +117,28 @@ public class AccelerometerService extends Service implements SensorEventListener
 			//Commit every 1 minute
 			if((curTime - lastUpdate5secs) >= 60000  && !first) {
 				lastUpdate5secs = curTime;
-				writeToDB(Calendar.getInstance().getTimeInMillis(), motions);
+				writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar);
 				Log.d("Motion: ", Integer.toString(motions));
 				motions = 0;
+				maxVar = 0;
+			}
+
+			if(abs_var > maxVar){
+				maxVar = abs_var;
 			}
 
 			first = false;
 		}
 	}
 
-	private void writeToDB(long timestamp, int amtMotion){
+	private void writeToDB(long timestamp, int amtMotion, float maxVar){
 		db.beginTransaction();
 
 		AccelerometerData acc = db.createObject(AccelerometerData.class);
 		acc.setTimestamp(timestamp);
 		acc.setSleepId(sleepId);
 		acc.setAmtMotion(amtMotion);
+		acc.setMaxAccel(maxVar);
 
 		db.commitTransaction();
 	}
