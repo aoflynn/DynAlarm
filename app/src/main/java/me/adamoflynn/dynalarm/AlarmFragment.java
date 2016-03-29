@@ -22,6 +22,9 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
+import me.adamoflynn.dynalarm.services.AccelerometerService;
+
 public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	private Button alarm, start, accel, cancel;

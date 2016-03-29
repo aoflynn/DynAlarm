@@ -1,4 +1,4 @@
-package me.adamoflynn.dynalarm;
+package me.adamoflynn.dynalarm.adapters;
 
 import android.content.Context;
 import android.content.Intent;

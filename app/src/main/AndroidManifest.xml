@@ -31,7 +31,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".AlarmReceiver"/>
+        <receiver android:name=".receivers.AlarmReceiver"/>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -51,7 +51,7 @@
         </activity>
 
         <service
-            android:name=".AccelerometerService"
+            android:name=".services.AccelerometerService"
             android:enabled="true"
             android:exported="true">
         </service>

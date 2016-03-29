@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 
 
 import io.realm.Realm;
+import me.adamoflynn.dynalarm.adapters.ViewPagerAdapter;
 
 public class MainActivity extends AppCompatActivity {
 

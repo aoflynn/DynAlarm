@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +17,7 @@ import android.widget.Toast;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import me.adamoflynn.dynalarm.adapters.RoutineAdapter;
 import me.adamoflynn.dynalarm.model.Routine;
 
 public class RoutineActivity extends AppCompatActivity {

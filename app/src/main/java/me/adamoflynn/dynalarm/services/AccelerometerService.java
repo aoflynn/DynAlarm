@@ -1,4 +1,4 @@
-package me.adamoflynn.dynalarm;
+package me.adamoflynn.dynalarm.services;
 
 import android.app.Service;
 import android.content.Context;
@@ -14,6 +14,7 @@ import android.widget.Toast;
 import java.util.Calendar;
 
 import io.realm.Realm;
+import me.adamoflynn.dynalarm.Application;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
 

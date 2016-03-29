@@ -1,4 +1,4 @@
-package me.adamoflynn.dynalarm;
+package me.adamoflynn.dynalarm.receivers;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -8,6 +8,9 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.widget.Toast;
+
+import me.adamoflynn.dynalarm.R;
+import me.adamoflynn.dynalarm.services.AccelerometerService;
 
 /**
  * Created by Adam on 20/03/2016.

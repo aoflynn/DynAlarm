@@ -1,4 +1,4 @@
-package me.adamoflynn.dynalarm;
+package me.adamoflynn.dynalarm.adapters;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
