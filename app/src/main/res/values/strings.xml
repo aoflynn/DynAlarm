@@ -14,7 +14,7 @@
         <item>@string/nav_item_settings</item>
     </string-array>
 
-    <!-- TODO: Remove or change this placeholder text -->s
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="accelButton">Accelerometer</string>
     <string name="insight">Insight</string>
@@ -22,4 +22,5 @@
     <string name="tone">Wake Tone</string>
     <string name="timeframe">Wake Timeframe</string>
     <string name="title_activity_routine">RoutineActivity</string>
+    <string name="online_routing_key">nmqjmepdy9ppbp8yekvrsaet</string>
 </resources>

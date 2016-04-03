@@ -5,40 +5,25 @@
              tools:context="me.adamoflynn.dynalarm.AlarmFragment"
     >
 
-    <!-- TODO: Update blank fragment layout -->
-
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/accelButton"
+        android:text="Routine Act"
         android:id="@+id/accelButton"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="255dp"
         android:backgroundTint="@color/colorAccent"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Set Alarm"
-        android:id="@+id/alarm"
-        android:layout_marginBottom="112dp"
-        android:layout_marginStart="81dp"
-        android:layout_above="@+id/accelButton"
-        android:layout_alignParentStart="true"
-        android:backgroundTint="@color/colorAccent"/>
+        android:layout_centerVertical="true"
+        android:layout_alignStart="@+id/routine"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start"
         android:id="@+id/start"
-        android:layout_alignTop="@+id/alarm"
-        android:layout_toEndOf="@+id/alarm"
-        android:layout_marginStart="42dp"
-        android:backgroundTint="@color/colorAccent"/>
+        android:backgroundTint="@color/colorAccent"
+        android:layout_marginTop="52dp"
+        android:layout_below="@+id/time"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="48dp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -46,10 +31,16 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Current Time"
         android:id="@+id/time"
-        android:layout_marginTop="67dp"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:textColor="#ffffff"/>
+        android:textColor="#ffffff"
+        android:textSize="48sp"
+        android:clickable="true"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="64dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:onClick="timePicker"/>
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -57,8 +48,58 @@
         android:layout_height="wrap_content"
         android:text="Cancel"
         android:id="@+id/cancel"
+        android:backgroundTint="@color/colorAccent"
+        android:layout_alignTop="@+id/start"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="48dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Routines?"
+        android:id="@+id/routine"
+        android:layout_marginTop="139dp"
+        android:textSize="24sp"
+        android:textColor="#ffffff"
+        android:layout_below="@+id/start"
+        android:layout_alignEnd="@+id/start"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/routineCheck"
+        android:checked="false"
+        android:layout_alignTop="@+id/routine"
+        android:layout_alignEnd="@+id/cancel"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Traffic?"
+        android:id="@+id/traffic"
+        android:layout_below="@+id/routine"
+        android:layout_alignStart="@+id/routine"
+        android:layout_marginTop="33dp"
+        android:textSize="24sp"
+        android:textColor="#ffffff"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/trafficCheck"
+        android:checked="false"
+        android:layout_alignBottom="@+id/traffic"
+        android:layout_alignStart="@+id/routineCheck"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Maps Act"
+        android:id="@+id/mapsButton"
+        android:backgroundTint="@color/colorAccent"
         android:layout_alignTop="@+id/accelButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="114dp"/>
+        android:layout_alignStart="@+id/cancel"/>
 
 </RelativeLayout>

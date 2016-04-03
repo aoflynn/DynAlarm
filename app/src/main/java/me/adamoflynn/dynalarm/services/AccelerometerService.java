@@ -55,7 +55,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 		lastUpdate = System.currentTimeMillis();
 		lastUpdate5secs = System.currentTimeMillis();
 
-		Log.d("Service? ", " Created");
+		Log.d("Service", " Created");
 	}
 
 	@Override
@@ -65,10 +65,11 @@ public class AccelerometerService extends Service implements SensorEventListener
 		sleep.setId(sleepId);
 		sleep.setStartTime(Calendar.getInstance().getTimeInMillis());
 		sleep.setDate(Calendar.getInstance().getTime());
+
 		db.beginTransaction();
 		db.copyToRealm(sleep);
 		db.commitTransaction();
-		Log.d("Service? ", " Started");
+		Log.d("Service", " Started");
 		return START_STICKY;
 	}
 
@@ -77,13 +78,15 @@ public class AccelerometerService extends Service implements SensorEventListener
 		super.onDestroy();
 		mSensorManager.unregisterListener(this);
 		writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar);
+
 		db.beginTransaction();
 		Sleep sleep = db.where(Sleep.class).equalTo("id", sleepId).findFirst();
 		sleep.setEndTime(Calendar.getInstance().getTimeInMillis());
 		db.commitTransaction();
+
 		// Increment for next trial/sleep
 		sleepId++;
-		Log.d("Service? ", " Stopped");
+		Log.d("Service", " Stopped");
 		Toast.makeText(this, "Service stopped!", Toast.LENGTH_SHORT).show();
 	}
 
@@ -110,13 +113,14 @@ public class AccelerometerService extends Service implements SensorEventListener
 			float variance = accelCurrent - accelLast;
 			float abs_var = Math.abs(variance);
 
-			if(abs_var > 0.04){
+			// .04 -> 0.025
+			if(abs_var > 0.025){
 				motions++;
 				Log.d("Motion: ", Float.toString(abs_var));
 			}
 
-			//Commit every 1 minute
-			if((curTime - lastUpdate5secs) >= 60000  && !first) {
+			//Commit every 5 minute
+			if((curTime - lastUpdate5secs) >= 300000  && !first) {
 				lastUpdate5secs = curTime;
 				writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar);
 				Log.d("Motion: ", Integer.toString(motions));

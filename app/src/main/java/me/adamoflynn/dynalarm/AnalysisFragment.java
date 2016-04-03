@@ -71,7 +71,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		dataSet = new LineDataSet(entries, "Movements");
 
 		dataSet.setDrawCubic(false);
-		//dataSet.setCubicIntensity(0.08f);
 		dataSet.setDrawCircles(true);
 		dataSet.setDrawFilled(true);
 		dataSet.setFillColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));

@@ -47,7 +47,14 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps"/>
-        <activity android:name=".AccelerometerActivity">
+
+        <activity
+            android:name=".AccelerometerActivity">
+        </activity>
+
+        <activity
+            android:name=".RoutineActivity"
+            android:theme="@style/DynAlarmTheme">
         </activity>
 
         <service
@@ -56,10 +63,6 @@
             android:exported="true">
         </service>
 
-        <activity
-            android:name=".RoutineActivity"
-            android:theme="@style/DynAlarmTheme">
-        </activity>
     </application>
 
 </manifest>

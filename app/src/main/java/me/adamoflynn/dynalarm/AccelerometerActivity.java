@@ -80,7 +80,6 @@ public class AccelerometerActivity extends Activity implements SensorEventListen
 		db.commitTransaction();
 		// Increment for next trial/sleep
 		sleepId++;
-		Log.d("KFKF", Integer.toString(sleepId));
 	}
 
 	public void initializeViews(){
