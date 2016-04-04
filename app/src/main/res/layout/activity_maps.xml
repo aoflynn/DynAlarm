@@ -45,4 +45,34 @@
         android:layout_toEndOf="@+id/fetchData"
         android:textColor="#ffffff"/>
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/from"
+        android:layout_toStartOf="@+id/from"
+        android:layout_marginTop="28dp"
+        android:layout_alignParentEnd="true"
+        android:weightSum="1">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Arrive At:"
+            android:id="@+id/textView2"
+            android:textColor="#ffffff"
+            android:layout_weight="0.19"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="00:00"
+            android:id="@+id/arriveAt"
+            android:textColor="#ffffff"
+            />
+
+    </LinearLayout>
+
 </RelativeLayout>

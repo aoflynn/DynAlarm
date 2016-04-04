@@ -119,9 +119,7 @@ public class RoutineActivity extends AppCompatActivity {
 
 	private void addToDoItem(String name, String desc) {
 		if (name == null || name.length() == 0) {
-			Toast
-					.makeText(this, "Empty Routine!", Toast.LENGTH_SHORT)
-					.show();
+			Toast.makeText(this, "Empty Routine!", Toast.LENGTH_SHORT).show();
 			return;
 		}
 		Routine routine = new Routine(routineID, name, desc);

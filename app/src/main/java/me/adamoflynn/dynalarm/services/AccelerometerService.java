@@ -1,5 +1,6 @@
 package me.adamoflynn.dynalarm.services;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +31,6 @@ public class AccelerometerService extends Service implements SensorEventListener
 	private int sleepId;
 	private Boolean first = true;
 	private float maxVar = 0f;
-
 
 	private Realm db;
 
@@ -69,6 +69,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 		db.beginTransaction();
 		db.copyToRealm(sleep);
 		db.commitTransaction();
+
 		Log.d("Service", " Started");
 		return START_STICKY;
 	}

@@ -19,7 +19,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Toast.makeText(context, "Alarm!", Toast.LENGTH_SHORT).show();
+		Toast.makeText(context, "Alarm!", Toast.LENGTH_LONG).show();
 		Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
 
 		long[] vib = {600,600,600, 200, 200, 900, 200};
@@ -30,8 +30,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 			.setSmallIcon(R.drawable.ic_alarm_white_48dp)
 			.setAutoCancel(true)
 			.setSound(alarmUri)
-			.setVibrate(vib)
 			.build();
+
+		not.defaults |= Notification.DEFAULT_VIBRATE;
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(0, not);

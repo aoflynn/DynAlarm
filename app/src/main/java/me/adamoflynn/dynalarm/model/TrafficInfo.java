@@ -6,6 +6,7 @@ import java.util.Date;
  * Created by Adam on 02/04/2016.
  */
 public class TrafficInfo {
+
 	private int lengthInMeters;
 	private int travelTime;
 	private int travelDelay;
@@ -23,6 +24,17 @@ public class TrafficInfo {
 		this.setTravelDelay(travelDelay);
 		this.setDepartureTime(departureTime);
 		this.setArrivalTime(arrivalTime);
+	}
+
+	public TrafficInfo(int lengthInMeters, int travelTime, int travelDelay, Date departureTime, Date arrivalTime, int travelTimeNoTraffic, int historicTravelTime, int liveIncidentsTravelTime){
+		this.setLengthInMeters(lengthInMeters);
+		this.setTravelTime(travelTime);
+		this.setTravelDelay(travelDelay);
+		this.setDepartureTime(departureTime);
+		this.setArrivalTime(arrivalTime);
+		this.setTravelTimeNoTraffic(travelTimeNoTraffic);
+		this.setHistoricTravelTime(historicTravelTime);
+		this.setLiveIncidentsTravelTime(liveIncidentsTravelTime);
 	}
 
 	public int getLengthInMeters() {
@@ -90,10 +102,13 @@ public class TrafficInfo {
 	}
 
 	public String toString(){
-		return "Travel time in KM: " + this.lengthInMeters/1000.00
+		return "Travel length in KM: " + this.lengthInMeters/1000.00
 				+ "\nTravel Time in Mins: " + this.travelTime/60.00
 				+ "\nDelay in Mins: " + this.travelDelay/60.00
 				+ "\nDeparture Time: " + this.departureTime
-				+ "\nArrival Time: " + this.arrivalTime;
+				+ "\nArrival Time: " + this.arrivalTime
+				+ "\nNo Traffic Time: " + this.travelTimeNoTraffic/60.00
+				+ "\nHistoric Travel Time: " + this.historicTravelTime/60.00
+				+ "\nLive Incidents Time: " + this.liveIncidentsTravelTime/60.00;
 	}
 }

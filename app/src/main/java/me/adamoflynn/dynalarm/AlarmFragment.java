@@ -1,6 +1,7 @@
 package me.adamoflynn.dynalarm;
 
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
@@ -27,6 +28,7 @@ import java.util.Date;
 
 import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
+import me.adamoflynn.dynalarm.services.TrafficService;
 
 public class AlarmFragment extends Fragment implements View.OnClickListener {
 
@@ -95,19 +97,17 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	public void onClick(View v){
 		switch(v.getId()){
 			case R.id.time:
-				Log.d("Pressed: ", " text view");
 				timePicker();
 				break;
 			case R.id.start:
-				Log.d("Pressed: ", " start button");
 				startAlarm();
+				break;
+			case R.id.cancel:
+				cancelAlarm();
 				break;
 			case R.id.accelButton:
 				Intent intent = new Intent(getActivity(), RoutineActivity.class);
 				getActivity().startActivity(intent);
-				break;
-			case R.id.cancel:
-				cancelAlarm();
 				break;
 			case R.id.mapsButton:
 				Intent maps = new Intent(getActivity(), MapsActivity.class);
@@ -120,18 +120,16 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		Calendar mCurrentTime = Calendar.getInstance();
 		int hour = mCurrentTime.get(Calendar.HOUR_OF_DAY);
 		int minute = mCurrentTime.get(Calendar.MINUTE);
-
-				TimePickerDialog pickerDialog = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
-					@Override
-					public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-						alarmTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-						alarmTime.set(Calendar.MINUTE, minute);
-						currentTime.setText(sdf.format(alarmTime.getTime()));
-					}
-				}, hour, minute, true);
-
-				pickerDialog.setTitle("Select Time");
-				pickerDialog.show();
+			TimePickerDialog pickerDialog = new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {
+				@Override
+				public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+					alarmTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+					alarmTime.set(Calendar.MINUTE, minute);
+					currentTime.setText(sdf.format(alarmTime.getTime()));
+				}
+			}, hour, minute, true);
+		pickerDialog.setTitle("Select Time");
+		pickerDialog.show();
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
@@ -173,4 +171,16 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			alarmTime.add(Calendar.HOUR_OF_DAY, 24);
 		}
 	}
+
+
+	private boolean isMyServiceRunning(Class<?> serviceClass) {
+		ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
+		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+			if (serviceClass.getName().equals(service.service.getClassName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

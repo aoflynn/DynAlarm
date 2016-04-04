@@ -86,7 +86,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		YAxis leftAxis = chart.getAxisLeft();
 		leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-		leftAxis.setAxisMaxValue(100f);
+		//leftAxis.setAxisMaxValue(250f);
 		leftAxis.setDrawLabels(true); // no axis labels
 		leftAxis.setStartAtZero(true);
 		leftAxis.setDrawGridLines(false); // no grid lineschart.setData(data);
@@ -149,6 +149,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	private void initializeButtons(View v){
 		previous = (Button)v.findViewById(R.id.previous);
 		previous.setOnClickListener(this);
+
 		next = (Button)v.findViewById(R.id.next);
 		next.setOnClickListener(this);
 	}

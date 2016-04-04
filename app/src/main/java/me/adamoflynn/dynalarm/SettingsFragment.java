@@ -1,7 +1,5 @@
 package me.adamoflynn.dynalarm;
 
-
-
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
@@ -16,7 +14,6 @@ import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.model.Settings;
 import me.adamoflynn.dynalarm.model.User;
-
 
 public class SettingsFragment extends Fragment {
 
