@@ -17,14 +17,14 @@
         android:inputType="textCapWords"
         />
 
-    <EditText
-        android:id="@+id/desc"
-        android:layout_width="match_parent"
+    <Spinner
+        android:layout_width="136dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:singleLine="true"
-        android:imeOptions="actionDone"
-        android:hint="Routine Description"
-        android:inputType="textCapWords"
-        />
+        android:id="@+id/desc"
+        android:layout_gravity="left|center"
+        android:spinnerMode="dialog"
+        android:focusableInTouchMode="false"
+        android:focusable="true"/>
+
+
 </LinearLayout>

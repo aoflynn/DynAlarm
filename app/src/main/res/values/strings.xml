@@ -8,12 +8,6 @@
     <string name="nav_item_analysis">Analysis</string>
     <string name="nav_item_settings">Settings</string>
 
-    <string-array name="nav_drawer_labels">
-        <item>@string/nav_item_alarm</item>
-        <item>@string/nav_item_analysis</item>
-        <item>@string/nav_item_settings</item>
-    </string-array>
-
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="accelButton">Accelerometer</string>
@@ -23,4 +17,28 @@
     <string name="timeframe">Wake Timeframe</string>
     <string name="title_activity_routine">RoutineActivity</string>
     <string name="online_routing_key">nmqjmepdy9ppbp8yekvrsaet</string>
+
+    <string-array name="nav_drawer_labels">
+        <item>@string/nav_item_alarm</item>
+        <item>@string/nav_item_analysis</item>
+        <item>@string/nav_item_settings</item>
+    </string-array>
+
+
+    <string-array name="routine_time_list">
+        <item>5 minutes</item>
+        <item>10 minutes</item>
+        <item>15 minutes</item>
+        <item>20 minutes</item>
+        <item>25 minutes</item>
+        <item>30 minutes</item>
+        <item>35 minutes</item>
+        <item>40 minutes</item>
+        <item>45 minutes</item>
+        <item>50 minutes</item>
+        <item>55 minutes</item>
+        <item>60 minutes</item>
+    </string-array>
+
+
 </resources>
