@@ -79,6 +79,7 @@ public class RoutineAdapter extends RealmBaseAdapter<Routine> implements ListAda
 		return convertView;
 	}
 
+
 	public RealmResults<Routine> getRealmResults() {
 		return realmResults;
 	}

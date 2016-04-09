@@ -25,6 +25,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 
 import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
@@ -40,6 +41,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private Calendar alarmTime = Calendar.getInstance();
 	private final DateFormat sdf = new SimpleDateFormat("HH:mm");
 	private boolean wantRoutines, wantTraffic = false;
+	private HashSet<Integer> routinesChecked;
 
 
 	public AlarmFragment() {
@@ -61,6 +63,12 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		setCheckboxes();
 	}
 
 	private void initializeTime(View v){
@@ -181,6 +189,24 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			}
 		}
 		return false;
+	}
+
+	public void setRoutinesChecked(Bundle b){
+		if(b != null){
+			routinesChecked = (HashSet) b.getSerializable("routineData");
+			setCheckboxes();
+			Log.d("Data in Alarm", routinesChecked.toString());
+		}
+
+		else {
+			Log.d("Data in Alarm", "No routines selected");
+		}
+
+
+	}
+
+	private void setCheckboxes(){
+
 	}
 
 }
