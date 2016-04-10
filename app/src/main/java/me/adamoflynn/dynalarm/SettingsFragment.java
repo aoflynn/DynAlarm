@@ -1,6 +1,7 @@
 package me.adamoflynn.dynalarm;
 
 import android.os.Bundle;
+import android.preference.PreferenceFragment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -15,7 +16,7 @@ import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.model.Settings;
 import me.adamoflynn.dynalarm.model.User;
 
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends PreferenceFragment {
 
 	private TextView timeframe, timeframe_val, vibration, tone, tone_val;
 	private RadioButton vibRadio;
@@ -26,28 +27,12 @@ public class SettingsFragment extends Fragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		// Inflate the layout for this fragment
-		View v = inflater.inflate(R.layout.fragment_settings, container, false);
-		db = Realm.getDefaultInstance();
-		initializeViews(v);
-		populateViews();
-		return v;
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+
+		// Load the preferences from an XML resource
+		addPreferencesFromResource(R.xml.preferences);
 	}
 
-	public void initializeViews(View v) {
-		timeframe = (TextView) v.findViewById(R.id.timeframe);
-		timeframe_val = (TextView) v.findViewById(R.id.timeframe_val);
-		vibration = (TextView) v.findViewById(R.id.vibration);
-		tone = (TextView) v.findViewById(R.id.tone);
-		tone_val = (TextView) v.findViewById(R.id.tone_val);
-		vibRadio = (RadioButton) v.findViewById(R.id.vibRadio);
-	}
-
-	public void populateViews(){
-		Settings query = db.where(Settings.class).findFirst();
-		timeframe_val.setText(Integer.toString(query.getWake_timeframe()));
-		tone_val.setText(query.getWake_tone());
-		vibRadio.setChecked(query.getVibration());
-	}
 }

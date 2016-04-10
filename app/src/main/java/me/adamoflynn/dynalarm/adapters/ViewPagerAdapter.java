@@ -1,11 +1,14 @@
 package me.adamoflynn.dynalarm.adapters;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.preference.PreferenceFragment;
+import android.support.v13.app.FragmentPagerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import me.adamoflynn.dynalarm.SettingsFragment;
 
 /**
  * Created by Adam on 05/03/2016.
@@ -19,7 +22,10 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
 
 	@Override
 	public Fragment getItem(int position) {
-		return mFragmentList.get(position);
+		if(position == 2){
+			return new SettingsFragment();
+		}
+		else return mFragmentList.get(position);
 	}
 
 	@Override

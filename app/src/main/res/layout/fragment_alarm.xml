@@ -5,14 +5,17 @@
              tools:context="me.adamoflynn.dynalarm.AlarmFragment"
     >
 
+
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Routine Act"
-        android:id="@+id/accelButton"
+        android:text="Routines"
+        android:id="@+id/routines"
         android:backgroundTint="@color/colorAccent"
-        android:layout_centerVertical="true"
-        android:layout_alignStart="@+id/routine"/>
+        android:layout_below="@+id/start"
+        android:layout_alignStart="@+id/start"
+        android:layout_marginTop="98dp"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -53,53 +56,35 @@
         android:layout_alignParentEnd="true"
         android:layout_marginRight="48dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Routines?"
-        android:id="@+id/routine"
-        android:layout_marginTop="139dp"
-        android:textSize="24sp"
-        android:textColor="#ffffff"
-        android:layout_below="@+id/start"
-        android:layout_alignEnd="@+id/start"/>
-
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/routineCheck"
         android:checked="false"
-        android:layout_alignTop="@+id/routine"
-        android:layout_alignEnd="@+id/cancel"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Traffic?"
-        android:id="@+id/traffic"
-        android:layout_below="@+id/routine"
-        android:layout_alignStart="@+id/routine"
-        android:layout_marginTop="33dp"
-        android:textSize="24sp"
-        android:textColor="#ffffff"/>
+        android:layout_alignBottom="@+id/routines"
+        android:layout_alignEnd="@+id/cancel"
+        android:fitsSystemWindows="false"
+        android:layout_marginBottom="8dp"/>
 
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/trafficCheck"
         android:checked="false"
-        android:layout_alignBottom="@+id/traffic"
-        android:layout_alignStart="@+id/routineCheck"/>
+        android:layout_alignBottom="@+id/mapsButton"
+        android:layout_alignEnd="@+id/cancel"
+        android:layout_marginBottom="8dp"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Maps Act"
+        android:text="Traffic"
         android:id="@+id/mapsButton"
         android:backgroundTint="@color/colorAccent"
-        android:layout_alignTop="@+id/accelButton"
-        android:layout_alignStart="@+id/cancel"/>
+        android:layout_marginTop="22dp"
+        android:layout_below="@+id/routines"
+        android:layout_alignStart="@+id/routines"/>
+
+
 
 </RelativeLayout>

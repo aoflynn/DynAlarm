@@ -12,7 +12,7 @@ public class TrafficReceiver extends ResultReceiver {
 	private Receiver mReceiver;
 
 	public interface Receiver {
-		public void onReceiveResult(int statusCode, Bundle resultData);
+		void onReceiveResult(int statusCode, Bundle resultData);
 	}
 
 	public TrafficReceiver(Handler handler) {

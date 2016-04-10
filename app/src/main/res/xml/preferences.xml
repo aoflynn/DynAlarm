@@ -1,0 +1,21 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent" android:layout_width="match_parent">
+
+    <PreferenceCategory
+        android:key="my_category_key"
+        android:title="My Title"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <CheckBoxPreference
+            android:key="pref_key"
+            android:title="Title"
+            android:summary="Summary"
+            android:defaultValue="false"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -69,14 +69,9 @@ public class RoutineActivity extends AppCompatActivity {
 		save.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Bundle b = new Bundle();
-
-				if(routineAdapter.getCheckedRoutines().size() == 0){
-					b = null;
-				} else b.putSerializable("routineData", routineAdapter.getCheckedRoutines());
-
-				AlarmFragment alarmFragment = new AlarmFragment();
-				alarmFragment.setRoutinesChecked(b);
+				Intent intent = new Intent();
+				intent.putExtra("routineData", routineAdapter.getCheckedRoutines());
+				setResult(1, intent);
 				finish();
 			}
 		});

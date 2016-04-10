@@ -3,7 +3,8 @@ package me.adamoflynn.dynalarm;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.FragmentActivity;
+/*import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.ViewPager;*/
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -12,7 +13,7 @@ import android.support.v7.widget.Toolbar;
 import io.realm.Realm;
 import me.adamoflynn.dynalarm.adapters.ViewPagerAdapter;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends AppCompatActivity {
 
 	private Toolbar tb;
 	private TabLayout tabLayout;
@@ -47,7 +48,7 @@ public class MainActivity extends FragmentActivity {
 	}
 
 	private void setupViewPager(ViewPager viewPager) {
-		ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+		ViewPagerAdapter adapter = new ViewPagerAdapter(getFragmentManager());
 		adapter.addFragment(new AlarmFragment());
 		adapter.addFragment(new AnalysisFragment());
 		adapter.addFragment(new SettingsFragment());

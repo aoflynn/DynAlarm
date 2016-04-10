@@ -3,13 +3,14 @@ package me.adamoflynn.dynalarm;
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+//import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +43,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private final DateFormat sdf = new SimpleDateFormat("HH:mm");
 	private boolean wantRoutines, wantTraffic = false;
 	private HashSet<Integer> routinesChecked;
+	private String fromA, toB, time;
 
 
 	public AlarmFragment() {
@@ -68,7 +70,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	@Override
 	public void onResume() {
 		super.onResume();
-		setCheckboxes();
 	}
 
 	private void initializeTime(View v){
@@ -83,7 +84,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		start = (Button) v.findViewById(R.id.start);
 		start.setOnClickListener(this);
 
-		accel = (Button) v.findViewById(R.id.accelButton);
+		accel = (Button) v.findViewById(R.id.routines);
 		accel.setOnClickListener(this);
 
 		cancel = (Button) v.findViewById(R.id.cancel);
@@ -94,11 +95,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	}
 
 	private void initializeExtras(View v){
-		routine = (TextView) v.findViewById(R.id.routine);
 		routineCheck = (CheckBox) v.findViewById(R.id.routineCheck);
-
-
-		traffic = (TextView) v.findViewById(R.id.traffic);
 		trafficCheck = (CheckBox) v.findViewById(R.id.trafficCheck);
 	}
 
@@ -113,13 +110,13 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			case R.id.cancel:
 				cancelAlarm();
 				break;
-			case R.id.accelButton:
-				Intent intent = new Intent(getActivity(), RoutineActivity.class);
-				getActivity().startActivity(intent);
+			case R.id.routines:
+				Intent routines = new Intent(getActivity(), RoutineActivity.class);
+				startActivityForResult(routines, 1);
 				break;
 			case R.id.mapsButton:
 				Intent maps = new Intent(getActivity(), MapsActivity.class);
-				getActivity().startActivity(maps);
+				startActivityForResult(maps, 2);
 				break;
 		}
 	}
@@ -191,22 +188,55 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		return false;
 	}
 
-	public void setRoutinesChecked(Bundle b){
-		if(b != null){
-			routinesChecked = (HashSet) b.getSerializable("routineData");
-			setCheckboxes();
-			Log.d("Data in Alarm", routinesChecked.toString());
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data){
+		if(requestCode == 1) {
+
+			if(data == null){
+				Log.d("Back button", "pressed");
+				return;
+			}
+
+			routinesChecked = (HashSet) data.getSerializableExtra("routineData");
+			if(routinesChecked.size() == 0){
+				Log.d("Data", "didn't select routines");
+				setRoutineCheckboxes(false);
+			} else {
+				Log.d("Data in Alarm", routinesChecked.toString());
+				setRoutineCheckboxes(true);
+			}
 		}
 
-		else {
-			Log.d("Data in Alarm", "No routines selected");
+		else if(requestCode == 2) {
+			if(data == null){
+				Log.d("Back button", "pressed");
+				setTrafficCheckboxes(false);
+				return;
+			}
+
+			String from = data.getStringExtra("from");
+			String to = data.getStringExtra("to");
+			String time = data.getStringExtra("time");
+			Log.d("Data in Maps", from);
+			Log.d("Data in Maps", to);
+			Log.d("Data in Maps", time);
+			setTrafficCheckboxes(true);
 		}
 
 
 	}
 
-	private void setCheckboxes(){
 
+	private void setRoutineCheckboxes(Boolean state){
+		if(state){
+			routineCheck.setChecked(true);
+		} else routineCheck.setChecked(false);
+	}
+
+	private void setTrafficCheckboxes(Boolean state){
+		if(state){
+			trafficCheck.setChecked(true);
+		} else trafficCheck.setChecked(false);
 	}
 
 }
