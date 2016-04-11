@@ -104,7 +104,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 		long curTime = System.currentTimeMillis();
 
 		// Was 100...
-		if ((curTime - lastUpdate) > 100) {
+		if ((curTime - lastUpdate) > 50) {
 			//lastUpdate = curTime;
 
 			//Get history to check for variance

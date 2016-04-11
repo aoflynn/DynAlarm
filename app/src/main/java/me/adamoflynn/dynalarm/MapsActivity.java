@@ -3,6 +3,7 @@ package me.adamoflynn.dynalarm;
 import android.Manifest;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -54,11 +55,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private final DateFormat hh = new SimpleDateFormat("HH:mm");
 	private Marker fromMarker, toMarker;
 	private Boolean fromLocationSet, toLocationSet, timeSet;
+	private ProgressDialog progressDialog;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_maps);
+
+		progressDialog = ProgressDialog.show(this, "Loading Map", "Please Wait", true);
 
 		toText = (TextView) findViewById(R.id.to);
 		fromText = (TextView) findViewById(R.id.from);
@@ -96,6 +101,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		mMap.setMyLocationEnabled(true);
 		mMap.setOnMapLongClickListener(this);
 		mMap.setOnMarkerDragListener(this);
+		progressDialog.dismiss();
   }
 
 	@Override
