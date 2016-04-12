@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.Toast;
 
 import me.adamoflynn.dynalarm.R;
@@ -29,15 +30,17 @@ public class AlarmReceiver extends BroadcastReceiver {
 			.setContentText("Click here to end Alarm.")
 			.setSmallIcon(R.drawable.ic_alarm_white_48dp)
 			.setAutoCancel(false)
-			.setSound(alarmUri)
+			.setSound(alarmUri).setVibrate(vib)
 			.build();
 
-		not.defaults |= Notification.DEFAULT_VIBRATE;
+		//not.defaults |= Notification.DEFAULT_VIBRATE;
+
+		Intent goToAccel = new Intent(context, AccelerometerService.class);
+		context.stopService(goToAccel);
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(0, not);
 
-		Intent goToAccel = new Intent(context, AccelerometerService.class);
-		context.stopService(goToAccel);
+		Log.d("End of alarm recevier"," should be cancel/called");
 	}
 }

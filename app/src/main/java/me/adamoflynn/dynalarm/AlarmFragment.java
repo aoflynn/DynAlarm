@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.Fragment;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -144,8 +145,8 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void startAlarm(){
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-		Intent intent = new Intent(getActivity(), AlarmReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		if(alarmTime==null){
 			Toast.makeText(getActivity(), "No Alarm Set!", Toast.LENGTH_SHORT).show();
@@ -159,11 +160,13 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		Intent goToAccel = new Intent(getActivity(), AccelerometerService.class);
 		getActivity().startService(goToAccel);
 		Log.d("Service? ", " Should Start");
+
+
 	}
 
 	private void cancelAlarm(){
-		Intent myIntent = new Intent(getActivity(), AlarmReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 		alarmManager.cancel(pendingIntent);
 		pendingIntent.cancel();
@@ -240,5 +243,4 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			trafficCheck.setChecked(true);
 		} else trafficCheck.setChecked(false);
 	}
-
 }

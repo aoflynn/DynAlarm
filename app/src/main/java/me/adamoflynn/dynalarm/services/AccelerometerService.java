@@ -1,6 +1,9 @@
 package me.adamoflynn.dynalarm.services;
 
 import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +20,9 @@ import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import me.adamoflynn.dynalarm.AlarmFragment;
 import me.adamoflynn.dynalarm.Application;
+import me.adamoflynn.dynalarm.R;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
 
@@ -33,6 +38,8 @@ public class AccelerometerService extends Service implements SensorEventListener
 	private int sleepId;
 	private Boolean first = true;
 	private float maxVar = 0f;
+
+	private NotificationManager notificationManager = null;
 
 	private Realm db;
 
@@ -58,6 +65,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 		lastUpdate5secs = System.currentTimeMillis();
 
 		Log.d("Service", " Created");
+		createPersistentNotification();
 	}
 
 	@Override
@@ -101,8 +109,11 @@ public class AccelerometerService extends Service implements SensorEventListener
 
 		// Increment for next trial/sleep
 		sleepId++;
-		Log.d("Service", " Stopped");
-		Toast.makeText(this, "Service stopped!", Toast.LENGTH_SHORT).show();
+		/*Log.d("Service", " Stopped");
+		Toast.makeText(this, "Service stopped!", Toast.LENGTH_SHORT).show();*/
+
+		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.cancel(1);
 
 		if (db != null) {
 			db.close();
@@ -166,6 +177,22 @@ public class AccelerometerService extends Service implements SensorEventListener
 		acc.setMaxAccel(maxVar);
 
 		db.commitTransaction();
+	}
+
+	private void createPersistentNotification(){
+
+		PendingIntent contentIntent = PendingIntent.getBroadcast(this, 0, new Intent(), 0);
+
+		Notification not = new Notification.Builder(this)
+				.setContentTitle("Alarm is running!")
+				.setContentText("Click here to go to DynAlarm.")
+				.setSmallIcon(R.drawable.ic_alarm_white_48dp)
+				.setOngoing(true)
+				.setContentIntent(contentIntent)
+				.build();
+
+		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+		notificationManager.notify(1, not);
 	}
 
 }
