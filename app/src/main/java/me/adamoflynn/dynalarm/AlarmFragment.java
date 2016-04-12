@@ -27,11 +27,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 
 import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
+import me.adamoflynn.dynalarm.receivers.WakeUpReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.TrafficService;
+import me.adamoflynn.dynalarm.services.WakeUpService;
 
 public class AlarmFragment extends Fragment implements View.OnClickListener {
 
@@ -41,11 +44,14 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	private AlarmManager alarmManager;
 	private Calendar alarmTime = Calendar.getInstance();
+	private Calendar wkUpServiceTime = Calendar.getInstance();
 	private final DateFormat sdf = new SimpleDateFormat("HH:mm");
 	private boolean wantRoutines, wantTraffic = false;
 	private HashSet<Integer> routinesChecked;
 	private String fromA, toB, time;
-	private long timeframe = 30 * 60 * 1000;
+	private long timeframe = 5 * 60 * 1000;
+	private boolean isTimeSet, isMaps = false;
+	private final long POLLING_TIME = 120000;
 
 
 	public AlarmFragment() {
@@ -79,8 +85,10 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		wakeUpTime = (TextView) v.findViewById(R.id.wakeUp);
 		Date curTime = Calendar.getInstance().getTime();
 
+		wkUpServiceTime.setTimeInMillis(curTime.getTime() - timeframe);
+
 		currentTime.setText(sdf.format(curTime));
-		wakeUpTime.setText("Wake up between " + sdf.format(new Date(curTime.getTime() - timeframe)) + " and " + sdf.format(curTime));
+		wakeUpTime.setText("Wake up between " + sdf.format(wkUpServiceTime.getTime().getTime()) + " and " + sdf.format(curTime));
 		currentTime.setOnClickListener(this);
 	}
 
@@ -135,36 +143,66 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 					alarmTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
 					alarmTime.set(Calendar.MINUTE, minute);
 					currentTime.setText(sdf.format(alarmTime.getTime()));
-					wakeUpTime.setText("Wake up between " + sdf.format(new Date(alarmTime.getTime().getTime() - timeframe)) + " and " + sdf.format(alarmTime.getTime()));
+					wkUpServiceTime.setTimeInMillis(alarmTime.getTimeInMillis() - timeframe);
+					wakeUpTime.setText("Wake up between " + sdf.format(wkUpServiceTime.getTime()) + " and " + sdf.format(alarmTime.getTime()));
+					isTimeSet = true;
 				}
 			}, hour, minute, true);
 		pickerDialog.setTitle("Select Time");
 		pickerDialog.show();
 	}
 
-	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void startAlarm(){
-		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+
+		setWakeUpAlarm();
+		if(isMaps){
+			setUpWakeService();
+		}
+	}
+
+	@TargetApi(Build.VERSION_CODES.KITKAT)
+	private void setWakeUpAlarm(){
 		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
-		if(alarmTime==null){
+		if(!isTimeSet){
 			Toast.makeText(getActivity(), "No Alarm Set!", Toast.LENGTH_SHORT).show();
 			return;
 		}
 
 		checkDifference();
 
-		alarmManager.setExact(AlarmManager.RTC, alarmTime.getTimeInMillis(), pendingIntent);
+		// alarmManager.setExact(AlarmManager.RTC, alarmTime.getTimeInMillis(), pendingIntent);
+		alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime.getTimeInMillis(), pendingIntent);
 		Toast.makeText(getActivity(), "Alarm set!", Toast.LENGTH_SHORT).show();
 		Intent goToAccel = new Intent(getActivity(), AccelerometerService.class);
 		getActivity().startService(goToAccel);
 		Log.d("Service? ", " Should Start");
-
-
 	}
 
+	@TargetApi(Build.VERSION_CODES.KITKAT)
+	private void setUpWakeService(){
+		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
+		intent.putExtra("from", fromA);
+		intent.putExtra("to", toB);
+		intent.putExtra("time", time);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+
+		// Set an inexact repeating alarm that goes off at *timeframe* mins before alarm goes off every 2 minutes repeats
+		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, wkUpServiceTime.getTimeInMillis(), POLLING_TIME, pendingIntent);
+		Log.d("Wake up Service", "should start at " + sdf.format(wkUpServiceTime.getTime()));
+	}
+
+
 	private void cancelAlarm(){
+		cancelWkAlarm();
+		cancelWkService();
+	}
+
+
+	private void cancelWkAlarm(){
 		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
@@ -175,6 +213,16 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		getActivity().stopService(stopAccel);
 
 		Toast.makeText(getActivity(), "Alarm Cancelled!", Toast.LENGTH_SHORT).show();
+	}
+
+	private void cancelWkService(){
+		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
+		pendingIntent.cancel();
+
+		Toast.makeText(getActivity(), "Recurring Alarm Cancelled!", Toast.LENGTH_SHORT).show();
 	}
 
 	private void checkDifference(){
@@ -227,6 +275,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			Log.d("Data in Maps", fromA);
 			Log.d("Data in Maps", toB);
 			Log.d("Data in Maps", time);
+			isMaps = true;
 			setTrafficCheckboxes(true);
 		}
 

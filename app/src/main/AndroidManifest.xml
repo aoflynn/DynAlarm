@@ -32,9 +32,6 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="me.adamoflynn.dynalarm.receivers.AlarmReceiver"
-        android:exported="false"
-        />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -67,6 +64,22 @@
             android:enabled="true"
             android:exported="true">
         </service>
+
+        <service
+            android:name=".services.WakeUpService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
+        <receiver
+            android:name="me.adamoflynn.dynalarm.receivers.AlarmReceiver"
+            android:exported="false">
+        </receiver>
+
+        <receiver
+            android:name="me.adamoflynn.dynalarm.receivers.WakeUpReceiver"
+            android:exported="false">
+        </receiver>
 
     </application>
 

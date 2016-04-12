@@ -45,18 +45,18 @@ public class TrafficService extends IntentService {
 		Log.d("Traffic Service", " Created");
 	}
 
-	@Override
+	/*@Override
 	public int onStartCommand(Intent intent, int flags, int startId){
 		super.onStartCommand(intent, flags, startId);
 		Log.d("Traffic Service", " Started");
 		return START_STICKY;
-	}
+	}*/
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		String output = "It will take you " + trafficInfo.getTravelTime()/60 + " minutes if you leave at " + hh.format(trafficInfo.getDepartureTime());
-		Toast.makeText(this, output , Toast.LENGTH_LONG).show();
+		//String output = "It will take you " + trafficInfo.getTravelTime()/60 + " minutes if you leave at " + hh.format(trafficInfo.getDepartureTime());
+		//Toast.makeText(this, output , Toast.LENGTH_LONG).show();
 	}
 
 	@Override
@@ -64,9 +64,6 @@ public class TrafficService extends IntentService {
 		String from = intent.getStringExtra("from");
 		String to = intent.getStringExtra("to");
 		String time = intent.getStringExtra("time");
-
-		//final ResultReceiver receiver = intent.getParcelableExtra("receiver");
-		//Bundle b = new Bundle();
 
 		try {
 			URL url = new URL(BASE_URL + from + ":" + to + "/json" + END_URL + time);

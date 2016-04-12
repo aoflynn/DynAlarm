@@ -1,5 +1,6 @@
 package me.adamoflynn.dynalarm.services;
 
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -7,10 +8,12 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -22,6 +25,7 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.AlarmFragment;
 import me.adamoflynn.dynalarm.Application;
+import me.adamoflynn.dynalarm.MainActivity;
 import me.adamoflynn.dynalarm.R;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
@@ -179,16 +183,18 @@ public class AccelerometerService extends Service implements SensorEventListener
 		db.commitTransaction();
 	}
 
+	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void createPersistentNotification(){
-
-		PendingIntent contentIntent = PendingIntent.getBroadcast(this, 0, new Intent(), 0);
+		Intent intent = new Intent(this, MainActivity.class);
+		PendingIntent contentIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
 
 		Notification not = new Notification.Builder(this)
 				.setContentTitle("Alarm is running!")
 				.setContentText("Click here to go to DynAlarm.")
+				.setContentIntent(contentIntent)
+				.setColor(Color.LTGRAY)
 				.setSmallIcon(R.drawable.ic_alarm_white_48dp)
 				.setOngoing(true)
-				.setContentIntent(contentIntent)
 				.build();
 
 		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
