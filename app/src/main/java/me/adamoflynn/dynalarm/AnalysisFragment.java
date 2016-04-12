@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import io.realm.Realm;
@@ -47,6 +48,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	private LineDataSet dataSet;
 	private final DateFormat format = new SimpleDateFormat("HH:mm");
 	private final DateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd", Locale.ENGLISH);
+	private ArrayList<Sleep> allSleepReq = new ArrayList<>();
+	private int sleepIndex;
 
 	public AnalysisFragment() {
 		// Required empty public constructor
@@ -62,12 +65,37 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		newestData = realm.where(AccelerometerData.class).max("sleepId");
 		lastId = newestData.intValue();
 
-		getData(lastId);
+		allSleepReq = getAllSleep();
+		sleepIndex = allSleepReq.size() - 1;
+		Log.d("Sler", Integer.toString(sleepIndex));
+		getData(sleepIndex);
 		initializeChart();
 		initializeDate(v);
 		initializeButtons(v);
 		return v;
 	}
+
+	private ArrayList<Sleep> getAllSleep() {
+		RealmResults<Sleep> allSleep = realm.where(Sleep.class).findAll();
+		ArrayList<Sleep> sleepIds = new ArrayList<>();
+		for (Sleep sleep: allSleep) {
+			sleepIds.add(sleep);
+			Log.d("Array", String.valueOf(sleep.getId()));
+		}
+
+		return sleepIds;
+	}
+
+
+	@Override
+	public void onStop() {
+		super.onStop();
+		if (realm != null) {
+			realm.close();
+			realm = null;
+		}
+	}
+
 
 	private void initializeChart(){
 		dataSet = new LineDataSet(entries, "Movements");
@@ -88,7 +116,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		YAxis leftAxis = chart.getAxisLeft();
 		leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-		//leftAxis.setAxisMaxValue(250f);
 		leftAxis.setDrawLabels(true); // no axis labels
 		leftAxis.setStartAtZero(true);
 		leftAxis.setDrawGridLines(false); // no grid lineschart.setData(data);
@@ -123,14 +150,14 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	// Have to implement this method to change the date as fragments are weird
 	public void changeText(){
 		TextView date = (TextView) getView().findViewById(R.id.date);
-		Sleep s = realm.where(Sleep.class).equalTo("id", lastId).findFirst();
+		Sleep s = realm.where(Sleep.class).equalTo("id", sleepIndex).findFirst();
 		Date d = s.getDate();
 		if(d == null) date.setText("No date");
 		date.setText(dateFormat.format(d));
 	}
 
 	private void getData(int sleepId){
-		Log.d("Sleep id", Integer.toString(sleepId));
+		/*Log.d("Sleep id", Integer.toString(sleepId));
 		int i = 0;
 		entries = new ArrayList<>();
 		labels = new ArrayList<>();
@@ -138,6 +165,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		maxVar = new ArrayList<>();
 		RealmResults<AccelerometerData> results = realm.where(AccelerometerData.class)
 				.equalTo("sleepId", sleepId).findAll();
+
 		for (AccelerometerData a: results) {
 			motion.add(a.getAmtMotion());
 			maxVar.add(a.getMaxAccel());
@@ -148,6 +176,28 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		Log.d("Labels ", labels.toString());
 		Log.d("Max Var", maxVar.toString());
 		lastId = sleepId;
+		Log.d("Sleep size", Integer.toString(entries.size()));
+		*/
+		int i = 0;
+		Sleep sleep = allSleepReq.get(sleepId);
+
+		entries = new ArrayList<>();
+		labels = new ArrayList<>();
+		motion = new ArrayList<>();
+		maxVar = new ArrayList<>();
+		RealmResults<AccelerometerData> results = realm.where(AccelerometerData.class)
+				.equalTo("sleepId", sleep.getId()).findAll();
+
+
+		for (AccelerometerData a: results) {
+			motion.add(a.getAmtMotion());
+			maxVar.add(a.getMaxAccel());
+			entries.add(new Entry(a.getAmtMotion(), i++));
+			labels.add(format.format(a.getTimestamp()));
+		}
+		Log.d("Motion ", motion.toString());
+		Log.d("Labels ", labels.toString());
+		Log.d("Max Var", maxVar.toString());
 		Log.d("Sleep size", Integer.toString(entries.size()));
 	}
 
@@ -162,26 +212,28 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	public void onClick(View v){
 		switch(v.getId()){
 			case R.id.previous:
-				if(lastId == 0) {
+				if(sleepIndex == 0) {
 					Toast.makeText(getActivity(), "This is the oldest sleep!", Toast.LENGTH_SHORT).show();
 					break;
 				}
 				else {
 					Log.d("State: ", " previous sleep cycle...");
-					getData(lastId - 1);
+					getData(sleepIndex - 1);
+					sleepIndex--;
 					initializeChart();
 					changeText();
 					break;
 				}
 			case R.id.next:
 				newestData = realm.where(AccelerometerData.class).max("sleepId");
-				if(lastId == newestData.intValue()) {
+				if(sleepIndex == newestData.intValue() - 1) {
 					Log.d("Newest data", Integer.toString(newestData.intValue())) ;
 					Toast.makeText(getActivity(), "Already at Newest Sleep!", Toast.LENGTH_SHORT).show();
 					break;
 				}
 				else{
-					getData(lastId + 1);
+					getData(sleepIndex + 1);
+					sleepIndex++;
 					initializeChart();
 					changeText();
 					Log.d("State: ", " next sleep cycle...");

@@ -13,8 +13,10 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.util.Calendar;
+import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.Application;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
@@ -83,12 +85,29 @@ public class AccelerometerService extends Service implements SensorEventListener
 		db.beginTransaction();
 		Sleep sleep = db.where(Sleep.class).equalTo("id", sleepId).findFirst();
 		sleep.setEndTime(Calendar.getInstance().getTimeInMillis());
+
+		if(sleep.getEndTime() - sleep.getStartTime() < 1200000){
+			Log.d("Sleep", "too short, deleting...");
+			RealmResults<AccelerometerData> accData = db.where(AccelerometerData.class).equalTo("sleepId", sleepId).findAll();
+			List<AccelerometerData> accDataDeleteable = accData;
+			for (int i = 0; i < accData.size(); i++){
+				accDataDeleteable.get(0).removeFromRealm();
+			}
+			sleep.removeFromRealm();
+			sleepId--;
+		}
+
 		db.commitTransaction();
 
 		// Increment for next trial/sleep
 		sleepId++;
 		Log.d("Service", " Stopped");
 		Toast.makeText(this, "Service stopped!", Toast.LENGTH_SHORT).show();
+
+		if (db != null) {
+			db.close();
+			db = null;
+		}
 	}
 
 	@Override

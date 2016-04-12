@@ -35,7 +35,7 @@ import me.adamoflynn.dynalarm.services.TrafficService;
 public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	private Button start, accel, cancel, maps;
-	private TextView currentTime, routine, traffic;
+	private TextView currentTime, wakeUpTime;
 	private CheckBox routineCheck, trafficCheck;
 
 	private AlarmManager alarmManager;
@@ -44,6 +44,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private boolean wantRoutines, wantTraffic = false;
 	private HashSet<Integer> routinesChecked;
 	private String fromA, toB, time;
+	private long timeframe = 30 * 60 * 1000;
 
 
 	public AlarmFragment() {
@@ -74,9 +75,11 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	private void initializeTime(View v){
 		currentTime = (TextView) v.findViewById(R.id.time);
+		wakeUpTime = (TextView) v.findViewById(R.id.wakeUp);
 		Date curTime = Calendar.getInstance().getTime();
 
 		currentTime.setText(sdf.format(curTime));
+		wakeUpTime.setText("Wake up between " + sdf.format(new Date(curTime.getTime() - timeframe)) + " and " + sdf.format(curTime));
 		currentTime.setOnClickListener(this);
 	}
 
@@ -131,6 +134,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 					alarmTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
 					alarmTime.set(Calendar.MINUTE, minute);
 					currentTime.setText(sdf.format(alarmTime.getTime()));
+					wakeUpTime.setText("Wake up between " + sdf.format(new Date(alarmTime.getTime().getTime() - timeframe)) + " and " + sdf.format(alarmTime.getTime()));
 				}
 			}, hour, minute, true);
 		pickerDialog.setTitle("Select Time");
@@ -214,18 +218,16 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 				return;
 			}
 
-			String from = data.getStringExtra("from");
-			String to = data.getStringExtra("to");
-			String time = data.getStringExtra("time");
-			Log.d("Data in Maps", from);
-			Log.d("Data in Maps", to);
+			fromA = data.getStringExtra("from");
+			toB = data.getStringExtra("to");
+			time = data.getStringExtra("time");
+			Log.d("Data in Maps", fromA);
+			Log.d("Data in Maps", toB);
 			Log.d("Data in Maps", time);
 			setTrafficCheckboxes(true);
 		}
 
-
 	}
-
 
 	private void setRoutineCheckboxes(Boolean state){
 		if(state){

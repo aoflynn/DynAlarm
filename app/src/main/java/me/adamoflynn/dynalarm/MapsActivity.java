@@ -90,14 +90,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	public void onMapReady(GoogleMap googleMap) {
 		mMap = googleMap;
 
-    /*from = new LatLng(53.382683, -6.245243);
-    mMap.addMarker(new MarkerOptions().position(from).title("From Here"));*/
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
 				&& ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			// No location services so go to Dublin City Centre, else go to current location.
 			mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 16));
 			return;
 		}
+
 		mMap.setMyLocationEnabled(true);
 		mMap.setOnMapLongClickListener(this);
 		mMap.setOnMarkerDragListener(this);

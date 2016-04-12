@@ -20,7 +20,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Toast.makeText(context, "Alarm!", Toast.LENGTH_LONG).show();
-		Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+		Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
 
 		long[] vib = {600,600,600, 200, 200, 900, 200};
 
@@ -28,7 +28,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		  .setContentTitle("Alarm! Wake Up!")
 			.setContentText("Click here to end Alarm.")
 			.setSmallIcon(R.drawable.ic_alarm_white_48dp)
-			.setAutoCancel(true)
+			.setAutoCancel(false)
 			.setSound(alarmUri)
 			.build();
 

@@ -13,9 +13,10 @@
         android:text="Routines"
         android:id="@+id/routines"
         android:backgroundTint="@color/colorAccent"
-        android:layout_below="@+id/start"
-        android:layout_alignStart="@+id/start"
-        android:layout_marginTop="98dp"/>
+        android:layout_marginTop="32dp"
+        android:layout_below="@+id/time"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="48dp"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -23,10 +24,8 @@
         android:text="Start"
         android:id="@+id/start"
         android:backgroundTint="@color/colorAccent"
-        android:layout_marginTop="52dp"
-        android:layout_below="@+id/time"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="48dp"/>
+        android:layout_alignTop="@+id/cancel"
+        android:layout_alignStart="@+id/mapsButton"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -52,19 +51,21 @@
         android:text="Cancel"
         android:id="@+id/cancel"
         android:backgroundTint="@color/colorAccent"
-        android:layout_alignTop="@+id/start"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="48dp"/>
+        android:layout_marginRight="48dp"
+        android:layout_marginTop="110dp"
+        android:layout_below="@+id/trafficCheck"
+        android:layout_alignParentEnd="true"/>
 
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/routineCheck"
         android:checked="false"
-        android:layout_alignBottom="@+id/routines"
-        android:layout_alignEnd="@+id/cancel"
         android:fitsSystemWindows="false"
-        android:layout_marginBottom="8dp"/>
+        android:layout_alignBottom="@+id/routines"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="8dp"
+        android:layout_marginRight="49dp"/>
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -72,7 +73,7 @@
         android:id="@+id/trafficCheck"
         android:checked="false"
         android:layout_alignBottom="@+id/mapsButton"
-        android:layout_alignEnd="@+id/cancel"
+        android:layout_alignEnd="@+id/routineCheck"
         android:layout_marginBottom="8dp"/>
 
     <Button
@@ -85,6 +86,15 @@
         android:layout_below="@+id/routines"
         android:layout_alignStart="@+id/routines"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Wake Up Time"
+        android:id="@+id/wakeUp"
+        android:textColor="#ffffff"
+        android:layout_above="@+id/routines"
+        android:layout_centerHorizontal="true"/>
 
 
 </RelativeLayout>
