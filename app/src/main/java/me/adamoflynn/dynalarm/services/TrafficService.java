@@ -55,7 +55,7 @@ public class TrafficService extends IntentService {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		//String output = "It will take you " + trafficInfo.getTravelTime()/60 + " minutes if you leave at " + hh.format(trafficInfo.getDepartureTime());
+		String output = "It will take you " + trafficInfo.getTravelTime()/60 + " minutes if you leave at " + hh.format(trafficInfo.getDepartureTime());
 		//Toast.makeText(this, output , Toast.LENGTH_LONG).show();
 	}
 

@@ -27,6 +27,5 @@ public class WakeUpReceiver extends BroadcastReceiver {
 		context.startService(trafficIntent);
 
 		Log.d("Traffic", "started service at" + new Date(System.currentTimeMillis()));
-		//PendingIntent pendingIntent = new PendingIntent()
 	}
 }

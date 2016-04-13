@@ -49,7 +49,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private boolean wantRoutines, wantTraffic = false;
 	private HashSet<Integer> routinesChecked;
 	private String fromA, toB, time;
-	private long timeframe = 5 * 60 * 1000;
+	private long timeframe = 10 * 60 * 1000;
 	private boolean isTimeSet, isMaps = false;
 	private final long POLLING_TIME = 120000;
 
@@ -266,6 +266,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			if(data == null){
 				Log.d("Back button", "pressed");
 				setTrafficCheckboxes(false);
+				isMaps = false;
 				return;
 			}
 

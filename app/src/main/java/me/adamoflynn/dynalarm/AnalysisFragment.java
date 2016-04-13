@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import io.realm.Sort;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
 
@@ -64,7 +65,10 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		newestData = realm.where(AccelerometerData.class).max("sleepId");
 		lastId = newestData.intValue();
+		Log.d("Newest ID", String.valueOf(newestData.intValue()));
 
+
+		deleteBadDates();
 		allSleepReq = getAllSleep();
 		sleepIndex = allSleepReq.size() - 1;
 		Log.d("Sler", Integer.toString(sleepIndex));
@@ -77,6 +81,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	private ArrayList<Sleep> getAllSleep() {
 		RealmResults<Sleep> allSleep = realm.where(Sleep.class).findAll();
+		allSleep.sort("id");
 		ArrayList<Sleep> sleepIds = new ArrayList<>();
 		for (Sleep sleep: allSleep) {
 			sleepIds.add(sleep);
@@ -142,7 +147,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	// Initialize the view
 	public void initializeDate(View v){
 		TextView date = (TextView) v.findViewById(R.id.date);
-		Sleep s = realm.where(Sleep.class).equalTo("id", lastId).findFirst();
+		Sleep s = realm.where(Sleep.class).equalTo("id", allSleepReq.get(sleepIndex).getId()).findFirst();
 		Date d = s.getDate();
 		date.setText(dateFormat.format(d));
 	}
@@ -150,36 +155,17 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	// Have to implement this method to change the date as fragments are weird
 	public void changeText(){
 		TextView date = (TextView) getView().findViewById(R.id.date);
-		Sleep s = realm.where(Sleep.class).equalTo("id", sleepIndex).findFirst();
+		Sleep s = realm.where(Sleep.class).equalTo("id", allSleepReq.get(sleepIndex).getId()).findFirst();
 		Date d = s.getDate();
 		if(d == null) date.setText("No date");
 		date.setText(dateFormat.format(d));
 	}
 
 	private void getData(int sleepId){
-		/*Log.d("Sleep id", Integer.toString(sleepId));
-		int i = 0;
-		entries = new ArrayList<>();
-		labels = new ArrayList<>();
-		motion = new ArrayList<>();
-		maxVar = new ArrayList<>();
-		RealmResults<AccelerometerData> results = realm.where(AccelerometerData.class)
-				.equalTo("sleepId", sleepId).findAll();
-
-		for (AccelerometerData a: results) {
-			motion.add(a.getAmtMotion());
-			maxVar.add(a.getMaxAccel());
-			entries.add(new Entry(a.getAmtMotion(), i++));
-			labels.add(format.format(a.getTimestamp()));
-		}
-		Log.d("Motion ", motion.toString());
-		Log.d("Labels ", labels.toString());
-		Log.d("Max Var", maxVar.toString());
-		lastId = sleepId;
-		Log.d("Sleep size", Integer.toString(entries.size()));
-		*/
 		int i = 0;
 		Sleep sleep = allSleepReq.get(sleepId);
+		Log.d("Data", String.valueOf(sleepId));
+		Log.d("Data", sleep.toString());
 
 		entries = new ArrayList<>();
 		labels = new ArrayList<>();
@@ -187,6 +173,12 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		maxVar = new ArrayList<>();
 		RealmResults<AccelerometerData> results = realm.where(AccelerometerData.class)
 				.equalTo("sleepId", sleep.getId()).findAll();
+		results.sort("timestamp");
+
+		if(results.size() == 0){
+			Log.d("Definitely something", " wrong with accelerometer data");
+			return;
+		}
 
 
 		for (AccelerometerData a: results) {
@@ -195,6 +187,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			entries.add(new Entry(a.getAmtMotion(), i++));
 			labels.add(format.format(a.getTimestamp()));
 		}
+
 		Log.d("Motion ", motion.toString());
 		Log.d("Labels ", labels.toString());
 		Log.d("Max Var", maxVar.toString());
@@ -225,8 +218,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 					break;
 				}
 			case R.id.next:
-				newestData = realm.where(AccelerometerData.class).max("sleepId");
-				if(sleepIndex == newestData.intValue() - 1) {
+				newestData = realm.where(Sleep.class).max("id");
+				if(sleepIndex == allSleepReq.size() - 1) {
 					Log.d("Newest data", Integer.toString(newestData.intValue())) ;
 					Toast.makeText(getActivity(), "Already at Newest Sleep!", Toast.LENGTH_SHORT).show();
 					break;
@@ -242,5 +235,28 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				default:
 					Log.d("State: ", " not set up.");
 		}
+	}
+
+	private void deleteBadDates(){
+		RealmResults<Sleep> sleeps = realm.where(Sleep.class).equalTo("endTime", 0).findAll();
+		Log.d("dirty sleeps", String.valueOf(sleeps.size()));
+
+		realm.beginTransaction();
+		List<Sleep> merp = sleeps;
+		if(sleeps.size() > 0){
+			for (int i = 0; i <= merp.size(); i++){
+				RealmResults<AccelerometerData> accData = realm.where(AccelerometerData.class).equalTo("sleepId", merp.get(i).getId()).findAll();
+				List<AccelerometerData> acc = accData;
+				for (int j = 0; j < acc.size(); j++ ) {
+					acc.get(j).removeFromRealm();
+				}
+				merp.get(i).removeFromRealm();
+				//Log.d("Dirty", String.valueOf(merp.get(i)));
+			}
+		} else{
+			Log.d("No dirty sleeps", "---");
+		}
+
+		realm.commitTransaction();
 	}
 }
