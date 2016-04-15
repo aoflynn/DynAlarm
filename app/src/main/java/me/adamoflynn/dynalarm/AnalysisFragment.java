@@ -232,7 +232,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 					Log.d("State: ", " next sleep cycle...");
 					break;
 				}
-				default:
+			default:
 					Log.d("State: ", " not set up.");
 		}
 	}
@@ -244,7 +244,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		realm.beginTransaction();
 		List<Sleep> merp = sleeps;
 		if(sleeps.size() > 0){
-			for (int i = 0; i <= merp.size(); i++){
+			for (int i = 0; i < merp.size(); i++){
 				RealmResults<AccelerometerData> accData = realm.where(AccelerometerData.class).equalTo("sleepId", merp.get(i).getId()).findAll();
 				List<AccelerometerData> acc = accData;
 				for (int j = 0; j < acc.size(); j++ ) {

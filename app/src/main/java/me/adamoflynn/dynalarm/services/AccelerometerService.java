@@ -62,7 +62,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
 		// Get most recent sleep ID + inc to get new unique iD.
-		sleepId = Application.sleepIDValue.incrementAndGet();
+		// sleepId = Application.sleepIDValue.incrementAndGet();
 
 		//Get times
 		lastUpdate = System.currentTimeMillis();
@@ -74,6 +74,8 @@ public class AccelerometerService extends Service implements SensorEventListener
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId){
+		sleepId = intent.getIntExtra("sleepId", 0);
+		Log.d("Starting Accel", " with ID" + Integer.toString(sleepId));
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		Sleep sleep = new Sleep();
 		sleep.setId(sleepId);

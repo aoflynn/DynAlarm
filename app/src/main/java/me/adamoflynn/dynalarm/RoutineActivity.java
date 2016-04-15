@@ -17,12 +17,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
-
-import java.lang.reflect.Array;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -48,7 +44,7 @@ public class RoutineActivity extends AppCompatActivity {
 		ListView listView = (ListView) findViewById(R.id.listView);
 		listView.setAdapter(routineAdapter);
 		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-		Button save = (Button) findViewById(R.id.save);
+		Button save = (Button) findViewById(R.id.done);
 
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override

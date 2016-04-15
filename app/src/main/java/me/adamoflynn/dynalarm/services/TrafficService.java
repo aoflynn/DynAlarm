@@ -1,8 +1,10 @@
 package me.adamoflynn.dynalarm.services;
+import android.app.Application;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 import android.widget.Toast;
 import org.json.JSONArray;
@@ -19,6 +21,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
+import me.adamoflynn.dynalarm.model.AccelerometerData;
+import me.adamoflynn.dynalarm.model.Sleep;
 import me.adamoflynn.dynalarm.model.TrafficInfo;
 
 public class TrafficService extends IntentService {
@@ -30,6 +37,7 @@ public class TrafficService extends IntentService {
 
 	private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final DateFormat hh = new SimpleDateFormat("HH:mm");
+
 
 	public TrafficService(String name) {
 		super(name);
@@ -64,7 +72,12 @@ public class TrafficService extends IntentService {
 		String from = intent.getStringExtra("from");
 		String to = intent.getStringExtra("to");
 		String time = intent.getStringExtra("time");
+		String id = intent.getStringExtra("id");
+		Log.d("Accelerometer Sleep ID", id);
 
+		Realm realm = Realm.getDefaultInstance();
+
+		int sleepId = Integer.valueOf(id);
 		try {
 			URL url = new URL(BASE_URL + from + ":" + to + "/json" + END_URL + time);
 			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -81,9 +94,10 @@ public class TrafficService extends IntentService {
 
 				bufferedReader.close();
 				urlConnection.disconnect();
-				parseJSON(stringBuilder.toString());
+				parseJSON(stringBuilder.toString(), realm, sleepId);
 				Log.d("Traffic service ", "trying to stop...");
-				//stopSelf();
+				realm.close();
+				WakefulBroadcastReceiver.completeWakefulIntent(intent);
 			} else throw new Exception("Download Error");
 
 		} catch (MalformedURLException e){
@@ -96,7 +110,7 @@ public class TrafficService extends IntentService {
 	}
 
 
-	public void parseJSON(String response) {
+	public void parseJSON(String response, Realm realm, int sleepId) {
 
 		try{
 
@@ -118,9 +132,8 @@ public class TrafficService extends IntentService {
 
 			//TrafficInfo trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr);
 			trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
-
 			Log.d("Data", trafficInfo.toString());
-
+			getAccelerometerReadings(realm, sleepId);
 		}catch (JSONException e) {
 			Log.e("JSON parse exception", e.getMessage());
 		}
@@ -136,6 +149,20 @@ public class TrafficService extends IntentService {
 			Log.e("Parse Error on time", e.getMessage());
 		}
 		return d;
+	}
+
+	public void getAccelerometerReadings(Realm realm, int sleepId){
+		RealmResults<AccelerometerData> sleep = realm.where(AccelerometerData.class).equalTo("sleepId", sleepId).findAll();
+		if(sleep.size() == 0){
+			Log.d("No sleep", "nya");
+			return;
+		} else{
+			for (AccelerometerData a: sleep){
+				Log.d("Acc Data - TM", String.valueOf(a.getTimestamp()));
+				Log.d("Acc Data - MNT", String.valueOf(a.getAmtMotion()));
+			}
+		}
+
 	}
 
 }

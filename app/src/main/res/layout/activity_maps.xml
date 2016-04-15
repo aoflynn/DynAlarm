@@ -1,89 +1,180 @@
 <RelativeLayout
-    android:layout_height="fill_parent"
-    android:layout_width="fill_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
-        android:orientation="horizontal"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/fetchData"
-        android:id="@+id/linearLayout3"
-        android:baselineAligned="false">
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:layout_scrollFlags="scroll|enterAlways"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"/>
 
-        <fragment
-            android:id="@+id/map"
-            android:layout_width="0dp"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            class="com.google.android.gms.maps.SupportMapFragment" />
-    </LinearLayout>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fetch Data"
-        android:id="@+id/fetchData"
-        android:layout_marginBottom="138dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="20dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/to"
-        android:layout_alignTop="@+id/fetchData"
-        android:layout_alignStart="@+id/from"
-        android:textColor="#ffffff"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/from"
-        android:layout_alignBottom="@+id/fetchData"
-        android:layout_toEndOf="@+id/fetchData"
-        android:textColor="#ffffff"/>
-
-    <LinearLayout
-        android:orientation="horizontal"
+    <fragment
+        android:id="@+id/map"
         android:layout_width="match_parent"
+        android:layout_height="350dp"
+        class="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_below="@+id/toolbar"
+        android:layout_alignParentStart="true"/>
+
+    <ScrollView
         android:layout_height="match_parent"
-        android:layout_below="@+id/from"
-        android:layout_toStartOf="@+id/from"
-        android:layout_marginTop="28dp"
-        android:layout_alignParentEnd="true"
-        android:weightSum="1">
+        android:layout_width="match_parent"
+        android:fillViewport="true"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_below="@+id/map"
+        android:layout_alignParentStart="true">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Save"
-            android:id="@+id/save"
-            android:layout_weight="0.19"
-            android:layout_marginLeft="20dp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:weightSum="1"
+            android:layout_below="@+id/toolbar"
+            android:layout_alignParentStart="true"
+            android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Arrive At:"
-            android:id="@+id/textView2"
-            android:textColor="#ffffff"
-            android:layout_weight="0.19"
-            android:layout_marginLeft="20dp"/>
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="11dp"
+                android:layout_gravity="center_horizontal"
+                />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="00:00"
-            android:id="@+id/arriveAt"
-            android:textColor="#ffffff"
-            />
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:weightSum="1"
+                android:layout_margin="10dp"
+                >
 
-    </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="From:"
+                    android:id="@+id/fromText"
+                    android:textColor="#ffffff"
+                    android:textSize="16dp"/>
 
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/fromEdit"
+                    android:layout_weight="1"
+                    android:editable="false"
+                    android:textColor="#ffffff"/>
+
+                <Spinner
+                    android:layout_width="36dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinnerFrom"
+                    android:spinnerMode="dropdown"
+                    />
+
+                <Button
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/add_location_from"
+                    android:backgroundTint="@color/colorAccent"
+                    android:text="ADD"/>
+            </LinearLayout>
+
+            <Space
+                android:layout_width="20px"
+                android:layout_height="20px"
+                />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:weightSum="1"
+                android:layout_margin="10dp"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="To:     "
+                    android:id="@+id/toText"
+                    android:textColor="#ffffff"
+                    android:textSize="16sp"/>
+
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/toEdit"
+                    android:layout_weight="1"
+                    android:editable="false"
+                    android:textColor="#ffffff"/>
+
+                <Spinner
+                    android:layout_width="36dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinnerTo"
+                    android:spinnerMode="dropdown"
+                    />
+
+                <Button
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/add_location_to"
+                    android:backgroundTint="@color/colorAccent"
+                    android:text="ADD"/>
+
+            </LinearLayout>
+
+            <Space
+                android:layout_width="20px"
+                android:layout_height="20px"
+                />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="1"
+                android:layout_alignParentEnd="true"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="Arrive At:"
+                    android:id="@+id/arriveAtText"
+                    android:textColor="#ffffff"
+                    android:layout_weight="0.19"
+                    android:layout_marginLeft="20dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="00:00"
+                    android:id="@+id/arriveAt"
+                    android:textColor="#ffffff"
+                    />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Done"
+                    android:id="@+id/done"
+                    android:layout_weight="0.19"
+                    android:layout_marginLeft="20dp"
+                    android:layout_gravity="center_horizontal"/>
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </RelativeLayout>

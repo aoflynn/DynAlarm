@@ -9,12 +9,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -26,6 +30,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -36,26 +41,34 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
+import io.realm.Realm;
+import me.adamoflynn.dynalarm.model.Location;
 import me.adamoflynn.dynalarm.model.Routine;
-import me.adamoflynn.dynalarm.services.TrafficService;
 import me.adamoflynn.dynalarm.utils.RoutineOnItemSelectedListener;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerDragListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnInfoWindowClickListener {
 
 	private GoogleMap mMap;
 	private LatLng to, from = null;
-	private TextView toText, fromText, arriveAt;
-	private Button fetch, save;
+	private TextView toEditText, fromEditText, arriveAt;
+	private Button add_from, add_to, done;
 	private Calendar alarmTime = Calendar.getInstance();
 	private final DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	private final DateFormat hh = new SimpleDateFormat("HH:mm");
 	private Marker fromMarker, toMarker;
 	private Boolean fromLocationSet, toLocationSet, timeSet;
 	private ProgressDialog progressDialog;
+	private final String FROM_TITLE = "From This Location";
+	private final String TO_TITLE = "To Here";
+	private int locationId;
+	private Realm realm;
+	//private LatLngToString convertLoc = new LatLngToString(getApplicationContext());
 
 
 	@Override
@@ -65,21 +78,42 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 		progressDialog = ProgressDialog.show(this, "Loading Map", "Please Wait", true);
 
-		toText = (TextView) findViewById(R.id.to);
-		fromText = (TextView) findViewById(R.id.from);
-		arriveAt = (TextView) findViewById(R.id.arriveAt);
-		fetch = (Button) findViewById(R.id.fetchData);
-		save = (Button) findViewById(R.id.save);
-		fetch.setOnClickListener(this);
-		arriveAt.setOnClickListener(this);
-		save.setOnClickListener(this);
-		arriveAt.setText(hh.format(alarmTime.getTime()));
+		locationId = Application.locationID.incrementAndGet();
+		realm = Realm.getDefaultInstance();
+		Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(tb);
 
+		if(getSupportActionBar() != null){
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			getSupportActionBar().setDisplayShowHomeEnabled(true);
+			final Drawable upArrow = getResources().getDrawable(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+			upArrow.setColorFilter(Color.parseColor("#FFFFFF"), PorterDuff.Mode.SRC_ATOP);
+			getSupportActionBar().setHomeAsUpIndicator(upArrow);
+			tb.setTitleTextColor(Color.WHITE);
+		}
+
+		tb.setNavigationOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onBackPressed();
+			}
+		});
+
+
+		arriveAt = (TextView) findViewById(R.id.arriveAt);
+		fromEditText = (TextView) findViewById(R.id.fromEdit);
+		toEditText = (TextView) findViewById(R.id.toEdit);
+		done = (Button) findViewById(R.id.done);
+		add_from = (Button) findViewById(R.id.add_location_from);
+		add_to = (Button) findViewById(R.id.add_location_to);
+		add_from.setOnClickListener(this);
+		arriveAt.setOnClickListener(this);
+		done.setOnClickListener(this);
+		arriveAt.setText(hh.format(alarmTime.getTime()));
 
 		fromLocationSet = false;
 		toLocationSet = false;
 		timeSet = false;
-
 
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.map);
@@ -89,17 +123,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		mMap = googleMap;
-
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 12));
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
 				&& ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			// No location services so go to Dublin City Centre, else go to current location.
 			mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 16));
 			return;
 		}
-
 		mMap.setMyLocationEnabled(true);
+		mMap.getUiSettings().setZoomControlsEnabled(true);
 		mMap.setOnMapLongClickListener(this);
 		mMap.setOnMarkerDragListener(this);
+		mMap.setOnInfoWindowClickListener(this);
 		progressDialog.dismiss();
   }
 
@@ -107,31 +142,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	public void onMapLongClick(LatLng point) {
 
 		if(!fromLocationSet) {
-			fromMarker = mMap.addMarker(new MarkerOptions().position(point).title("From").draggable(true));
-			//fromMarker.setDraggable(true);
-			fromMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+			fromMarker = mMap.addMarker(new MarkerOptions().position(point).title(FROM_TITLE).snippet("Tap here to remove this location!").draggable(true));
+			fromMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 			fromLocationSet = true;
-
 			from = point;
-			fromText.setText(from.toString());
+			new LatLngToStringFrom(this).execute(point);
 		} else if(!toLocationSet) {
-			toMarker = mMap.addMarker(new MarkerOptions().position(point).title("To Here").draggable(true));
-			//toMarker.setDraggable(true);
+			toMarker = mMap.addMarker(new MarkerOptions().position(point).title(TO_TITLE).snippet("Tap here to remove this location!").draggable(true));
 			toMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-			//toMarker.setDraggable(true);
 			toLocationSet = true;
-
 			to = point;
-			toText.setText(to.toString());
+			new LatLngToString(this).execute(point);
+		//	toText.setText(to.toString());
 		}
 
 	}
 
-
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()){
-			case R.id.fetchData:
+			/*case R.id.fetchData:
 				String fromA = Double.toString(from.latitude) + "," + Double.toString(from.longitude);
 				String toB = Double.toString(to.latitude) + "," + Double.toString(to.longitude);
 				checkDifference();
@@ -143,12 +173,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 				startService(intent);
 				Log.d("Traffic Running?", Boolean.toString(isMyServiceRunning(TrafficService.class)));
-				break;
+				break;*/
 			case R.id.arriveAt:
 				timePicker();
 				break;
-			case R.id.save:
+			case R.id.done:
 				sendData();
+				break;
+			case R.id.add_location_from:
+				buildAndShowInputDialog("from");
+				break;
+			case R.id.add_location_to:
+				buildAndShowInputDialog("to");
+				break;
 		}
 	}
 
@@ -200,21 +237,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 	@Override
 	public void onMarkerDragEnd(Marker marker) {
-		if(marker.getTitle().equals("From")){
+		if(marker.getTitle().equals(FROM_TITLE)){
 			updateFromMarker(marker);
-		} else updateToMarker(marker);
+			new LatLngToStringFrom(this).execute(marker.getPosition());
+		} else {
+			updateToMarker(marker);
+			new LatLngToString(this).execute(marker.getPosition());
+		}
 	}
 
 	private void updateFromMarker(Marker marker){
 		fromMarker = marker;
 		from = fromMarker.getPosition();
-		fromText.setText(from.toString());
 	}
 
 	private void updateToMarker(Marker marker){
 		toMarker = marker;
 		to = toMarker.getPosition();
-		toText.setText(to.toString());
 	}
 
 	private void sendData(){
@@ -249,4 +288,187 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		final AlertDialog dialog = builder.show();
 	}
 
+	@Override
+	public void onInfoWindowClick(Marker marker) {
+		if (fromMarker.equals(marker)){
+			Log.e("This is", "from marker");
+			fromMarker.remove();
+			fromEditText.setText("");
+			fromLocationSet = false;
+		} else{
+			toMarker.remove();
+			toEditText.setText("");
+			toLocationSet = false;
+			Log.e("This is", "to marker");
+		}
+	}
+
+	private void buildAndShowInputDialog(final String dest)  {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
+		builder.setTitle("Add Location");
+
+		LayoutInflater li = LayoutInflater.from(this);
+		View dialogView = li.inflate(R.layout.map_add_location, null);
+
+		final EditText locationName = (EditText) dialogView.findViewById(R.id.locationName);
+		final EditText address = (EditText) dialogView.findViewById(R.id.address);
+		address.setText(fromEditText.getText().toString());
+
+		builder.setView(dialogView);
+		builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if(dest.equals("from")){
+					addLocation(locationId, locationName.getText().toString(), address.getText().toString(), from);
+				}
+				else {
+					addLocation(locationId, locationName.getText().toString(), address.getText().toString(), to);
+				}
+			}
+		});
+
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+
+		final AlertDialog dialog = builder.show();
+
+		locationName.setOnEditorActionListener(
+				new EditText.OnEditorActionListener() {
+					@Override
+					public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+						if (actionId == EditorInfo.IME_ACTION_DONE ||
+								(event.getAction() == KeyEvent.ACTION_DOWN &&
+										event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+							dialog.dismiss();
+							if(dest.equals("from")) {
+								addLocation(locationId, locationName.getText().toString(), address.getText().toString(), from);
+								return true;
+							}
+							else {
+								addLocation(locationId, locationName.getText().toString(), address.getText().toString(), to);
+								return true;
+							}
+						}
+						return false;
+					}
+				});
+	}
+
+	private void addLocation(int id, String name, String address, LatLng loc){
+		if ( name == null || name.length() == 0) {
+			Toast.makeText(this, "Empty Name! Try Again", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		Location location = new Location(locationId, name, address, loc.latitude, loc.longitude);
+		realm.beginTransaction();
+		realm.copyToRealm(location);
+		realm.commitTransaction();
+		locationId++;
+	}
+
+	private class LatLngToString extends AsyncTask<LatLng, Void, String> {
+		ProgressDialog dialog;
+		Context mContext;
+
+		LatLngToString(Context context){
+			mContext = context;
+		}
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			dialog = new ProgressDialog(mContext);
+			dialog.setMessage("Getting address...");
+			dialog.show();
+		}
+
+		@Override
+		protected String doInBackground(LatLng... params) {
+			Geocoder geocoder = new Geocoder(mContext);
+			double latitude = params[0].latitude;
+			double longitude = params[0].longitude;
+
+			List<Address> addresses = null;
+			String addressText="";
+
+			try {
+				addresses = geocoder.getFromLocation(latitude, longitude, 1);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			if(addresses != null && addresses.size() > 0 ){
+				Address address = addresses.get(0);
+
+				addressText = String.format("%s, %s, %s",
+						address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
+						address.getLocality() == null ? "" : address.getLocality(),
+						address.getCountryName());
+			}
+
+			return addressText;
+		}
+
+		@Override
+		protected void onPostExecute(String s) {
+			super.onPostExecute(s);
+			toEditText.setText(s);
+			dialog.dismiss();
+			Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	private class LatLngToStringFrom extends AsyncTask<LatLng, Void, String> {
+		ProgressDialog dialog;
+		Context mContext;
+
+		LatLngToStringFrom(Context context){
+			mContext = context;
+		}
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			dialog = new ProgressDialog(mContext);
+			dialog.setMessage("Getting address...");
+			dialog.show();
+		}
+
+		@Override
+		protected String doInBackground(LatLng... params) {
+			Geocoder geocoder = new Geocoder(mContext);
+			double latitude = params[0].latitude;
+			double longitude = params[0].longitude;
+
+			List<Address> addresses = null;
+			String addressText="";
+
+			try {
+				addresses = geocoder.getFromLocation(latitude, longitude, 1);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			if(addresses != null && addresses.size() > 0 ){
+				Address address = addresses.get(0);
+
+				addressText = String.format("%s, %s, %s",
+						address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
+						address.getLocality() == null ? "" : address.getLocality(),
+						address.getCountryName());
+			}
+
+			return addressText;
+		}
+
+		@Override
+		protected void onPostExecute(String s) {
+			super.onPostExecute(s);
+			fromEditText.setText(s);
+			dialog.dismiss();
+			Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
+		}
+	}
 }

@@ -30,6 +30,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 
+import io.realm.Realm;
+import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.receivers.WakeUpReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
@@ -49,9 +51,10 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private boolean wantRoutines, wantTraffic = false;
 	private HashSet<Integer> routinesChecked;
 	private String fromA, toB, time;
-	private long timeframe = 10 * 60 * 1000;
+	private long timeframe = 20 * 60 * 1000;
 	private boolean isTimeSet, isMaps = false;
 	private final long POLLING_TIME = 120000;
+	private int sleepId;
 
 
 	public AlarmFragment() {
@@ -61,6 +64,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_alarm, container, false);
+
 
 		initializeTime(v);
 		initializeButtons(v);
@@ -72,7 +76,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 	}
 
 	@Override
@@ -172,13 +175,17 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		}
 
 		checkDifference();
-
+		Realm realm = Realm.getDefaultInstance();
+		Number newestData = realm.where(AccelerometerData.class).max("sleepId");
+		sleepId = newestData.intValue();
+		sleepId += 1;
 		// alarmManager.setExact(AlarmManager.RTC, alarmTime.getTimeInMillis(), pendingIntent);
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime.getTimeInMillis(), pendingIntent);
 		Toast.makeText(getActivity(), "Alarm set!", Toast.LENGTH_SHORT).show();
+		Log.d("Service? ", " Should Start with Sleep Id" + Integer.toString(sleepId));
 		Intent goToAccel = new Intent(getActivity(), AccelerometerService.class);
+		goToAccel.putExtra("sleepId", sleepId);
 		getActivity().startService(goToAccel);
-		Log.d("Service? ", " Should Start");
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
@@ -187,6 +194,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		intent.putExtra("from", fromA);
 		intent.putExtra("to", toB);
 		intent.putExtra("time", time);
+		intent.putExtra("id", Integer.toString(sleepId));
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
