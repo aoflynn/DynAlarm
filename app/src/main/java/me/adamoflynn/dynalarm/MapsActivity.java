@@ -358,7 +358,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 				});
 	}
 
-	private void addLocation(int id, String name, String address, LatLng loc){
+	private void addLocation(int locationId, String name, String address, LatLng loc){
 		if ( name == null || name.length() == 0) {
 			Toast.makeText(this, "Empty Name! Try Again", Toast.LENGTH_SHORT).show();
 			return;

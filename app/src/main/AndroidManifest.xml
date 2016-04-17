@@ -71,6 +71,12 @@
             android:exported="true">
         </service>
 
+        <service
+            android:name=".services.AlarmSound"
+            android:enabled="true"
+            android:exported="true">
+        </service>
+
         <receiver
             android:name="me.adamoflynn.dynalarm.receivers.AlarmReceiver"
             android:exported="false">

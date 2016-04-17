@@ -19,6 +19,8 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.formatter.XAxisValueFormatter;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -93,8 +95,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 
 	@Override
-	public void onStop() {
-		super.onStop();
+	public void onDestroy() {
+		super.onDestroy();
 		if (realm != null) {
 			realm.close();
 			realm = null;
@@ -105,10 +107,13 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	private void initializeChart(){
 		dataSet = new LineDataSet(entries, "Movements");
 
-		dataSet.setDrawCubic(false);
-		dataSet.setDrawCircles(true);
-		dataSet.setDrawFilled(true);
+		dataSet.setDrawCubic(true);
+		dataSet.setDrawCircles(false);
+		dataSet.setDrawFilled(false);
+		dataSet.setDrawValues(false);
+		dataSet.setHighlightEnabled(false);
 		dataSet.setFillColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
+		dataSet.setColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
 		dataSet.setFillAlpha(195);
 
 		chart.setTouchEnabled(true);
@@ -118,23 +123,26 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		chart.setAutoScaleMinMaxEnabled(true);
 		chart.setBorderColor(Color.BLACK);
 		chart.setNoDataTextDescription("No data for this sleep");
+		chart.setDescription("");
+		chart.setHardwareAccelerationEnabled(true);
 
 		YAxis leftAxis = chart.getAxisLeft();
 		leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
 		leftAxis.setDrawLabels(true); // no axis labels
 		leftAxis.setStartAtZero(true);
 		leftAxis.setDrawGridLines(false); // no grid lineschart.setData(data);
+		leftAxis.setTextColor(Color.WHITE);
+		leftAxis.setAxisMaxValue(dataSet.getYMax());
 
 		YAxis rightAxis = chart.getAxisRight();
-		rightAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-		rightAxis.setDrawLabels(false); // no axis labels
-		rightAxis.setStartAtZero(true);
-		rightAxis.setDrawGridLines(false);
+		rightAxis.setEnabled(false);
+
 
 		XAxis xAxis = chart.getXAxis();
 		xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 		xAxis.setDrawAxisLine(true);
 		xAxis.setDrawGridLines(false);
+		xAxis.setTextColor(Color.WHITE);
 
 
 
@@ -173,18 +181,28 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		maxVar = new ArrayList<>();
 		RealmResults<AccelerometerData> results = realm.where(AccelerometerData.class)
 				.equalTo("sleepId", sleep.getId()).findAll();
+
+		if(results.size() == 0){
+			Log.d("Sleep Id", String.valueOf(sleep.getId()) + " no accelerometer data for this date.");
+			return;
+		}
 		results.sort("timestamp");
 
 		if(results.size() == 0){
 			Log.d("Definitely something", " wrong with accelerometer data");
 			return;
 		}
+		int sum = 0;
+		for (AccelerometerData ass: results){
+			sum += ass.getAmtMotion();
+		}
 
+		Log.d("Average", String.valueOf(sum/results.size()));
 
 		for (AccelerometerData a: results) {
 			motion.add(a.getAmtMotion());
 			maxVar.add(a.getMaxAccel());
-			entries.add(new Entry(a.getAmtMotion(), i++));
+			entries.add(new Entry(a.getAmtMotion() + 30, i++));
 			labels.add(format.format(a.getTimestamp()));
 		}
 
@@ -218,9 +236,9 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 					break;
 				}
 			case R.id.next:
-				newestData = realm.where(Sleep.class).max("id");
+				//newestData = realm.where(Sleep.class).max("id");
 				if(sleepIndex == allSleepReq.size() - 1) {
-					Log.d("Newest data", Integer.toString(newestData.intValue())) ;
+					//Log.d("Newest data", Integer.toString(newestData.intValue())) ;
 					Toast.makeText(getActivity(), "Already at Newest Sleep!", Toast.LENGTH_SHORT).show();
 					break;
 				}

@@ -19,7 +19,10 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -37,7 +40,7 @@ public class TrafficService extends IntentService {
 
 	private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final DateFormat hh = new SimpleDateFormat("HH:mm");
-
+	private List<AccelerometerData> accelerometerData;
 
 	public TrafficService(String name) {
 		super(name);
@@ -53,18 +56,11 @@ public class TrafficService extends IntentService {
 		Log.d("Traffic Service", " Created");
 	}
 
-	/*@Override
-	public int onStartCommand(Intent intent, int flags, int startId){
-		super.onStartCommand(intent, flags, startId);
-		Log.d("Traffic Service", " Started");
-		return START_STICKY;
-	}*/
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		String output = "It will take you " + trafficInfo.getTravelTime()/60 + " minutes if you leave at " + hh.format(trafficInfo.getDepartureTime());
-		//Toast.makeText(this, output , Toast.LENGTH_LONG).show();
 	}
 
 	@Override
@@ -73,6 +69,7 @@ public class TrafficService extends IntentService {
 		String to = intent.getStringExtra("to");
 		String time = intent.getStringExtra("time");
 		String id = intent.getStringExtra("id");
+		Calendar wake_time = (Calendar) intent.getSerializableExtra("wake_time");
 		Log.d("Accelerometer Sleep ID", id);
 
 		Realm realm = Realm.getDefaultInstance();
@@ -161,8 +158,13 @@ public class TrafficService extends IntentService {
 				Log.d("Acc Data - TM", String.valueOf(a.getTimestamp()));
 				Log.d("Acc Data - MNT", String.valueOf(a.getAmtMotion()));
 			}
+			accelerometerData = sleep;
+			wakeUpCheck();
 		}
+	}
 
+	private void wakeUpCheck() {
+		Log.d("Check:", " ain't doing shit");
 	}
 
 }

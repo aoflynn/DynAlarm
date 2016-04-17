@@ -23,8 +23,13 @@
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:layout_marginTop="@dimen/activity_horizontal_margin"
-            android:background="@color/graph_bg"
-            android:layout_weight="0.09"/>
+            android:layout_weight="0.09"
+            android:background="#757575"/>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -37,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:text="Previous"
                 android:id="@+id/previous"
-                />
+                android:backgroundTint="@color/colorAccent"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -59,18 +64,8 @@
                 android:id="@+id/next"
                 android:layout_alignTop="@+id/linearLayout"
                 android:layout_alignEnd="@+id/chart"
-                />
+                android:backgroundTint="@color/colorAccent"/>
         </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/linearLayout2"
-        android:layout_alignParentStart="true"
-        android:weightSum="1">
 
     </LinearLayout>
 

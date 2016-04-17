@@ -35,6 +35,7 @@ import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.receivers.WakeUpReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
+import me.adamoflynn.dynalarm.services.AlarmSound;
 import me.adamoflynn.dynalarm.services.TrafficService;
 import me.adamoflynn.dynalarm.services.WakeUpService;
 
@@ -65,13 +66,14 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_alarm, container, false);
 
-
+		
 		initializeTime(v);
 		initializeButtons(v);
 		initializeExtras(v);
 
 		return v;
 	}
+
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -179,7 +181,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		Number newestData = realm.where(AccelerometerData.class).max("sleepId");
 		sleepId = newestData.intValue();
 		sleepId += 1;
-		// alarmManager.setExact(AlarmManager.RTC, alarmTime.getTimeInMillis(), pendingIntent);
+
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime.getTimeInMillis(), pendingIntent);
 		Toast.makeText(getActivity(), "Alarm set!", Toast.LENGTH_SHORT).show();
 		Log.d("Service? ", " Should Start with Sleep Id" + Integer.toString(sleepId));
@@ -190,11 +192,20 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void setUpWakeService(){
+
+		if(!isTimeSet){
+			Toast.makeText(getActivity(), "No Alarm Set!", Toast.LENGTH_SHORT).show();
+			return;
+		}
+
+		checkDifference();
+
 		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
 		intent.putExtra("from", fromA);
 		intent.putExtra("to", toB);
 		intent.putExtra("time", time);
 		intent.putExtra("id", Integer.toString(sleepId));
+		intent.putExtra("wake_time", alarmTime);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
@@ -207,6 +218,12 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private void cancelAlarm(){
 		cancelWkAlarm();
 		cancelWkService();
+
+		if(isMyServiceRunning(AlarmSound.class)) {
+			Log.d("Alarm sound", " is running... stopping");
+			Intent stopAlarm = new Intent(getActivity(), AlarmSound.class);
+			getActivity().stopService(stopAlarm);
+		}
 	}
 
 
