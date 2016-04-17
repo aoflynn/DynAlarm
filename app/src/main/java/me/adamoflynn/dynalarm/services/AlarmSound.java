@@ -18,11 +18,11 @@ import java.net.URI;
 /**
  * Created by Adam on 17/04/2016.
  */
+
 public class AlarmSound extends Service {
 
 	private Vibrator vibrator;
 	private MediaPlayer mediaPlayer;
-	private AudioManager audioManager;
 	private PowerManager powerManager;
 	private PowerManager.WakeLock wakeLock;
 	private boolean isVibrateEnabled = true;

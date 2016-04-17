@@ -1,6 +1,7 @@
 package me.adamoflynn.dynalarm;
 
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -45,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
 	private Realm db;
 	private final long SNOOZE_TIME = 60000;
 	private Context context;
+	private boolean isAlarm = false;
+	private boolean isDialogShowing = false;
 
 	private int[] tabsIcons = {
 		R.drawable.ic_alarm_white_48dp,
@@ -65,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
 		tb = (Toolbar) findViewById(R.id.toolbar);
 
 
-		//getSupportActionBar().hide();
-
 		viewPager = (ViewPager) findViewById(R.id.viewpager);
 		setupViewPager(viewPager);
 
@@ -79,51 +80,8 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onNewIntent(Intent intent){
 		super.onNewIntent(intent);
-		boolean isAlarm = intent.getBooleanExtra("isAlarmRinging", false);
-		if(isAlarm){
-			final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-			builder.setTitle("Create A Routine");
-
-			LayoutInflater li = LayoutInflater.from(this);
-			//View dialogView = li.inflate(R.layout.alarm, null);
-
-			builder.setMessage("Wake Up!");
-			builder.setIcon(R.drawable.ic_alarm_white_48dp);
-			builder.setCancelable(false);
-			builder.setTitle("DynAlarm");
-
-			//builder.setView(dialogView);
-			builder.setPositiveButton("Stop Alarm", new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-
-					Intent stopAlarm = new Intent(context, AlarmSound.class);
-					context.stopService(stopAlarm);
-
-					Intent goToAccel = new Intent(context, AccelerometerService.class);
-					context.stopService(goToAccel);
-
-					cancelAlarms(context);
-
-					NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-					notificationManager.cancel(0);
-
-					Log.d("End of alarm recevier", " should be cancel/called");
-				}
-			});
-
-			builder.setNegativeButton("Snooze Alarm", new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					Log.d("Snooze", " like a bitch");
-					Intent i = new Intent(context, AlarmSound.class);
-					context.stopService(i);
-					snoozeAlarms(context);
-				}
-			});
-
-			final AlertDialog dialog = builder.show();
-		}
+		isAlarm = intent.getBooleanExtra("isAlarmRinging", false);
+		showAlarmDialog();
 	}
 
 	private void setupViewPager(ViewPager viewPager) {
@@ -147,6 +105,19 @@ public class MainActivity extends AppCompatActivity {
 
 	}
 
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+		if(!isDialogShowing){
+			Log.d("Restart alarm bool", String.valueOf(isAlarm));
+			Log.d("Restart alarm sound", String.valueOf(isMyServiceRunning(AlarmSound.class)));
+			if(isAlarm || isMyServiceRunning(AlarmSound.class)){
+				isAlarm = true;
+				showAlarmDialog();
+			}
+		}
+	}
+
 	protected void onPause() {
 		super.onPause();
 	}
@@ -158,6 +129,53 @@ public class MainActivity extends AppCompatActivity {
 		if (db != null) {
 			db.close();
 			db = null;
+		}
+	}
+
+	private void showAlarmDialog(){
+		if(isAlarm){
+			isDialogShowing = true;
+			final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+			builder.setTitle("Create A Routine");
+
+			builder.setMessage("Wake Up!");
+			builder.setIcon(R.drawable.ic_alarm_white_48dp);
+			builder.setCancelable(false);
+			builder.setTitle("DynAlarm");
+
+			builder.setPositiveButton("Stop Alarm", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+
+					Intent stopAlarm = new Intent(context, AlarmSound.class);
+					context.stopService(stopAlarm);
+
+					Intent goToAccel = new Intent(context, AccelerometerService.class);
+					context.stopService(goToAccel);
+
+					cancelAlarms(context);
+
+					NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+					notificationManager.cancel(0);
+					isAlarm = false;
+					isDialogShowing = false;
+				}
+			});
+
+			builder.setNegativeButton("Snooze Alarm", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					Log.d("Snooze", " like a bitch");
+					Intent i = new Intent(context, AlarmSound.class);
+					context.stopService(i);
+					snoozeAlarms(context);
+					NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+					notificationManager.cancel(0);
+					isDialogShowing = false;
+				}
+			});
+
+			final AlertDialog dialog = builder.show();
 		}
 	}
 
@@ -179,6 +197,16 @@ public class MainActivity extends AppCompatActivity {
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + SNOOZE_TIME, pendingIntent);
 		Log.d("Alarm set", "for 1 min in future");
+	}
+
+	private boolean isMyServiceRunning(Class<?> serviceClass) {
+		ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+			if (serviceClass.getName().equals(service.service.getClassName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

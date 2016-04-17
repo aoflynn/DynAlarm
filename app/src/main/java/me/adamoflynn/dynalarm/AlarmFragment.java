@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.Fragment;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -18,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -27,7 +25,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 
 import io.realm.Realm;
@@ -36,20 +33,18 @@ import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.receivers.WakeUpReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.AlarmSound;
-import me.adamoflynn.dynalarm.services.TrafficService;
-import me.adamoflynn.dynalarm.services.WakeUpService;
 
 public class AlarmFragment extends Fragment implements View.OnClickListener {
 
-	private Button start, accel, cancel, maps;
+	private Button start, accel, stop, maps;
 	private TextView currentTime, wakeUpTime;
 	private CheckBox routineCheck, trafficCheck;
 
 	private AlarmManager alarmManager;
 	private Calendar alarmTime = Calendar.getInstance();
 	private Calendar wkUpServiceTime = Calendar.getInstance();
+	private Calendar timeSet = Calendar.getInstance();
 	private final DateFormat sdf = new SimpleDateFormat("HH:mm");
-	private boolean wantRoutines, wantTraffic = false;
 	private HashSet<Integer> routinesChecked;
 	private String fromA, toB, time;
 	private long timeframe = 20 * 60 * 1000;
@@ -66,7 +61,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_alarm, container, false);
 
-		
 		initializeTime(v);
 		initializeButtons(v);
 		initializeExtras(v);
@@ -104,8 +98,8 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		accel = (Button) v.findViewById(R.id.routines);
 		accel.setOnClickListener(this);
 
-		cancel = (Button) v.findViewById(R.id.cancel);
-		cancel.setOnClickListener(this);
+		stop = (Button) v.findViewById(R.id.stop);
+		stop.setOnClickListener(this);
 
 		maps = (Button) v.findViewById(R.id.mapsButton);
 		maps.setOnClickListener(this);
@@ -124,7 +118,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			case R.id.start:
 				startAlarm();
 				break;
-			case R.id.cancel:
+			case R.id.stop:
 				cancelAlarm();
 				break;
 			case R.id.routines:
@@ -158,11 +152,11 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	}
 
 	private void startAlarm(){
-
 		setWakeUpAlarm();
 		if(isMaps){
 			setUpWakeService();
 		}
+		timeSet = Calendar.getInstance();
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)

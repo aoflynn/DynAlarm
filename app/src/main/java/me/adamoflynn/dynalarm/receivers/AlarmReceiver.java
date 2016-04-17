@@ -38,8 +38,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		Intent intentToActivity = new Intent(context, MainActivity.class);
 		intentToActivity.putExtra("isAlarmRinging", true);
-		intentToActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		PendingIntent pendingIntent = PendingIntent.getActivity(context, 101, intentToActivity, 0);
+		//intentToActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		PendingIntent pendingIntent = PendingIntent.getActivity(context, 101, intentToActivity, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Notification not = new Notification.Builder(context)
 		  .setContentTitle("Alarm! Wake Up!")
@@ -47,23 +47,15 @@ public class AlarmReceiver extends BroadcastReceiver {
 			.setContentIntent(pendingIntent)
 			.setSmallIcon(R.drawable.ic_alarm_white_48dp)
 			.setAutoCancel(false)
-		//	.setSound(alarmUri).setVibrate(vib)
 			.build();
 
-		//not.defaults |= Notification.DEFAULT_VIBRATE;
 
 		Intent startAlarmSound = new Intent(context, AlarmSound.class);
 		context.startService(startAlarmSound);
-		/*Intent goToAccel = new Intent(context, AccelerometerService.class);
-		context.stopService(goToAccel);
-
-		cancelAlarms(context);
-	*/
 
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(0, not);
 
-		//Log.d("End of alarm recevier"," should be cancel/called");
 	}
 
 	private void cancelAlarms(Context context){

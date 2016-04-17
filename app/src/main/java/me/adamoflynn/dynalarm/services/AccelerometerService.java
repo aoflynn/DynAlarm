@@ -42,6 +42,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 	private int sleepId;
 	private Boolean first = true;
 	private float maxVar = 0f;
+	private final int SERVICE_ID = 99;
 
 	private NotificationManager notificationManager = null;
 
@@ -69,13 +70,13 @@ public class AccelerometerService extends Service implements SensorEventListener
 		lastUpdate5secs = System.currentTimeMillis();
 
 		Log.d("Service", " Created");
-		createPersistentNotification();
+
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId){
 		sleepId = intent.getIntExtra("sleepId", 0);
-		Log.d("Starting Accel", " with ID" + Integer.toString(sleepId));
+		Log.d("Starting Accel", "with ID " + Integer.toString(sleepId));
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		Sleep sleep = new Sleep();
 		sleep.setId(sleepId);
@@ -87,6 +88,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 		db.commitTransaction();
 
 		Log.d("Service", " Started");
+		createPersistentNotification();
 		return START_STICKY;
 	}
 
@@ -96,8 +98,10 @@ public class AccelerometerService extends Service implements SensorEventListener
 		mSensorManager.unregisterListener(this);
 		writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar);
 
-		db.beginTransaction();
+		Log.d("Sleep Id mate", String.valueOf(sleepId));
 		Sleep sleep = db.where(Sleep.class).equalTo("id", sleepId).findFirst();
+		Log.d("Sleep data", sleep.toString());
+		db.beginTransaction();
 		sleep.setEndTime(Calendar.getInstance().getTimeInMillis());
 
 		if(sleep.getEndTime() - sleep.getStartTime() < 1200000){
@@ -115,11 +119,8 @@ public class AccelerometerService extends Service implements SensorEventListener
 
 		// Increment for next trial/sleep
 		sleepId++;
-		/*Log.d("Service", " Stopped");
-		Toast.makeText(this, "Service stopped!", Toast.LENGTH_SHORT).show();*/
 
-		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-		notificationManager.cancel(1);
+		stopForeground(true);
 
 		if (db != null) {
 			db.close();
@@ -154,6 +155,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 			if(abs_var > 0.025){
 				motions++;
 				Log.d("Motion: ", Float.toString(abs_var));
+				Log.d("Sleep ID motion", String.valueOf(sleepId));
 			}
 
 			//Commit every 5 minute
@@ -188,7 +190,9 @@ public class AccelerometerService extends Service implements SensorEventListener
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void createPersistentNotification(){
 		Intent intent = new Intent(this, MainActivity.class);
-		PendingIntent contentIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+		intent.putExtra("isAccelerometer", true);
+		//intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 113, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Notification not = new Notification.Builder(this)
 				.setContentTitle("Alarm is running!")
@@ -199,8 +203,6 @@ public class AccelerometerService extends Service implements SensorEventListener
 				.setOngoing(true)
 				.build();
 
-		NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-		notificationManager.notify(1, not);
+		startForeground(SERVICE_ID, not);
 	}
-
 }

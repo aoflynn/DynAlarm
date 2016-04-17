@@ -1,6 +1,8 @@
 package me.adamoflynn.dynalarm;
 
+import android.app.ActivityManager;
 import android.app.Fragment;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 //import android.support.v4.app.Fragment;
@@ -35,6 +37,7 @@ import io.realm.RealmResults;
 import io.realm.Sort;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
+import me.adamoflynn.dynalarm.services.AccelerometerService;
 
 public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
@@ -69,8 +72,13 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		lastId = newestData.intValue();
 		Log.d("Newest ID", String.valueOf(newestData.intValue()));
 
+		if(!isMyServiceRunning(AccelerometerService.class)){
+			Log.d("Delete sleep", " no service running...");
+			deleteBadDates();
+		} else{
+			Log.d("Delete sleep", " denied - accelerometer running...");
+		}
 
-		deleteBadDates();
 		allSleepReq = getAllSleep();
 		sleepIndex = allSleepReq.size() - 1;
 		Log.d("Sler", Integer.toString(sleepIndex));
@@ -269,12 +277,21 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 					acc.get(j).removeFromRealm();
 				}
 				merp.get(i).removeFromRealm();
-				//Log.d("Dirty", String.valueOf(merp.get(i)));
 			}
 		} else{
 			Log.d("No dirty sleeps", "---");
 		}
 
 		realm.commitTransaction();
+	}
+
+	private boolean isMyServiceRunning(Class<?> serviceClass) {
+		ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
+		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+			if (serviceClass.getName().equals(service.service.getClassName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
