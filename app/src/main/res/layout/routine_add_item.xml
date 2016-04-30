@@ -15,7 +15,7 @@
         android:imeOptions="actionDone"
         android:hint="Routine Name"
         android:inputType="textCapWords"
-        />
+        android:textColor="#000000"/>
 
     <Spinner
         android:layout_width="136dp"
@@ -24,7 +24,8 @@
         android:layout_gravity="left|center"
         android:spinnerMode="dialog"
         android:focusableInTouchMode="false"
-        android:focusable="true"/>
+        android:focusable="true"
+        android:dropDownWidth="wrap_content"/>
 
 
 </LinearLayout>

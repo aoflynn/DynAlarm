@@ -48,6 +48,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.model.Location;
 import me.adamoflynn.dynalarm.model.Routine;
 import me.adamoflynn.dynalarm.utils.RoutineOnItemSelectedListener;
@@ -68,6 +69,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private final String TO_TITLE = "To Here";
 	private int locationId;
 	private Realm realm;
+	private Spinner spinnerFrom, spinnerTo;
 	//private LatLngToString convertLoc = new LatLngToString(getApplicationContext());
 
 
@@ -106,6 +108,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		done = (Button) findViewById(R.id.done);
 		add_from = (Button) findViewById(R.id.add_location_from);
 		add_to = (Button) findViewById(R.id.add_location_to);
+		spinnerFrom = (Spinner) findViewById(R.id.spinnerFrom);
+		spinnerTo = (Spinner) findViewById(R.id.spinnerTo);
 		add_from.setOnClickListener(this);
 		arriveAt.setOnClickListener(this);
 		done.setOnClickListener(this);
@@ -161,19 +165,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()){
-			/*case R.id.fetchData:
-				String fromA = Double.toString(from.latitude) + "," + Double.toString(from.longitude);
-				String toB = Double.toString(to.latitude) + "," + Double.toString(to.longitude);
-				checkDifference();
-
-				Intent intent = new Intent(this, TrafficService.class);
-				intent.putExtra("from", fromA);
-				intent.putExtra("to", toB);
-				intent.putExtra("time", sdf.format(alarmTime.getTime()));
-
-				startService(intent);
-				Log.d("Traffic Running?", Boolean.toString(isMyServiceRunning(TrafficService.class)));
-				break;*/
 			case R.id.arriveAt:
 				timePicker();
 				break;
@@ -188,6 +179,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 				break;
 		}
 	}
+
 
 	private void timePicker(){
 		Calendar mCurrentTime = Calendar.getInstance();
@@ -212,6 +204,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			alarmTime.add(Calendar.HOUR_OF_DAY, 24);
 			arriveAt.setText(hh.format(alarmTime.getTime()));
 		}
+	}
+
+	private void updateSpinner(){
+		RealmResults<Location> locations = realm.where(Location.class).findAll();
+		List<Location> locationList = locations;
+		ArrayAdapter<Location> arrayAdapter = new ArrayAdapter<Location>(this, R.layout.support_simple_spinner_dropdown_item, locationList);
+		spinnerFrom.setAdapter(arrayAdapter);
+		spinnerTo.setAdapter(arrayAdapter);
 	}
 
 

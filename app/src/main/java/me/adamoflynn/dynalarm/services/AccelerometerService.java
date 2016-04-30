@@ -42,6 +42,8 @@ public class AccelerometerService extends Service implements SensorEventListener
 	private int sleepId;
 	private Boolean first = true;
 	private float maxVar = 0f;
+	private float sumVar = 0f;
+	private float avgVar = 0f;
 	private final int SERVICE_ID = 99;
 
 	private NotificationManager notificationManager = null;
@@ -96,7 +98,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 	public void onDestroy() {
 		super.onDestroy();
 		mSensorManager.unregisterListener(this);
-		writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar);
+		writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar, avgVar);
 
 		Log.d("Sleep Id mate", String.valueOf(sleepId));
 		Sleep sleep = db.where(Sleep.class).equalTo("id", sleepId).findFirst();
@@ -154,17 +156,22 @@ public class AccelerometerService extends Service implements SensorEventListener
 			// .04 -> 0.025
 			if(abs_var > 0.025){
 				motions++;
+				sumVar += abs_var;
 				Log.d("Motion: ", Float.toString(abs_var));
 				Log.d("Sleep ID motion", String.valueOf(sleepId));
 			}
 
 			//Commit every 5 minute
-			if((curTime - lastUpdate5secs) >= 300000  && !first) {
+			// (curTime - lastUpdate5secs) >= 300000
+			if((curTime - lastUpdate5secs) >= 60000  && !first) {
 				lastUpdate5secs = curTime;
-				writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar);
+				avgVar = sumVar / motions;
+				writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar, avgVar);
 				Log.d("Motion: ", Integer.toString(motions));
 				motions = 0;
 				maxVar = 0;
+				sumVar = 0;
+				avgVar = 0;
 			}
 
 			if(abs_var > maxVar){
@@ -175,7 +182,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 		}
 	}
 
-	private void writeToDB(long timestamp, int amtMotion, float maxVar){
+	private void writeToDB(long timestamp, int amtMotion, float maxVar, float avgVar){
 		db.beginTransaction();
 
 		AccelerometerData acc = db.createObject(AccelerometerData.class);
@@ -183,6 +190,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 		acc.setSleepId(sleepId);
 		acc.setAmtMotion(amtMotion);
 		acc.setMaxAccel(maxVar);
+		acc.setMinAccel(avgVar);
 
 		db.commitTransaction();
 	}

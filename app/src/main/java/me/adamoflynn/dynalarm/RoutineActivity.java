@@ -206,7 +206,7 @@ public class RoutineActivity extends AppCompatActivity {
 		times.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(times);
 		spinner.setSelection(times.getPosition(descText + " minutes"));
-		Log.d("Position of edit", Integer.toString(times.getPosition(descText + " minutes")));
+		Log.d("Position of edit ", Integer.toString(times.getPosition(descText + " minutes")));
 		spinner.setOnItemSelectedListener(new RoutineOnItemSelectedListener());
 
 		builder.setView(dialogView);

@@ -13,7 +13,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.IOException;
-import java.net.URI;
 
 /**
  * Created by Adam on 17/04/2016.
@@ -38,11 +37,14 @@ public class AlarmSound extends Service {
 
 	@Override
 	public void onCreate(){
+		Log.d("ALARM SOUND", " created service..");
 		vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 		powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "RINGTONE");
+		Log.d("ALARM WAKE LOCK -before", wakeLock.toString());
 		wakeLock.acquire();
-		Log.d("ALARM SOUND", " created service..");
+		Log.d("ALARM WAKE LOCK", " acquired...");
+		Log.d("ALARM WAKE LOCK -after", wakeLock.toString());
 	}
 
 	@Override
@@ -77,7 +79,9 @@ public class AlarmSound extends Service {
 			if(isVibrateOn){
 				vibrator.cancel();
 			}
+			Log.d("ALARM WAKE LOCK -before", " released...");
 			wakeLock.release();
+			Log.d("ALARM WAKE LOCK -after", wakeLock.toString());
 			wakeLock = null;
 		}
 

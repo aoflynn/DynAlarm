@@ -71,7 +71,7 @@
                     android:textColor="#ffffff"/>
 
                 <Spinner
-                    android:layout_width="36dp"
+                    android:layout_width="78dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/spinnerFrom"
                     android:spinnerMode="dropdown"

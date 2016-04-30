@@ -17,6 +17,7 @@
     <string name="timeframe">Wake Timeframe</string>
     <string name="title_activity_routine">RoutineActivity</string>
     <string name="online_routing_key">nmqjmepdy9ppbp8yekvrsaet</string>
+    <string name="general">general</string>
 
     <string-array name="nav_drawer_labels">
         <item>@string/nav_item_alarm</item>
@@ -38,6 +39,46 @@
         <item>50 minutes</item>
         <item>55 minutes</item>
         <item>60 minutes</item>
+    </string-array>
+
+    <string-array name="snooze_entries">
+        <item>1 mins</item>
+        <item>2 mins</item>
+        <item>3 mins</item>
+        <item>4 mins</item>
+        <item>5 mins</item>
+        <item>10 mins</item>
+    </string-array>
+
+    <string-array name="snooze_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>10</item>
+    </string-array>
+
+    <string-array name="timeframe_entries">
+        <item>5 mins</item>
+        <item>10 mins</item>
+        <item>15 mins</item>
+        <item>20 mins</item>
+        <item>25 mins</item>
+        <item>30 mins</item>
+        <item>45 mins</item>
+        <item>60 mins</item>
+    </string-array>
+
+    <string-array name="timeframe_values">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
     </string-array>
 
 

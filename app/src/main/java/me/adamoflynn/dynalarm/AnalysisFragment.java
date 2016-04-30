@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -29,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,8 +44,8 @@ import me.adamoflynn.dynalarm.services.AccelerometerService;
 public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	private ArrayList<Entry> entries;
-	private ArrayList<Integer> motion;
-	private ArrayList<String> labels;
+	private ArrayList<Integer> motion, max_motion;
+	private ArrayList<String> labels, sleep_stage;
 	private ArrayList<Float> maxVar;
 	private Realm realm;
 	private Number newestData;
@@ -83,7 +85,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		sleepIndex = allSleepReq.size() - 1;
 		Log.d("Sler", Integer.toString(sleepIndex));
 		getData(sleepIndex);
-		initializeChart();
+		initializeLineChart();
+		initializeBarChart();
 		initializeDate(v);
 		initializeButtons(v);
 		return v;
@@ -112,7 +115,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	}
 
 
-	private void initializeChart(){
+	private void initializeLineChart(){
 		dataSet = new LineDataSet(entries, "Movements");
 
 		dataSet.setDrawCubic(true);
@@ -121,7 +124,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		dataSet.setDrawValues(false);
 		dataSet.setHighlightEnabled(false);
 		dataSet.setFillColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
-		dataSet.setColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
+		//dataSet.setColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
 		dataSet.setFillAlpha(195);
 
 		chart.setTouchEnabled(true);
@@ -158,6 +161,56 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		chart.setData(data);
 		chart.notifyDataSetChanged();
 		chart.invalidate();
+	}
+
+	private void initializeBarChart() {
+		dataSet = new LineDataSet(entries, "Movements");
+
+		dataSet.setDrawCubic(true);
+		dataSet.setDrawCircles(false);
+		dataSet.setDrawFilled(false);
+		dataSet.setDrawValues(false);
+		dataSet.setHighlightEnabled(false);
+		dataSet.setFillColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
+		//dataSet.setColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
+		dataSet.setFillAlpha(195);
+
+		chart.setTouchEnabled(true);
+		chart.setDragEnabled(true);
+		chart.setPinchZoom(true);
+		chart.setDrawGridBackground(false);
+		chart.setAutoScaleMinMaxEnabled(true);
+		chart.setBorderColor(Color.BLACK);
+		chart.setNoDataTextDescription("No data for this sleep");
+		chart.setDescription("");
+		chart.setHardwareAccelerationEnabled(true);
+
+		YAxis leftAxis = chart.getAxisLeft();
+		leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
+		leftAxis.setDrawLabels(true); // no axis labels
+		leftAxis.setStartAtZero(true);
+		leftAxis.setDrawGridLines(false); // no grid lineschart.setData(data);
+		leftAxis.setTextColor(Color.WHITE);
+		leftAxis.setAxisMaxValue(dataSet.getYMax());
+
+		YAxis rightAxis = chart.getAxisRight();
+		rightAxis.setEnabled(false);
+
+
+		XAxis xAxis = chart.getXAxis();
+		xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+		xAxis.setDrawAxisLine(true);
+		xAxis.setDrawGridLines(false);
+		xAxis.setTextColor(Color.WHITE);
+
+
+
+		LineData data = new LineData(labels, dataSet);
+		chart.setData(data);
+		chart.notifyDataSetChanged();
+		chart.invalidate();
+
+
 	}
 
 	// Initialize the view
@@ -200,24 +253,61 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			Log.d("Definitely something", " wrong with accelerometer data");
 			return;
 		}
-		int sum = 0;
-		for (AccelerometerData ass: results){
-			sum += ass.getAmtMotion();
+
+		if(checkDateAfter(sleep.getStartTime())){
+			Log.d("SIZE before", Integer.toString(results.size()));
+			Log.d("AFTER","true");
+			int concatDataLength = results.size() / 5 + 1; // Get the required length of new array where 5 represents every 5 minutes we concatenate
+			for (int j = 0, k = 0; j < concatDataLength; j++ ){
+				labels.add(format.format(results.get(k).getTimestamp()));
+				int amt = 0;
+				int count = 0;
+				for (; count < 5 && k < results.size(); k++ ){
+					amt += results.get(k).getAmtMotion();
+					count++;
+				}
+				motion.add(amt);
+				entries.add(new Entry(amt + 30, i++));
+			}
+
+			Log.d("Motion ", motion.toString());
+			Log.d("Labels ", labels.toString());
+			Log.d("Sleep size", Integer.toString(entries.size()));
+		}
+		else {
+			Log.d("BEFORE","true");
+			for (AccelerometerData a: results) {
+				motion.add(a.getAmtMotion());
+				maxVar.add(a.getMaxAccel());
+				entries.add(new Entry(a.getAmtMotion() + 30, i++));
+				labels.add(format.format(a.getTimestamp()));
+			}
+
+			Log.d("Motion ", motion.toString());
+			Log.d("Labels ", labels.toString());
+			Log.d("Max Var", maxVar.toString());
+			Log.d("Sleep size", Integer.toString(entries.size()));
 		}
 
-		Log.d("Average", String.valueOf(sum/results.size()));
+		int concatDataLength = results.size() / 15 + 1; // Get the required length of new array where 5 represents every 15 minutes we concatenate
+		for (int j = 0, k = 0; j < concatDataLength; j++ ){
+			int max = 0, amt = 0, count = 0;
+			double avg = 0;
+			for (; count < 15 && k < results.size(); k++ ){
+				amt += results.get(k).getAmtMotion();
+				if(max < results.get(k).getAmtMotion()) max = results.get(k).getAmtMotion();
+				count++;
+			}
 
-		for (AccelerometerData a: results) {
-			motion.add(a.getAmtMotion());
-			maxVar.add(a.getMaxAccel());
-			entries.add(new Entry(a.getAmtMotion() + 30, i++));
-			labels.add(format.format(a.getTimestamp()));
+			avg = amt / 15.0;
+			Log.d("Avg", Double.toString(avg));
+			Log.d("Amt", Integer.toString(amt));
+			Log.d("Max", Integer.toString(max));
+
+			/*motion.add(amt);
+			entries.add(new Entry(amt + 30, i++));*/
 		}
 
-		Log.d("Motion ", motion.toString());
-		Log.d("Labels ", labels.toString());
-		Log.d("Max Var", maxVar.toString());
-		Log.d("Sleep size", Integer.toString(entries.size()));
 	}
 
 	private void initializeButtons(View v){
@@ -239,7 +329,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 					Log.d("State: ", " previous sleep cycle...");
 					getData(sleepIndex - 1);
 					sleepIndex--;
-					initializeChart();
+					initializeLineChart();
 					changeText();
 					break;
 				}
@@ -253,7 +343,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				else{
 					getData(sleepIndex + 1);
 					sleepIndex++;
-					initializeChart();
+					initializeLineChart();
 					changeText();
 					Log.d("State: ", " next sleep cycle...");
 					break;
@@ -293,5 +383,16 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			}
 		}
 		return false;
+	}
+
+	private boolean checkDateAfter(Long analysisDate){
+		// Day I changed my analysis so want to read differently
+		Calendar analysisChangeDate = new GregorianCalendar(2016, Calendar.APRIL, 26);
+		analysisChangeDate.set(Calendar.HOUR, 12);
+		Log.d("ANALYSIS", Long.toString(analysisChangeDate.getTimeInMillis()));
+		Log.d("DATE", Long.toString(analysisDate));
+		if (analysisDate > analysisChangeDate.getTimeInMillis()){
+			return true;
+		} else return false;
 	}
 }

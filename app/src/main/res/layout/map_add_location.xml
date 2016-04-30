@@ -14,7 +14,8 @@
         android:imeOptions="actionDone"
         android:inputType="textCapWords"
         android:textAlignment="center"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="10dp"
+        android:textColor="#000000"/>
 
     <EditText
         android:layout_width="wrap_content"
@@ -24,6 +25,7 @@
         android:singleLine="true"
         android:imeOptions="actionDone"
         android:textAlignment="center"
-        android:inputType="textPostalAddress"/>
+        android:inputType="textPostalAddress"
+        android:textColor="#000000"/>
 
 </LinearLayout>

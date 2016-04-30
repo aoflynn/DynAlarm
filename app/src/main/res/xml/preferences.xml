@@ -3,18 +3,64 @@
     android:layout_height="match_parent" android:layout_width="match_parent">
 
     <PreferenceCategory
-        android:key="my_category_key"
-        android:title="My Title"
+        android:icon="@drawable/ic_settings_white_48dp"
+        android:key="@string/general"
+        android:title="General Settings"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <CheckBoxPreference
-            android:key="pref_key"
-            android:title="Title"
-            android:summary="Summary"
-            android:defaultValue="false"
+        <SwitchPreference
+            android:key="@string/vibration"
+            android:title="Vibration"
+            android:summary="Use vibration and sound to wake you up?"
+            android:defaultValue="true"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:persistent="true"/>
+
+        <RingtonePreference
+            android:key="alarmTone"
+            android:title="Alarm Tone"
+            android:summary="Select an alarm tone to wake up to."
+            android:ringtoneType="alarm"
+            android:defaultValue="Default alarm sound"
+            android:showDefault="true"
+            android:showSilent="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:persistent="true"/>
+
+        <ListPreference
+            android:key="snoozeTime"
+            android:title="Snooze Time"
+            android:summary="Choose a snooze timeframe"
+            android:defaultValue="5"
+            android:dialogTitle="Pick a time"
+            android:entries="@array/snooze_entries"
+            android:entryValues="@array/snooze_values"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:persistent="true"/>
+
+        <ListPreference
+            android:key="timeframe"
+            android:title="Wakeup Timeframe"
+            android:summary="Choose a wake up timeframe."
+            android:dialogTitle="Pick a time"
+            android:defaultValue="20"
+            android:entries="@array/timeframe_entries"
+            android:entryValues="@array/timeframe_values"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:persistent="true"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="user"
+        android:title="User Details"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     </PreferenceCategory>
 

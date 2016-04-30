@@ -1,7 +1,12 @@
 package me.adamoflynn.dynalarm.services;
+import android.annotation.TargetApi;
+import android.app.AlarmManager;
 import android.app.Application;
 import android.app.IntentService;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.support.v4.content.WakefulBroadcastReceiver;
@@ -26,10 +31,13 @@ import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmList;
 import io.realm.RealmResults;
+import io.realm.Sort;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
 import me.adamoflynn.dynalarm.model.TrafficInfo;
+import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 
 public class TrafficService extends IntentService {
 
@@ -127,7 +135,6 @@ public class TrafficService extends IntentService {
 			int historicTravelTime = summary.getInt("historicTrafficTravelTimeInSeconds");
 			int liveIncidents = summary.getInt("liveTrafficIncidentsTravelTimeInSeconds");
 
-			//TrafficInfo trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr);
 			trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
 			Log.d("Data", trafficInfo.toString());
 			getAccelerometerReadings(realm, sleepId);
@@ -150,21 +157,55 @@ public class TrafficService extends IntentService {
 
 	public void getAccelerometerReadings(Realm realm, int sleepId){
 		RealmResults<AccelerometerData> sleep = realm.where(AccelerometerData.class).equalTo("sleepId", sleepId).findAll();
+		sleep.sort("timestamp", Sort.DESCENDING);
 		if(sleep.size() == 0){
 			Log.d("No sleep", "nya");
 			return;
 		} else{
-			for (AccelerometerData a: sleep){
-				Log.d("Acc Data - TM", String.valueOf(a.getTimestamp()));
-				Log.d("Acc Data - MNT", String.valueOf(a.getAmtMotion()));
-			}
 			accelerometerData = sleep;
-			wakeUpCheck();
+			wakeUpCheck(sleepId);
 		}
 	}
 
-	private void wakeUpCheck() {
-		Log.d("Check:", " ain't doing shit");
+	private void wakeUpCheck(int sleepId) {
+		Realm realm = Realm.getDefaultInstance();
+		Log.d("WAKE", "CHECK");
+		ArrayList<AccelerometerData> newestData = new ArrayList<>();
+		int max = 0;
+
+		// Get last ten minutes of sleep data
+		for (int i = 10, j = 0; i > 0; i--, j++){
+			newestData.add(j, accelerometerData.get(i));
+			if(max > newestData.get(j).getAmtMotion() && newestData.get(j).getMaxAccel() > 0.1){
+				Log.d("ALARM", "Update");
+				updateAlarm();
+			} else if(max < newestData.get(j).getAmtMotion()){
+				max = newestData.get(j).getAmtMotion();
+				Log.d("UPDATE MAX", Integer.toString(max));
+			}
+		}
+
+		Log.d("UPDATE MAX", Integer.toString(max));
+		RealmList<AccelerometerData> acc = new RealmList<>();
+		for (AccelerometerData a: newestData){
+			acc.add(a);
+			Log.d("Acc Data - TM", String.valueOf(a.getTimestamp()));
+			Log.d("Acc Data - MNT", String.valueOf(a.getAmtMotion()));
+			Log.d("Acc Data - MAX", String.valueOf(a.getMaxAccel()));
+			Log.d("Acc Data - AVG", String.valueOf(a.getMinAccel()));
+		}
+
+		realm.beginTransaction();
+		Sleep sleep = realm.where(Sleep.class).equalTo("id", sleepId).findFirst();
+		sleep.setSleepData(acc);
+		realm.commitTransaction();
 	}
 
+	@TargetApi(Build.VERSION_CODES.KITKAT)
+	private void updateAlarm(){
+		Intent intent = new Intent(this, AlarmReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		alarmManager.setExact(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), pendingIntent);
+	}
 }
