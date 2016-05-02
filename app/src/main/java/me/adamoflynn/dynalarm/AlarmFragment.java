@@ -22,6 +22,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.facebook.stetho.common.Util;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -35,6 +37,8 @@ import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.receivers.WakeUpReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.AlarmSound;
+import me.adamoflynn.dynalarm.services.TrafficService;
+import me.adamoflynn.dynalarm.services.WakeUpService;
 import me.adamoflynn.dynalarm.utils.Utils;
 
 public class AlarmFragment extends Fragment implements View.OnClickListener {
@@ -68,7 +72,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		initializeTime(v);
 		initializeButtons(v);
 		initializeExtras(v);
-
 		return v;
 	}
 
@@ -120,10 +123,15 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 				timePicker();
 				break;
 			case R.id.start:
-				startAlarm();
+				if(!Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){
+					timeSet = Calendar.getInstance();
+					showAlarmConfirmation();
+				} else Toast.makeText(getActivity(), "Alarm currently on, please cancel it to set another alarm.", Toast.LENGTH_LONG).show();
 				break;
 			case R.id.stop:
-				cancelAlarm();
+				if(Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){
+					showCancelConfirmation();
+				} else Toast.makeText(getActivity(), "No alarm currently set.", Toast.LENGTH_LONG).show();
 				break;
 			case R.id.routines:
 				Intent routines = new Intent(getActivity(), RoutineActivity.class);
@@ -153,11 +161,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			}, hour, minute, true);
 		pickerDialog.setTitle("Select Time");
 		pickerDialog.show();
-	}
-
-	private void startAlarm(){
-		timeSet = Calendar.getInstance();
-		showAlarmConfirmation();
 	}
 
 
@@ -192,7 +195,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				setWakeUpAlarm();
-				if(usingMaps){
+				if (usingMaps) {
 					setUpTrafficService();
 				} else {
 					setUpWakeService();
@@ -263,7 +266,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 		// Set an inexact repeating alarm that goes off at *timeframe* mins before alarm goes off every 2 minutes repeats
 		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, wkUpServiceTime.getTimeInMillis(), POLLING_TIME, pendingIntent);
-		Log.d("Wake up Service", "should start at " + sdf.format(wkUpServiceTime.getTime()));
+		Log.d("Traffic Service", "should start at " + sdf.format(wkUpServiceTime.getTime()));
 	}
 
 	// Doesn't use Maps or Traffic Data
@@ -293,9 +296,36 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	}
 
 
+
+	private void showCancelConfirmation()  {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle("Stop Alarm?");
+		builder.setMessage("Are you sure you want to stop the alarm?");
+
+		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				cancelAlarm();
+			}
+		});
+
+		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+
+		final AlertDialog dialog = builder.show();
+
+	}
+
+
 	private void cancelAlarm(){
 		cancelWkAlarm();
-		cancelWkService();
+
+		if(Utils.isMyServiceRunning(WakeUpService.class, getActivity())) cancelWakeService();
+		else if(Utils.isMyServiceRunning(TrafficService.class, getActivity())) cancelTrafficService();
 
 		if(Utils.isMyServiceRunning(AlarmSound.class, getActivity())) {
 			Log.d("Alarm sound", " is running... stopping");
@@ -304,10 +334,9 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		}
 	}
 
-
 	private void cancelWkAlarm(){
 		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 		alarmManager.cancel(pendingIntent);
 		pendingIntent.cancel();
@@ -318,13 +347,24 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		Toast.makeText(getActivity(), "Alarm Cancelled!", Toast.LENGTH_SHORT).show();
 	}
 
-	private void cancelWkService(){
+	private void cancelWakeService() {
 		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		String WAKEUP = "me.adamoflynn.dynalarm.action.WAKEUP";
+		intent.setAction(WAKEUP);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 		alarmManager.cancel(pendingIntent);
 		pendingIntent.cancel();
+	}
 
+	private void cancelTrafficService(){
+		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
+		String TRAFFIC = "me.adamoflynn.dynalarm.action.TRAFFIC";
+		intent.setAction(TRAFFIC);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+		AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
+		pendingIntent.cancel();
 		Toast.makeText(getActivity(), "Recurring Alarm Cancelled!", Toast.LENGTH_SHORT).show();
 	}
 

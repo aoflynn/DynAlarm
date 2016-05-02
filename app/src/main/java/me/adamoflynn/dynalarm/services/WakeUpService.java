@@ -37,13 +37,13 @@ public class WakeUpService extends IntentService {
 	}
 
 	public WakeUpService(){
-		super("TrafficService");
+		super("WakeUpService");
 	}
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		Log.d("Traffic Service", " Created");
+		Log.d("Wakeup Service", " Created");
 	}
 
 

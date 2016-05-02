@@ -14,30 +14,34 @@
         android:text="Set Alarm from:"
         android:id="@+id/text"
         android:layout_gravity="center_horizontal"
-        android:padding="10dp"/>
+        android:padding="10dp"
+        android:textSize="16dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start Time to End Time"
         android:id="@+id/time"
-        android:layout_gravity="center_horizontal"
-        android:padding="10dp"/>
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:textSize="16dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="with a wake timeframe of 30 minutes"
         android:id="@+id/timeframe"
-        android:layout_gravity="center_horizontal"
-        android:padding="10dp"/>
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:textSize="16dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="journey and routine data"
         android:id="@+id/options"
-        android:layout_gravity="center_horizontal"
-        android:padding="10dp"/>
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:textSize="16dp"/>
 
 </LinearLayout>

@@ -43,6 +43,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -62,9 +63,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private Boolean fromLocationSet, toLocationSet, timeSet;
 	private ProgressDialog progressDialog;
 	private final String FROM_TITLE = "From This Location";
+	private final String TO_TITLE = "To Here";
 	private int locationId;
 	private Realm realm;
 	private Spinner spinnerFrom, spinnerTo;
+	private final String SNIP = "Tap here to remove this location!";
 
 
 	@Override
@@ -76,6 +79,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 		locationId = Application.locationID.incrementAndGet();
 		realm = Realm.getDefaultInstance();
+
 		Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(tb);
 
@@ -104,7 +108,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		Button add_to = (Button) findViewById(R.id.add_location_to);
 		spinnerFrom = (Spinner) findViewById(R.id.spinnerFrom);
 		spinnerTo = (Spinner) findViewById(R.id.spinnerTo);
+		updateSpinner();
 		add_from.setOnClickListener(this);
+		add_to.setOnClickListener(this);
 		arriveAt.setOnClickListener(this);
 		done.setOnClickListener(this);
 		arriveAt.setText(hh.format(alarmTime.getTime()));
@@ -121,7 +127,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		mMap = googleMap;
-		//mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 12));
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 10));
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
 				&& ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			// No location services so go to Dublin City Centre, else go to current location.
@@ -146,13 +152,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			from = point;
 			new LatLngToStringFrom(this).execute(point);
 		} else if(!toLocationSet) {
-			String TO_TITLE = "To Here";
 			toMarker = mMap.addMarker(new MarkerOptions().position(point).title(TO_TITLE).snippet("Tap here to remove this location!").draggable(true));
 			toMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 			toLocationSet = true;
 			to = point;
 			new LatLngToString(this).execute(point);
-		//	toText.setText(to.toString());
 		}
 
 	}
@@ -203,7 +207,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private void updateSpinner(){
 		RealmResults<Location> locations = realm.where(Location.class).findAll();
 		List<Location> locationList = locations;
-		ArrayAdapter<Location> arrayAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, locationList);
+
+		Log.d("Locations", locationList.toString());
+		ArrayList<String> loca = new ArrayList<>();
+		loca.add(0, "");
+		for (Location l:locationList){
+			loca.add(l.getLocation());
+		}
+
+		ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, loca);
 		spinnerFrom.setAdapter(arrayAdapter);
 		spinnerTo.setAdapter(arrayAdapter);
 	}
@@ -295,7 +307,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 		final EditText locationName = (EditText) dialogView.findViewById(R.id.locationName);
 		final EditText address = (EditText) dialogView.findViewById(R.id.address);
-		address.setText(fromEditText.getText().toString());
+		if(dest.equals("from"))
+			address.setText(fromEditText.getText().toString());
+		else address.setText(toEditText.getText().toString());
 
 		builder.setView(dialogView);
 		builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
@@ -452,6 +466,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			fromEditText.setText(s);
 			dialog.dismiss();
 			Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
+			//fromMarker.setSnippet(s + "\n"+SNIP);
 		}
 	}
 }

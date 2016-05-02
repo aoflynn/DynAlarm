@@ -5,44 +5,46 @@
              tools:context="me.adamoflynn.dynalarm.AnalysisFragment">
 
 
-
-    <LinearLayout
-        android:layout_width="wrap_content"
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_view_chart"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:weightSum="1"
+        card_view:cardCornerRadius="4dp"
+        card_view:cardBackgroundColor="#FF232323"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:orientation="vertical"
-        android:id="@+id/linearLayout2">
+        android:layout_alignParentStart="true"
+        android:layout_margin="15dp">
 
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/chart"
-            android:layout_width="match_parent"
-            android:layout_height="260dp"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/activity_horizontal_margin"
-            android:layout_weight="0.09"
-            android:background="#757575"/>
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                        xmlns:tools="http://schemas.android.com/tools"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        tools:context="me.adamoflynn.dynalarm.AnalysisFragment"
+                        android:layout_alignParentBottom="true">
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="8dp"
-            />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1.00">
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/chart"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginRight="8dp"
+                android:layout_weight="0.09"
+                android:layout_marginLeft="8dp"
+                android:layout_below="@+id/date"
+                android:layout_alignParentEnd="true"
+                android:layout_marginBottom="16dp"/>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Previous"
                 android:id="@+id/previous"
-                android:backgroundTint="@color/colorAccent"/>
+                android:backgroundTint="@color/colorAccent"
+                android:layout_below="@+id/chart"
+                android:layout_alignStart="@+id/chart"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -55,18 +57,149 @@
                 android:textSize="14dp"
                 android:textStyle="bold"
                 android:padding="16dp"
-                android:textAlignment="center"/>
+                android:textAlignment="center"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"/>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Next"
                 android:id="@+id/next"
-                android:layout_alignTop="@+id/linearLayout"
-                android:layout_alignEnd="@+id/chart"
-                android:backgroundTint="@color/colorAccent"/>
-        </LinearLayout>
+                android:backgroundTint="@color/colorAccent"
+                android:layout_below="@+id/chart"
+                android:layout_alignEnd="@+id/chart"/>
 
-    </LinearLayout>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_view_sleep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        card_view:cardCornerRadius="4dp"
+        card_view:cardBackgroundColor="#FF232323"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_below="@+id/card_view_chart"
+        android:layout_alignParentStart="true">
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                        xmlns:tools="http://schemas.android.com/tools"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        tools:context="me.adamoflynn.dynalarm.AnalysisFragment"
+                        android:layout_alignParentEnd="true">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Sleep Length"
+                android:id="@+id/textView2"
+                android:layout_margin="16dp"
+                android:layout_marginLeft="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="07:25 "
+                android:id="@+id/sleepTime"
+                android:textSize="30sp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_below="@+id/textView2"
+                android:layout_alignParentStart="true"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="00:40 to 7:40"
+                android:id="@+id/sleepTimeframe"
+                android:layout_below="@+id/sleepTime"
+                android:layout_alignStart="@+id/sleepTime"
+                android:layout_marginBottom="16dp"/>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_view_sleep_avg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        card_view:cardCornerRadius="4dp"
+        card_view:cardBackgroundColor="#FF232323"
+        android:layout_marginRight="15dp"
+        android:layout_alignTop="@+id/card_view_sleep"
+        android:layout_alignParentEnd="true"
+        android:layout_alignBottom="@+id/card_view_sleep"
+        android:layout_toEndOf="@+id/card_view_sleep">
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                        xmlns:tools="http://schemas.android.com/tools"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        tools:context="me.adamoflynn.dynalarm.AnalysisFragment"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentStart="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="07:01 hrs"
+                android:id="@+id/sleepAvg"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Overall Sleep Stats"
+                android:id="@+id/textView"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:layout_margin="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="Avg. Sleep Time"
+                android:id="@+id/textView3"
+                android:layout_alignTop="@+id/sleepAvg"
+                android:layout_alignStart="@+id/textView"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="No. of Sleeps"
+                android:id="@+id/textView4"
+                android:layout_below="@+id/textView3"
+                android:layout_alignStart="@+id/textView3"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="50"
+                android:id="@+id/sleepCount"
+                android:layout_alignTop="@+id/textView4"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="16dp"/>
+
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
 
 </RelativeLayout>

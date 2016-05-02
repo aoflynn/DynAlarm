@@ -20,7 +20,6 @@ public class WakeUpReceiver extends WakefulBroadcastReceiver {
 	private final String TRAFFIC = "me.adamoflynn.dynalarm.action.TRAFFIC";
 	@Override
 	public void onReceive(Context context, Intent intent) {
-
 		String action = intent.getAction();
 		if(action.equals(WAKEUP)){
 			String id = intent.getStringExtra("id");

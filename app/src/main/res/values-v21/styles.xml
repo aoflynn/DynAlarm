@@ -12,9 +12,11 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorSecondary">#FFFFFF</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
         <item name="android:timePickerDialogTheme">@style/timePickerTheme</item>
+        <item name="android:alertDialogTheme">@style/dialogTheme</item>
     </style>
 
     <style name="timePickerTheme" parent="Theme.AppCompat.Light.Dialog">
@@ -23,6 +25,21 @@
         <item name="android:textColorSecondary">#FFFFFF</item>
         <item name="android:windowBackground">@color/colorPrimary</item>
         <item name="android:numbersTextColor">#FFFFFF</item>
+    </style>
+
+    <style name="dialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#FFFFFF</item>
+        <item name="android:windowBackground">@color/colorBackground</item>
+        <item name="android:editTextColor">#FFFFFF</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColorHint">#FFFFFF</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+        <item name="android:windowMinWidthMajor">@android:dimen/dialog_min_width_major</item>
+        <item name="android:windowMinWidthMinor">@android:dimen/dialog_min_width_minor</item>
     </style>
 
 </resources>

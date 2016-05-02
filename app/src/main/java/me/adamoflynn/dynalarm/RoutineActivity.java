@@ -3,9 +3,13 @@ package me.adamoflynn.dynalarm;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -38,6 +42,27 @@ public class RoutineActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_routine);
 		routineID = Application.routineID.incrementAndGet();
 		realm = Realm.getDefaultInstance();
+
+
+		Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
+		tb.setTitle("Routines");
+		setSupportActionBar(tb);
+
+		if(getSupportActionBar() != null){
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			getSupportActionBar().setDisplayShowHomeEnabled(true);
+			final Drawable upArrow = getResources().getDrawable(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+			upArrow.setColorFilter(Color.parseColor("#FFFFFF"), PorterDuff.Mode.SRC_ATOP);
+			getSupportActionBar().setHomeAsUpIndicator(upArrow);
+			tb.setTitleTextColor(Color.WHITE);
+		}
+
+		tb.setNavigationOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onBackPressed();
+			}
+		});
 
 		routines = realm.where(Routine.class).findAll();
 		routineAdapter = new RoutineAdapter(this, R.id.listView, routines, true);

@@ -28,9 +28,12 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import io.realm.Sort;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
@@ -72,14 +75,16 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			Log.d("Delete sleep", " denied - accelerometer running...");
 		}
 
+		deleteShortSleeps();
 		allSleepReq = getAllSleep();
 		sleepIndex = allSleepReq.size() - 1;
 		Log.d("Sler", Integer.toString(sleepIndex));
 		getData(sleepIndex);
+		initializeSleepAvg(v);
 		initializeLineChart();
-		initializeBarChart();
 		initializeDate(v);
 		initializeButtons(v);
+		initializeSleepCard(v);
 		return v;
 	}
 
@@ -91,10 +96,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			sleepIds.add(sleep);
 			Log.d("Array", String.valueOf(sleep.getId()));
 		}
-
 		return sleepIds;
 	}
-
 
 	@Override
 	public void onDestroy() {
@@ -115,8 +118,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		dataSet.setDrawValues(false);
 		dataSet.setHighlightEnabled(false);
 		dataSet.setFillColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
-		//dataSet.setColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
 		dataSet.setFillAlpha(195);
+
 
 		chart.setTouchEnabled(true);
 		chart.setDragEnabled(true);
@@ -127,6 +130,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		chart.setNoDataTextDescription("No data for this sleep");
 		chart.setDescription("");
 		chart.setHardwareAccelerationEnabled(true);
+		chart.getLegend().setEnabled(false);
 
 		YAxis leftAxis = chart.getAxisLeft();
 		leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
@@ -152,56 +156,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		chart.setData(data);
 		chart.notifyDataSetChanged();
 		chart.invalidate();
-	}
-
-	private void initializeBarChart() {
-		dataSet = new LineDataSet(entries, "Movements");
-
-		dataSet.setDrawCubic(true);
-		dataSet.setDrawCircles(false);
-		dataSet.setDrawFilled(false);
-		dataSet.setDrawValues(false);
-		dataSet.setHighlightEnabled(false);
-		dataSet.setFillColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
-		//dataSet.setColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
-		dataSet.setFillAlpha(195);
-
-		chart.setTouchEnabled(true);
-		chart.setDragEnabled(true);
-		chart.setPinchZoom(true);
-		chart.setDrawGridBackground(false);
-		chart.setAutoScaleMinMaxEnabled(true);
-		chart.setBorderColor(Color.BLACK);
-		chart.setNoDataTextDescription("No data for this sleep");
-		chart.setDescription("");
-		chart.setHardwareAccelerationEnabled(true);
-
-		YAxis leftAxis = chart.getAxisLeft();
-		leftAxis.removeAllLimitLines(); // reset all limit lines to avoid overlapping lines
-		leftAxis.setDrawLabels(true); // no axis labels
-		leftAxis.setStartAtZero(true);
-		leftAxis.setDrawGridLines(false); // no grid lineschart.setData(data);
-		leftAxis.setTextColor(Color.WHITE);
-		leftAxis.setAxisMaxValue(dataSet.getYMax());
-
-		YAxis rightAxis = chart.getAxisRight();
-		rightAxis.setEnabled(false);
-
-
-		XAxis xAxis = chart.getXAxis();
-		xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-		xAxis.setDrawAxisLine(true);
-		xAxis.setDrawGridLines(false);
-		xAxis.setTextColor(Color.WHITE);
-
-
-
-		LineData data = new LineData(labels, dataSet);
-		chart.setData(data);
-		chart.notifyDataSetChanged();
-		chart.invalidate();
-
-
 	}
 
 	// Initialize the view
@@ -213,7 +167,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	}
 
 	// Have to implement this method to change the date as fragments are weird
-	public void changeText(){
+	public void changeDate(){
 		TextView date = (TextView) getView().findViewById(R.id.date);
 		Sleep s = realm.where(Sleep.class).equalTo("id", allSleepReq.get(sleepIndex).getId()).findFirst();
 		Date d = s.getDate();
@@ -320,8 +274,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 					Log.d("State: ", " previous sleep cycle...");
 					getData(sleepIndex - 1);
 					sleepIndex--;
-					initializeLineChart();
-					changeText();
+					updateData();
 					break;
 				}
 			case R.id.next:
@@ -334,14 +287,68 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				else{
 					getData(sleepIndex + 1);
 					sleepIndex++;
-					initializeLineChart();
-					changeText();
+					updateData();
 					Log.d("State: ", " next sleep cycle...");
 					break;
 				}
 			default:
 					Log.d("State: ", " not set up.");
 		}
+	}
+
+	private void updateData(){
+		initializeLineChart();
+		changeDate();
+		updateSleepTime();
+	}
+
+	private void initializeSleepCard(View v) {
+		TextView sleepLength = (TextView) v.findViewById(R.id.sleepTime);
+		TextView sleepTimeframe = (TextView) v.findViewById(R.id.sleepTimeframe);
+		Sleep s = realm.where(Sleep.class).equalTo("id", allSleepReq.get(sleepIndex).getId()).findFirst();
+
+		long start = s.getStartTime();
+		long end = s.getEndTime();
+		long lengthOfSleep = end - start;
+		Log.d("SLEEP", Long.toString(lengthOfSleep));
+		long lengthOfsleep = end - start;
+		format.setTimeZone(TimeZone.getTimeZone("GMT"));
+		sleepLength.setText(format.format(new Date(lengthOfsleep)) + " hrs");
+		sleepTimeframe.setText(format.format(new Date(start)) + " to " + format.format(new Date(end)));
+	}
+
+	private void updateSleepTime() {
+		TextView sleepLength = (TextView) getView().findViewById(R.id.sleepTime);
+		TextView sleepTimeframe = (TextView) getView().findViewById(R.id.sleepTimeframe);
+		Sleep s = realm.where(Sleep.class).equalTo("id", allSleepReq.get(sleepIndex).getId()).findFirst();
+
+		format.setTimeZone(TimeZone.getTimeZone("GMT"));
+		long start = s.getStartTime();
+		long end = s.getEndTime();
+		long lengthOfsleep = end - start;
+		sleepLength.setText(format.format(new Date(lengthOfsleep))+ " hrs");
+		sleepTimeframe.setText(format.format(new Date(start)) + " to " + format.format(new Date(end)));
+	}
+
+	private void initializeSleepAvg(View v) {
+		TextView sleepAvg = (TextView) v.findViewById(R.id.sleepAvg);
+		TextView sleepCount = (TextView) v.findViewById(R.id.sleepCount);
+		RealmResults<Sleep> results = realm.where(Sleep.class).findAll();
+		results.sort("date", Sort.DESCENDING);
+		long totalSeconds = 0;
+		int count = 0;
+
+		for (Sleep s: results){
+			totalSeconds += (s.getEndTime() - s.getStartTime())/1000;
+			Log.d("Tot", Long.toString(totalSeconds));
+			count++;
+		}
+
+		long avgTime = totalSeconds/count;
+
+		sleepAvg.setText(format.format(new Date(avgTime * 1000))+ " hrs");
+		sleepCount.setText(Integer.toString(count));
+
 	}
 
 	private void deleteBadDates(){
@@ -366,16 +373,43 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		realm.commitTransaction();
 	}
 
-	/*
-	private boolean isMyServiceRunning(Class<?> serviceClass) {
-		ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
-		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-			if (serviceClass.getName().equals(service.service.getClassName())) {
-				return true;
+	private void deleteShortSleeps(){
+		RealmResults<Sleep> sleeps = realm.where(Sleep.class).findAll();
+		Log.d("dirty sleeps", String.valueOf(sleeps.size()));
+
+		realm.beginTransaction();
+		List<Sleep> merp = sleeps;
+
+		for (int i = 0; i < sleeps.size(); i++) {
+			Sleep s = sleeps.get(i);
+			long time = s.getEndTime() - s.getStartTime();
+			if(time < 1200000) {
+				RealmResults<AccelerometerData> accData = realm.where(AccelerometerData.class).equalTo("sleepId", merp.get(i).getId()).findAll();
+				List<AccelerometerData> acc = accData;
+				for (int j = 0; j < acc.size(); j++ ) {
+					acc.get(j).removeFromRealm();
+				}
+				merp.get(i).removeFromRealm();
 			}
 		}
-		return false;
-	}*/
+
+	/*
+		if(sleeps.size() > 0){
+			for (int i = 0; i < merp.size(); i++){
+				RealmResults<AccelerometerData> accData = realm.where(AccelerometerData.class).equalTo("sleepId", merp.get(i).getId()).findAll();
+				List<AccelerometerData> acc = accData;
+				for (int j = 0; j < acc.size(); j++ ) {
+					acc.get(j).removeFromRealm();
+				}
+				merp.get(i).removeFromRealm();
+			}
+		} else{
+			Log.d("No dirty sleeps", "---");
+		}*/
+
+		realm.commitTransaction();
+	}
+
 
 	private boolean checkDateAfter(Long analysisDate){
 		// Day I changed my analysis so want to read differently
