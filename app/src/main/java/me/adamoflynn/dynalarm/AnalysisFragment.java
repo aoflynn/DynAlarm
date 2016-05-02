@@ -1,8 +1,6 @@
 package me.adamoflynn.dynalarm;
 
-import android.app.ActivityManager;
 import android.app.Fragment;
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 //import android.support.v4.app.Fragment;
@@ -17,13 +15,10 @@ import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.formatter.XAxisValueFormatter;
-import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -36,21 +31,17 @@ import java.util.Locale;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
-import io.realm.Sort;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
+import me.adamoflynn.dynalarm.utils.Utils;
 
 public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	private ArrayList<Entry> entries;
-	private ArrayList<Integer> motion, max_motion;
+	private ArrayList<Integer> max_motion;
 	private ArrayList<String> labels, sleep_stage;
-	private ArrayList<Float> maxVar;
 	private Realm realm;
-	private Number newestData;
-	private int lastId;
-	private Button previous, next;
 	private TextView date;
 	private LineChart chart;
 	private LineDataSet dataSet;
@@ -70,11 +61,11 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		chart = (LineChart) v.findViewById(R.id.chart);
 		realm = Realm.getDefaultInstance();
 
-		newestData = realm.where(AccelerometerData.class).max("sleepId");
-		lastId = newestData.intValue();
+		Number newestData = realm.where(AccelerometerData.class).max("sleepId");
+		int lastId = newestData.intValue();
 		Log.d("Newest ID", String.valueOf(newestData.intValue()));
 
-		if(!isMyServiceRunning(AccelerometerService.class)){
+		if(!Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){
 			Log.d("Delete sleep", " no service running...");
 			deleteBadDates();
 		} else{
@@ -238,8 +229,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		entries = new ArrayList<>();
 		labels = new ArrayList<>();
-		motion = new ArrayList<>();
-		maxVar = new ArrayList<>();
+		ArrayList<Integer> motion = new ArrayList<>();
+		ArrayList<Float> maxVar = new ArrayList<>();
 		RealmResults<AccelerometerData> results = realm.where(AccelerometerData.class)
 				.equalTo("sleepId", sleep.getId()).findAll();
 
@@ -311,10 +302,10 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	}
 
 	private void initializeButtons(View v){
-		previous = (Button)v.findViewById(R.id.previous);
+		Button previous = (Button) v.findViewById(R.id.previous);
 		previous.setOnClickListener(this);
 
-		next = (Button)v.findViewById(R.id.next);
+		Button next = (Button) v.findViewById(R.id.next);
 		next.setOnClickListener(this);
 	}
 
@@ -375,6 +366,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		realm.commitTransaction();
 	}
 
+	/*
 	private boolean isMyServiceRunning(Class<?> serviceClass) {
 		ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
 		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -383,7 +375,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			}
 		}
 		return false;
-	}
+	}*/
 
 	private boolean checkDateAfter(Long analysisDate){
 		// Day I changed my analysis so want to read differently
@@ -391,8 +383,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		analysisChangeDate.set(Calendar.HOUR, 12);
 		Log.d("ANALYSIS", Long.toString(analysisChangeDate.getTimeInMillis()));
 		Log.d("DATE", Long.toString(analysisDate));
-		if (analysisDate > analysisChangeDate.getTimeInMillis()){
-			return true;
-		} else return false;
+		return analysisDate > analysisChangeDate.getTimeInMillis();
 	}
 }

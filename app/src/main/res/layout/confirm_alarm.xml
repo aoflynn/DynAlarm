@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="20dp"
+    android:background="@color/colorBackground">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Alarm from:"
+        android:id="@+id/text"
+        android:layout_gravity="center_horizontal"
+        android:padding="10dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Time to End Time"
+        android:id="@+id/time"
+        android:layout_gravity="center_horizontal"
+        android:padding="10dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="with a wake timeframe of 30 minutes"
+        android:id="@+id/timeframe"
+        android:layout_gravity="center_horizontal"
+        android:padding="10dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="journey and routine data"
+        android:id="@+id/options"
+        android:layout_gravity="center_horizontal"
+        android:padding="10dp"/>
+
+</LinearLayout>

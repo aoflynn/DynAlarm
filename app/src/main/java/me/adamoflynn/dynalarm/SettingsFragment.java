@@ -2,19 +2,10 @@ package me.adamoflynn.dynalarm;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
 import io.realm.Realm;
-import io.realm.RealmQuery;
-import io.realm.RealmResults;
-import me.adamoflynn.dynalarm.model.Settings;
-import me.adamoflynn.dynalarm.model.User;
 
 public class SettingsFragment extends PreferenceFragment {
 

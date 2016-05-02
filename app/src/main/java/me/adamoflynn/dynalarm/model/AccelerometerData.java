@@ -1,7 +1,5 @@
 package me.adamoflynn.dynalarm.model;
 
-import java.util.Date;
-
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 

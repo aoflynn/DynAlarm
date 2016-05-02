@@ -1,12 +1,13 @@
 package me.adamoflynn.dynalarm;
 
 import android.annotation.TargetApi;
-import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,14 +30,15 @@ import java.util.HashSet;
 
 import io.realm.Realm;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
+import me.adamoflynn.dynalarm.model.Routine;
 import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.receivers.WakeUpReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.AlarmSound;
+import me.adamoflynn.dynalarm.utils.Utils;
 
 public class AlarmFragment extends Fragment implements View.OnClickListener {
 
-	private Button start, accel, stop, maps;
 	private TextView currentTime, wakeUpTime;
 	private CheckBox routineCheck, trafficCheck;
 
@@ -45,12 +47,14 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private Calendar wkUpServiceTime = Calendar.getInstance();
 	private Calendar timeSet = Calendar.getInstance();
 	private final DateFormat sdf = new SimpleDateFormat("HH:mm");
-	private HashSet<Integer> routinesChecked;
+	private HashSet<Integer> routinesChecked = new HashSet<>();
 	private String fromA, toB, time;
 	private long timeframe = 20 * 60 * 1000;
 	private boolean isTimeSet, isMaps = false;
 	private final long POLLING_TIME = 120000;
 	private int sleepId;
+	private int routineTime = 0;
+	private Realm realm;
 
 
 	public AlarmFragment() {
@@ -60,7 +64,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_alarm, container, false);
-
+		realm = Realm.getDefaultInstance();
 		initializeTime(v);
 		initializeButtons(v);
 		initializeExtras(v);
@@ -92,16 +96,16 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	}
 
 	private void initializeButtons(View v){
-		start = (Button) v.findViewById(R.id.start);
+		Button start = (Button) v.findViewById(R.id.start);
 		start.setOnClickListener(this);
 
-		accel = (Button) v.findViewById(R.id.routines);
+		Button accel = (Button) v.findViewById(R.id.routines);
 		accel.setOnClickListener(this);
 
-		stop = (Button) v.findViewById(R.id.stop);
+		Button stop = (Button) v.findViewById(R.id.stop);
 		stop.setOnClickListener(this);
 
-		maps = (Button) v.findViewById(R.id.mapsButton);
+		Button maps = (Button) v.findViewById(R.id.mapsButton);
 		maps.setOnClickListener(this);
 	}
 
@@ -152,11 +156,58 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	}
 
 	private void startAlarm(){
-		setWakeUpAlarm();
-		if(isMaps){
-			setUpWakeService();
-		}
 		timeSet = Calendar.getInstance();
+		showAlarmConfirmation();
+	}
+
+
+	private void showAlarmConfirmation()  {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle("Set Alarm");
+
+		LayoutInflater li = LayoutInflater.from(getActivity());
+		View dialogView = li.inflate(R.layout.confirm_alarm, null);
+		final TextView time = (TextView) dialogView.findViewById(R.id.time);
+		final TextView timeframe = (TextView) dialogView.findViewById(R.id.timeframe);
+		final TextView options = (TextView) dialogView.findViewById(R.id.options);
+		time.setText(sdf.format(timeSet.getTime()) + " to " + sdf.format(alarmTime.getTime()));
+		timeframe.setText("with a wake timeframe of 20 minutes");
+
+		final boolean usingMaps = isMaps && trafficCheck.isChecked();
+		final boolean usingRoutines = routinesChecked.size() > 0 && routineCheck.isChecked();
+
+		if(usingMaps && usingRoutines) {
+			options.setText("You are using journey, routine, and sleep data to wake up.");
+		} else if (usingMaps) {
+			options.setText("You are only using journey and sleep data to wake up.");
+		} else if (usingRoutines) {
+			options.setText("You are only using routine and sleep data to wake up.");
+		} else {
+			options.setText("You are only using sleep data to wake up.");
+		}
+
+
+		builder.setView(dialogView);
+		builder.setPositiveButton("Set Alarm", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				setWakeUpAlarm();
+				if(usingMaps){
+					setUpTrafficService();
+				} else {
+					setUpWakeService();
+				}
+			}
+		});
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+
+		final AlertDialog dialog = builder.show();
+
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
@@ -185,6 +236,38 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
+	private void setUpTrafficService(){
+
+		if(!isTimeSet){
+			Toast.makeText(getActivity(), "No Alarm Set!", Toast.LENGTH_SHORT).show();
+			return;
+		}
+
+		checkDifference();
+
+		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
+		String TRAFFIC = "me.adamoflynn.dynalarm.action.TRAFFIC";
+		intent.setAction(TRAFFIC);
+		intent.putExtra("from", fromA);
+		intent.putExtra("to", toB);
+		intent.putExtra("time", time);
+		intent.putExtra("id", Integer.toString(sleepId));
+		intent.putExtra("wake_time", alarmTime);
+
+		if(routinesChecked.size() > 0) {
+			intent.putExtra("routines", getRoutineTime());
+		} else intent.putExtra("routines", 0);
+
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+
+		// Set an inexact repeating alarm that goes off at *timeframe* mins before alarm goes off every 2 minutes repeats
+		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, wkUpServiceTime.getTimeInMillis(), POLLING_TIME, pendingIntent);
+		Log.d("Wake up Service", "should start at " + sdf.format(wkUpServiceTime.getTime()));
+	}
+
+	// Doesn't use Maps or Traffic Data
+	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void setUpWakeService(){
 
 		if(!isTimeSet){
@@ -195,11 +278,12 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		checkDifference();
 
 		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
-		intent.putExtra("from", fromA);
-		intent.putExtra("to", toB);
-		intent.putExtra("time", time);
+		String WAKEUP = "me.adamoflynn.dynalarm.action.WAKEUP";
+		intent.setAction(WAKEUP);
 		intent.putExtra("id", Integer.toString(sleepId));
+		intent.putExtra("routines", getRoutineTime());
 		intent.putExtra("wake_time", alarmTime);
+
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
@@ -213,7 +297,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		cancelWkAlarm();
 		cancelWkService();
 
-		if(isMyServiceRunning(AlarmSound.class)) {
+		if(Utils.isMyServiceRunning(AlarmSound.class, getActivity())) {
 			Log.d("Alarm sound", " is running... stopping");
 			Intent stopAlarm = new Intent(getActivity(), AlarmSound.class);
 			getActivity().stopService(stopAlarm);
@@ -251,15 +335,18 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		}
 	}
 
-
-	private boolean isMyServiceRunning(Class<?> serviceClass) {
-		ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
-		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-			if (serviceClass.getName().equals(service.service.getClassName())) {
-				return true;
+	private int getRoutineTime(){
+		int routineTime = 0;
+		if(routinesChecked.size() > 0){
+			for (int id : routinesChecked){
+				Routine selectedRoutines = realm.where(Routine.class).equalTo("id", id).findFirst();
+				routineTime += Integer.parseInt(selectedRoutines.getDesc());
 			}
+		} else {
+			routineTime = 0;
 		}
-		return false;
+
+		return routineTime;
 	}
 
 	@Override
@@ -267,7 +354,8 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		if(requestCode == 1) {
 
 			if(data == null){
-				Log.d("Back button", "pressed");
+				Log.d("BACK BUTTON", "pressed");
+				setRoutineCheckboxes(false);
 				return;
 			}
 
@@ -283,7 +371,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 		else if(requestCode == 2) {
 			if(data == null){
-				Log.d("Back button", "pressed");
+				Log.d("BACK BUTTON", "pressed");
 				setTrafficCheckboxes(false);
 				isMaps = false;
 				return;
@@ -298,7 +386,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			isMaps = true;
 			setTrafficCheckboxes(true);
 		}
-
 	}
 
 	private void setRoutineCheckboxes(Boolean state){

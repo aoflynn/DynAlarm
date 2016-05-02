@@ -8,18 +8,14 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.util.Calendar;
 
-import me.adamoflynn.dynalarm.AlarmFragment;
 import me.adamoflynn.dynalarm.MainActivity;
 import me.adamoflynn.dynalarm.R;
-import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.AlarmSound;
 
 /**

@@ -1,7 +1,6 @@
 package me.adamoflynn.dynalarm;
 
 import android.Manifest;
-import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
@@ -50,15 +49,12 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.model.Location;
-import me.adamoflynn.dynalarm.model.Routine;
-import me.adamoflynn.dynalarm.utils.RoutineOnItemSelectedListener;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnInfoWindowClickListener {
 
 	private GoogleMap mMap;
 	private LatLng to, from = null;
 	private TextView toEditText, fromEditText, arriveAt;
-	private Button add_from, add_to, done;
 	private Calendar alarmTime = Calendar.getInstance();
 	private final DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	private final DateFormat hh = new SimpleDateFormat("HH:mm");
@@ -66,11 +62,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private Boolean fromLocationSet, toLocationSet, timeSet;
 	private ProgressDialog progressDialog;
 	private final String FROM_TITLE = "From This Location";
-	private final String TO_TITLE = "To Here";
 	private int locationId;
 	private Realm realm;
 	private Spinner spinnerFrom, spinnerTo;
-	//private LatLngToString convertLoc = new LatLngToString(getApplicationContext());
 
 
 	@Override
@@ -105,9 +99,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		arriveAt = (TextView) findViewById(R.id.arriveAt);
 		fromEditText = (TextView) findViewById(R.id.fromEdit);
 		toEditText = (TextView) findViewById(R.id.toEdit);
-		done = (Button) findViewById(R.id.done);
-		add_from = (Button) findViewById(R.id.add_location_from);
-		add_to = (Button) findViewById(R.id.add_location_to);
+		Button done = (Button) findViewById(R.id.done);
+		Button add_from = (Button) findViewById(R.id.add_location_from);
+		Button add_to = (Button) findViewById(R.id.add_location_to);
 		spinnerFrom = (Spinner) findViewById(R.id.spinnerFrom);
 		spinnerTo = (Spinner) findViewById(R.id.spinnerTo);
 		add_from.setOnClickListener(this);
@@ -127,7 +121,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		mMap = googleMap;
-		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 12));
+		//mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 12));
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
 				&& ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			// No location services so go to Dublin City Centre, else go to current location.
@@ -152,6 +146,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			from = point;
 			new LatLngToStringFrom(this).execute(point);
 		} else if(!toLocationSet) {
+			String TO_TITLE = "To Here";
 			toMarker = mMap.addMarker(new MarkerOptions().position(point).title(TO_TITLE).snippet("Tap here to remove this location!").draggable(true));
 			toMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 			toLocationSet = true;
@@ -179,7 +174,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 				break;
 		}
 	}
-
 
 	private void timePicker(){
 		Calendar mCurrentTime = Calendar.getInstance();
@@ -209,20 +203,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private void updateSpinner(){
 		RealmResults<Location> locations = realm.where(Location.class).findAll();
 		List<Location> locationList = locations;
-		ArrayAdapter<Location> arrayAdapter = new ArrayAdapter<Location>(this, R.layout.support_simple_spinner_dropdown_item, locationList);
+		ArrayAdapter<Location> arrayAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, locationList);
 		spinnerFrom.setAdapter(arrayAdapter);
 		spinnerTo.setAdapter(arrayAdapter);
-	}
-
-
-	private boolean isMyServiceRunning(Class<?> serviceClass) {
-		ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-			if (serviceClass.getName().equals(service.service.getClassName())) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -318,10 +301,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				if(dest.equals("from")){
+				if (dest.equals("from")) {
 					addLocation(locationId, locationName.getText().toString(), address.getText().toString(), from);
-				}
-				else {
+				} else {
 					addLocation(locationId, locationName.getText().toString(), address.getText().toString(), to);
 				}
 			}
@@ -369,6 +351,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		realm.commitTransaction();
 		locationId++;
 	}
+
 
 	private class LatLngToString extends AsyncTask<LatLng, Void, String> {
 		ProgressDialog dialog;

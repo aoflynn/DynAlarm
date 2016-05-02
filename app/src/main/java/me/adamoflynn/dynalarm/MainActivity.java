@@ -1,10 +1,8 @@
 package me.adamoflynn.dynalarm;
 
 import android.annotation.TargetApi;
-import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -19,11 +17,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 
@@ -31,20 +24,16 @@ import java.util.Calendar;
 
 import io.realm.Realm;
 import me.adamoflynn.dynalarm.adapters.ViewPagerAdapter;
-import me.adamoflynn.dynalarm.model.Routine;
 import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.receivers.WakeUpReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.AlarmSound;
-import me.adamoflynn.dynalarm.utils.RoutineOnItemSelectedListener;
+import me.adamoflynn.dynalarm.utils.Utils;
 
 public class MainActivity extends AppCompatActivity {
 
-	private Toolbar tb;
 	private TabLayout tabLayout;
-	private ViewPager viewPager;
 	private Realm db;
-	private final long SNOOZE_TIME = 60000;
 	private Context context;
 	private boolean isAlarm = false;
 	private boolean isDialogShowing = false;
@@ -65,10 +54,10 @@ public class MainActivity extends AppCompatActivity {
 
 		db = Realm.getDefaultInstance();
 
-		tb = (Toolbar) findViewById(R.id.toolbar);
+		Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
 
 
-		viewPager = (ViewPager) findViewById(R.id.viewpager);
+		ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
 		setupViewPager(viewPager);
 
 		tabLayout = (TabLayout) findViewById(R.id.tabs);
@@ -110,10 +99,12 @@ public class MainActivity extends AppCompatActivity {
 		super.onRestart();
 		if(!isDialogShowing){
 			Log.d("Restart alarm bool", String.valueOf(isAlarm));
-			Log.d("Restart alarm sound", String.valueOf(isMyServiceRunning(AlarmSound.class)));
-			if(isAlarm || isMyServiceRunning(AlarmSound.class)){
+			Log.d("Restart alarm sound", String.valueOf(Utils.isMyServiceRunning(AlarmSound.class, context)));
+			if(isAlarm || Utils.isMyServiceRunning(AlarmSound.class, context)){
 				isAlarm = true;
 				showAlarmDialog();
+			} else {
+				isAlarm = false;
 			}
 		}
 	}
@@ -195,10 +186,12 @@ public class MainActivity extends AppCompatActivity {
 		Intent intent = new Intent(context, AlarmReceiver.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+		long SNOOZE_TIME = 60000;
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + SNOOZE_TIME, pendingIntent);
 		Log.d("Alarm set", "for 1 min in future");
 	}
 
+	/*
 	private boolean isMyServiceRunning(Class<?> serviceClass) {
 		ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -207,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
 			}
 		}
 		return false;
-	}
+	}*/
 
 }
 

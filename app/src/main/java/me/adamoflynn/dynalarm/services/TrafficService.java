@@ -1,17 +1,14 @@
 package me.adamoflynn.dynalarm.services;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
-import android.app.Application;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.os.Bundle;
-import android.os.ResultReceiver;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
-import android.widget.Toast;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 
 import io.realm.Realm;
-import io.realm.RealmConfiguration;
 import io.realm.RealmList;
 import io.realm.RealmResults;
 import io.realm.Sort;
@@ -41,7 +37,6 @@ import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 
 public class TrafficService extends IntentService {
 
-	private TrafficInfo trafficInfo;
 	private final String BASE_URL = "https://api.tomtom.com/routing/1/calculateRoute/";
 	private final String API_KEY = "nmqjmepdy9ppbp8yekvrsaet";
 	private final String END_URL = "?key="+ API_KEY + "&routeType=fastest&traffic=true&computeTravelTimeFor=all&arriveAt=";
@@ -68,7 +63,6 @@ public class TrafficService extends IntentService {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		String output = "It will take you " + trafficInfo.getTravelTime()/60 + " minutes if you leave at " + hh.format(trafficInfo.getDepartureTime());
 	}
 
 	@Override
@@ -78,6 +72,7 @@ public class TrafficService extends IntentService {
 		String time = intent.getStringExtra("time");
 		String id = intent.getStringExtra("id");
 		Calendar wake_time = (Calendar) intent.getSerializableExtra("wake_time");
+		int routineTime = intent.getIntExtra("routines", 0);
 		Log.d("Accelerometer Sleep ID", id);
 
 		Realm realm = Realm.getDefaultInstance();
@@ -99,7 +94,7 @@ public class TrafficService extends IntentService {
 
 				bufferedReader.close();
 				urlConnection.disconnect();
-				parseJSON(stringBuilder.toString(), realm, sleepId);
+				analyseData(stringBuilder.toString(), realm, sleepId, routineTime);
 				Log.d("Traffic service ", "trying to stop...");
 				realm.close();
 				WakefulBroadcastReceiver.completeWakefulIntent(intent);
@@ -115,7 +110,7 @@ public class TrafficService extends IntentService {
 	}
 
 
-	public void parseJSON(String response, Realm realm, int sleepId) {
+	public void analyseData(String response, Realm realm, int sleepId, int routineTime) {
 
 		try{
 
@@ -135,9 +130,9 @@ public class TrafficService extends IntentService {
 			int historicTravelTime = summary.getInt("historicTrafficTravelTimeInSeconds");
 			int liveIncidents = summary.getInt("liveTrafficIncidentsTravelTimeInSeconds");
 
-			trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
+			TrafficInfo trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
 			Log.d("Data", trafficInfo.toString());
-			getAccelerometerReadings(realm, sleepId);
+			getAccelerometerReadings(realm, sleepId, routineTime);
 		}catch (JSONException e) {
 			Log.e("JSON parse exception", e.getMessage());
 		}
@@ -155,12 +150,11 @@ public class TrafficService extends IntentService {
 		return d;
 	}
 
-	public void getAccelerometerReadings(Realm realm, int sleepId){
+	public void getAccelerometerReadings(Realm realm, int sleepId, int routineTime){
 		RealmResults<AccelerometerData> sleep = realm.where(AccelerometerData.class).equalTo("sleepId", sleepId).findAll();
 		sleep.sort("timestamp", Sort.DESCENDING);
 		if(sleep.size() == 0){
 			Log.d("No sleep", "nya");
-			return;
 		} else{
 			accelerometerData = sleep;
 			wakeUpCheck(sleepId);

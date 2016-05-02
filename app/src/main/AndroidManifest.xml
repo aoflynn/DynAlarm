@@ -56,25 +56,25 @@
         <service
             android:name=".services.AccelerometerService"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
         </service>
 
         <service
             android:name=".services.TrafficService"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
         </service>
 
         <service
             android:name=".services.WakeUpService"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
         </service>
 
         <service
             android:name=".services.AlarmSound"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
         </service>
 
         <receiver
@@ -85,6 +85,11 @@
         <receiver
             android:name="me.adamoflynn.dynalarm.receivers.WakeUpReceiver"
             android:exported="false">
+            <intent-filter>
+                <action android:name="me.adamoflynn.dynalarm.action.WAKEUP"></action>
+                <action android:name="me.adamoflynn.dynalarm.action.TRAFFIC"></action>
+                <category android:name="android.intent.category.DEFAULT"></category>
+            </intent-filter>
         </receiver>
 
     </application>

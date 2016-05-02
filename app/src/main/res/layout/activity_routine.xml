@@ -13,6 +13,6 @@
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/plus" />
 
-    <include layout="@layout/content_routine"></include>
+    <include layout="@layout/content_routine"/>
 
 </android.support.design.widget.CoordinatorLayout>

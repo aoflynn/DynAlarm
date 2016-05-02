@@ -1,7 +1,6 @@
 package me.adamoflynn.dynalarm.services;
 
 import android.annotation.TargetApi;
-import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -16,15 +15,12 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.Calendar;
 import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
-import me.adamoflynn.dynalarm.AlarmFragment;
-import me.adamoflynn.dynalarm.Application;
 import me.adamoflynn.dynalarm.MainActivity;
 import me.adamoflynn.dynalarm.R;
 import me.adamoflynn.dynalarm.model.AccelerometerData;

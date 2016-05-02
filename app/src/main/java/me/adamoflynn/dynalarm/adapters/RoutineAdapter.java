@@ -1,19 +1,13 @@
 package me.adamoflynn.dynalarm.adapters;
 
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Color;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
 import io.realm.RealmBaseAdapter;
@@ -70,7 +64,7 @@ public class RoutineAdapter extends RealmBaseAdapter<Routine> implements ListAda
 			@Override
 			public void onClick(View v) {
 				checkedRoutines[position] = ((CheckBox) v).isChecked();
-				if (((CheckBox) v).isChecked() == true) {
+				if (((CheckBox) v).isChecked()) {
 					checkedIds.add(item.getId());
 				} else checkedIds.remove(item.getId());
 			}

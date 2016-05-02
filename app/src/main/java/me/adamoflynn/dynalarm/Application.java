@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import io.realm.RealmQuery;
 import me.adamoflynn.dynalarm.model.Location;
 import me.adamoflynn.dynalarm.model.Routine;
 import me.adamoflynn.dynalarm.model.Settings;
