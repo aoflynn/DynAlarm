@@ -28,6 +28,8 @@ import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.receivers.WakeUpReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.AlarmSound;
+import me.adamoflynn.dynalarm.services.TrafficService;
+import me.adamoflynn.dynalarm.services.WakeUpService;
 import me.adamoflynn.dynalarm.utils.Utils;
 
 public class MainActivity extends AppCompatActivity {
@@ -138,13 +140,7 @@ public class MainActivity extends AppCompatActivity {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 
-					Intent stopAlarm = new Intent(context, AlarmSound.class);
-					context.stopService(stopAlarm);
-
-					Intent goToAccel = new Intent(context, AccelerometerService.class);
-					context.stopService(goToAccel);
-
-					cancelAlarms(context);
+					cancelAlarm();
 
 					NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 					notificationManager.cancel(0);
@@ -170,37 +166,61 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	private void cancelAlarms(Context context){
+	private void cancelAlarm(){
+		cancelWkAlarm();
+		cancelWakeService();
+		cancelTrafficService();
 
-		Intent intent = new Intent(context, WakeUpReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(context.getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		if(Utils.isMyServiceRunning(AlarmSound.class, context)) {
+			Log.d("Alarm sound", " is running... stopping");
+			Intent stopAlarm = new Intent(context, AlarmSound.class);
+			context.stopService(stopAlarm);
+		}
+	}
+
+	private void cancelWkAlarm(){
+		Intent intent = new Intent(this, AlarmReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		alarmManager.cancel(pendingIntent);
 		pendingIntent.cancel();
 
-		Toast.makeText(context, "Recurring Alarm Cancelled!", Toast.LENGTH_SHORT).show();
+		Intent stopAccel = new Intent(context, AccelerometerService.class);
+		context.stopService(stopAccel);
+
+		Toast.makeText(context, "Alarm Cancelled!", Toast.LENGTH_SHORT).show();
+	}
+
+	private void cancelWakeService() {
+		Log.d("WAKE", " trying to cancel...");
+		Intent intent = new Intent(getApplicationContext(), WakeUpReceiver.class);
+
+		intent.setAction(WakeUpReceiver.WAKEUP);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
+		pendingIntent.cancel();
+	}
+
+	private void cancelTrafficService(){
+		Log.d("TRAFFIC", " trying to cancel...");
+		Intent intent = new Intent(getApplicationContext(), WakeUpReceiver.class);
+		intent.setAction(WakeUpReceiver.TRAFFIC);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
+		pendingIntent.cancel();
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void snoozeAlarms(Context context){
-		Intent intent = new Intent(context, AlarmReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		long SNOOZE_TIME = 60000;
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + SNOOZE_TIME, pendingIntent);
 		Log.d("Alarm set", "for 1 min in future");
 	}
-
-	/*
-	private boolean isMyServiceRunning(Class<?> serviceClass) {
-		ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-		for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-			if (serviceClass.getName().equals(service.service.getClassName())) {
-				return true;
-			}
-		}
-		return false;
-	}*/
 
 }
 

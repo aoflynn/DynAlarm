@@ -27,7 +27,8 @@
             android:theme="@style/DynAlarmTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
+                <action android:name="me.adamoflynn.dynalarm.action.WAKEUP"></action>
+                <action android:name="me.adamoflynn.dynalarm.action.TRAFFIC"></action>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>

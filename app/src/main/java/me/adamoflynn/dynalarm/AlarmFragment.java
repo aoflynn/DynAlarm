@@ -59,6 +59,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private int sleepId;
 	private int routineTime = 0;
 	private Realm realm;
+	private final int WAKEUP = 400, TRAFFIC = 401;
 
 
 	public AlarmFragment() {
@@ -215,9 +216,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void setWakeUpAlarm(){
-		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
 		if(!isTimeSet){
 			Toast.makeText(getActivity(), "No Alarm Set!", Toast.LENGTH_SHORT).show();
@@ -230,9 +228,12 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		sleepId = newestData.intValue();
 		sleepId += 1;
 
+		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime.getTimeInMillis(), pendingIntent);
 		Toast.makeText(getActivity(), "Alarm set!", Toast.LENGTH_SHORT).show();
-		Log.d("Service? ", " Should Start with Sleep Id" + Integer.toString(sleepId));
+		Log.d("Accelerometer Service", " Should Start with Sleep Id" + Integer.toString(sleepId));
 		Intent goToAccel = new Intent(getActivity(), AccelerometerService.class);
 		goToAccel.putExtra("sleepId", sleepId);
 		getActivity().startService(goToAccel);
@@ -249,8 +250,8 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		checkDifference();
 
 		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
-		String TRAFFIC = "me.adamoflynn.dynalarm.action.TRAFFIC";
-		intent.setAction(TRAFFIC);
+		intent.setAction(WakeUpReceiver.TRAFFIC);
+
 		intent.putExtra("from", fromA);
 		intent.putExtra("to", toB);
 		intent.putExtra("time", time);
@@ -281,8 +282,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		checkDifference();
 
 		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
-		String WAKEUP = "me.adamoflynn.dynalarm.action.WAKEUP";
-		intent.setAction(WAKEUP);
+		intent.setAction(WakeUpReceiver.WAKEUP);
 		intent.putExtra("id", Integer.toString(sleepId));
 		intent.putExtra("routines", getRoutineTime());
 		intent.putExtra("wake_time", alarmTime);
@@ -290,12 +290,54 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
+
 		// Set an inexact repeating alarm that goes off at *timeframe* mins before alarm goes off every 2 minutes repeats
 		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, wkUpServiceTime.getTimeInMillis(), POLLING_TIME, pendingIntent);
 		Log.d("Wake up Service", "should start at " + sdf.format(wkUpServiceTime.getTime()));
 	}
 
+	private void cancelAlarm(){
+		cancelWkAlarm();
+		cancelWakeService();
+		cancelTrafficService();
 
+		if(Utils.isMyServiceRunning(AlarmSound.class, getActivity())) {
+			Log.d("Alarm sound", " is running... stopping");
+			Intent stopAlarm = new Intent(getActivity(), AlarmSound.class);
+			getActivity().stopService(stopAlarm);
+		}
+	}
+
+	private void cancelWkAlarm(){
+		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
+		pendingIntent.cancel();
+
+		Intent stopAccel = new Intent(getActivity(), AccelerometerService.class);
+		getActivity().stopService(stopAccel);
+
+		Toast.makeText(getActivity(), "Alarm Cancelled!", Toast.LENGTH_SHORT).show();
+	}
+
+	private void cancelWakeService() {
+		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
+		intent.setAction(WakeUpReceiver.WAKEUP);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+		AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
+		pendingIntent.cancel();
+	}
+
+	private void cancelTrafficService(){
+		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
+		intent.setAction(WakeUpReceiver.TRAFFIC);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+		AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
+		pendingIntent.cancel();
+	}
 
 	private void showCancelConfirmation()  {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -318,54 +360,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 		final AlertDialog dialog = builder.show();
 
-	}
-
-
-	private void cancelAlarm(){
-		cancelWkAlarm();
-
-		if(Utils.isMyServiceRunning(WakeUpService.class, getActivity())) cancelWakeService();
-		else if(Utils.isMyServiceRunning(TrafficService.class, getActivity())) cancelTrafficService();
-
-		if(Utils.isMyServiceRunning(AlarmSound.class, getActivity())) {
-			Log.d("Alarm sound", " is running... stopping");
-			Intent stopAlarm = new Intent(getActivity(), AlarmSound.class);
-			getActivity().stopService(stopAlarm);
-		}
-	}
-
-	private void cancelWkAlarm(){
-		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-		alarmManager.cancel(pendingIntent);
-		pendingIntent.cancel();
-
-		Intent stopAccel = new Intent(getActivity(), AccelerometerService.class);
-		getActivity().stopService(stopAccel);
-
-		Toast.makeText(getActivity(), "Alarm Cancelled!", Toast.LENGTH_SHORT).show();
-	}
-
-	private void cancelWakeService() {
-		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
-		String WAKEUP = "me.adamoflynn.dynalarm.action.WAKEUP";
-		intent.setAction(WAKEUP);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-		AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-		alarmManager.cancel(pendingIntent);
-		pendingIntent.cancel();
-	}
-
-	private void cancelTrafficService(){
-		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
-		String TRAFFIC = "me.adamoflynn.dynalarm.action.TRAFFIC";
-		intent.setAction(TRAFFIC);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-		AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-		alarmManager.cancel(pendingIntent);
-		pendingIntent.cancel();
-		Toast.makeText(getActivity(), "Recurring Alarm Cancelled!", Toast.LENGTH_SHORT).show();
 	}
 
 	private void checkDifference(){

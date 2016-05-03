@@ -49,7 +49,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	private LineChart chart;
 	private LineDataSet dataSet;
 	private final DateFormat format = new SimpleDateFormat("HH:mm");
-	private final DateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd", Locale.ENGLISH);
+	private final DateFormat formatGMT = new SimpleDateFormat("HH:mm");
+	private final DateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy", Locale.ENGLISH);
 	private ArrayList<Sleep> allSleepReq = new ArrayList<>();
 	private int sleepIndex;
 
@@ -75,7 +76,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			Log.d("Delete sleep", " denied - accelerometer running...");
 		}
 
-		deleteShortSleeps();
 		allSleepReq = getAllSleep();
 		sleepIndex = allSleepReq.size() - 1;
 		Log.d("Sler", Integer.toString(sleepIndex));
@@ -312,21 +312,20 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		long lengthOfSleep = end - start;
 		Log.d("SLEEP", Long.toString(lengthOfSleep));
 		long lengthOfsleep = end - start;
-		format.setTimeZone(TimeZone.getTimeZone("GMT"));
-		sleepLength.setText(format.format(new Date(lengthOfsleep)) + " hrs");
+		formatGMT.setTimeZone(TimeZone.getTimeZone("GMT"));
 		sleepTimeframe.setText(format.format(new Date(start)) + " to " + format.format(new Date(end)));
+		sleepLength.setText(formatGMT.format(new Date(lengthOfsleep)) + " hrs");
 	}
 
 	private void updateSleepTime() {
 		TextView sleepLength = (TextView) getView().findViewById(R.id.sleepTime);
 		TextView sleepTimeframe = (TextView) getView().findViewById(R.id.sleepTimeframe);
 		Sleep s = realm.where(Sleep.class).equalTo("id", allSleepReq.get(sleepIndex).getId()).findFirst();
-
-		format.setTimeZone(TimeZone.getTimeZone("GMT"));
 		long start = s.getStartTime();
 		long end = s.getEndTime();
 		long lengthOfsleep = end - start;
-		sleepLength.setText(format.format(new Date(lengthOfsleep))+ " hrs");
+		formatGMT.setTimeZone(TimeZone.getTimeZone("GMT"));
+		sleepLength.setText(formatGMT.format(new Date(lengthOfsleep))+ " hrs");
 		sleepTimeframe.setText(format.format(new Date(start)) + " to " + format.format(new Date(end)));
 	}
 
@@ -346,7 +345,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		long avgTime = totalSeconds/count;
 
-		sleepAvg.setText(format.format(new Date(avgTime * 1000))+ " hrs");
+		formatGMT.setTimeZone(TimeZone.getTimeZone("GMT"));
+		sleepAvg.setText(formatGMT.format(new Date(avgTime * 1000))+ " hrs");
 		sleepCount.setText(Integer.toString(count));
 
 	}
@@ -383,30 +383,15 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		for (int i = 0; i < sleeps.size(); i++) {
 			Sleep s = sleeps.get(i);
 			long time = s.getEndTime() - s.getStartTime();
-			if(time < 1200000) {
+			if (time < 3600000) {
 				RealmResults<AccelerometerData> accData = realm.where(AccelerometerData.class).equalTo("sleepId", merp.get(i).getId()).findAll();
 				List<AccelerometerData> acc = accData;
-				for (int j = 0; j < acc.size(); j++ ) {
+				for (int j = 0; j < acc.size(); j++) {
 					acc.get(j).removeFromRealm();
 				}
 				merp.get(i).removeFromRealm();
 			}
 		}
-
-	/*
-		if(sleeps.size() > 0){
-			for (int i = 0; i < merp.size(); i++){
-				RealmResults<AccelerometerData> accData = realm.where(AccelerometerData.class).equalTo("sleepId", merp.get(i).getId()).findAll();
-				List<AccelerometerData> acc = accData;
-				for (int j = 0; j < acc.size(); j++ ) {
-					acc.get(j).removeFromRealm();
-				}
-				merp.get(i).removeFromRealm();
-			}
-		} else{
-			Log.d("No dirty sleeps", "---");
-		}*/
-
 		realm.commitTransaction();
 	}
 

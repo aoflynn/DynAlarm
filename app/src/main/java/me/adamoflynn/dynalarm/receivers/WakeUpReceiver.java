@@ -16,11 +16,13 @@ import me.adamoflynn.dynalarm.services.WakeUpService;
  */
 public class WakeUpReceiver extends WakefulBroadcastReceiver {
 
-	private final String WAKEUP = "me.adamoflynn.dynalarm.action.WAKEUP";
-	private final String TRAFFIC = "me.adamoflynn.dynalarm.action.TRAFFIC";
+	public static final String WAKEUP = "me.adamoflynn.dynalarm.action.WAKEUP";
+	public static final String TRAFFIC = "me.adamoflynn.dynalarm.action.TRAFFIC";
+
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
+
 		if(action.equals(WAKEUP)){
 			String id = intent.getStringExtra("id");
 			int routineTime = intent.getIntExtra("routines", 0);
