@@ -93,17 +93,17 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-
+		Log.d("On resume", "true");
 	}
 
 	@Override
 	protected void onRestart() {
 		super.onRestart();
+		Log.d("On restart", "true");
 		if(!isDialogShowing){
 			Log.d("Restart alarm bool", String.valueOf(isAlarm));
 			Log.d("Restart alarm sound", String.valueOf(Utils.isMyServiceRunning(AlarmSound.class, context)));
 			if(isAlarm || Utils.isMyServiceRunning(AlarmSound.class, context)){
-				isAlarm = true;
 				showAlarmDialog();
 			} else {
 				isAlarm = false;
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-
+		Log.d("On destroy", "true");
 		if (db != null) {
 			db.close();
 			db = null;

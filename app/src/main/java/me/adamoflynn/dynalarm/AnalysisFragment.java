@@ -65,9 +65,9 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		chart = (LineChart) v.findViewById(R.id.chart);
 		realm = Realm.getDefaultInstance();
 
-		Number newestData = realm.where(AccelerometerData.class).max("sleepId");
-		int lastId = newestData.intValue();
-		Log.d("Newest ID", String.valueOf(newestData.intValue()));
+		/*Number newestData = realm.where(AccelerometerData.class).max("sleepId");
+		int lastId = newestData.intValue();*/
+		//Log.d("Newest ID", String.valueOf(newestData.intValue()));
 
 		if(!Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){
 			Log.d("Delete sleep", " no service running...");
@@ -78,13 +78,18 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		allSleepReq = getAllSleep();
 		sleepIndex = allSleepReq.size() - 1;
-		Log.d("Sler", Integer.toString(sleepIndex));
-		getData(sleepIndex);
-		initializeSleepAvg(v);
-		initializeLineChart();
-		initializeDate(v);
-		initializeButtons(v);
-		initializeSleepCard(v);
+
+		if(allSleepReq.size() == 0){
+			Log.d("No sleep data yet.", "");
+		} else {
+			getData(sleepIndex);
+			initializeSleepAvg(v);
+			initializeLineChart();
+			initializeDate(v);
+			initializeButtons(v);
+			initializeSleepCard(v);
+		}
+
 		return v;
 	}
 
@@ -93,8 +98,11 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		allSleep.sort("id");
 		ArrayList<Sleep> sleepIds = new ArrayList<>();
 		for (Sleep sleep: allSleep) {
-			sleepIds.add(sleep);
-			Log.d("Array", String.valueOf(sleep.getId()));
+			if(sleep.getEndTime() == 0){
+				Log.d("Null Sleep", "no end time");
+			} else {
+				sleepIds.add(sleep);
+			}
 		}
 		return sleepIds;
 	}
@@ -177,6 +185,10 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	private void getData(int sleepId){
 		int i = 0;
+
+		if(allSleepReq.size() == 0){
+			return;
+		}
 		Sleep sleep = allSleepReq.get(sleepId);
 		Log.d("Data", String.valueOf(sleepId));
 		Log.d("Data", sleep.toString());
@@ -194,11 +206,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		}
 		results.sort("timestamp");
 
-		if(results.size() == 0){
-			Log.d("Definitely something", " wrong with accelerometer data");
-			return;
-		}
-
 		if(checkDateAfter(sleep.getStartTime())){
 			Log.d("SIZE before", Integer.toString(results.size()));
 			Log.d("AFTER","true");
@@ -215,9 +222,9 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				entries.add(new Entry(amt + 30, i++));
 			}
 
-			Log.d("Motion ", motion.toString());
+			/*Log.d("Motion ", motion.toString());
 			Log.d("Labels ", labels.toString());
-			Log.d("Sleep size", Integer.toString(entries.size()));
+			Log.d("Sleep size", Integer.toString(entries.size()));*/
 		}
 		else {
 			Log.d("BEFORE","true");
@@ -228,10 +235,10 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				labels.add(format.format(a.getTimestamp()));
 			}
 
-			Log.d("Motion ", motion.toString());
+			/*Log.d("Motion ", motion.toString());
 			Log.d("Labels ", labels.toString());
 			Log.d("Max Var", maxVar.toString());
-			Log.d("Sleep size", Integer.toString(entries.size()));
+			Log.d("Sleep size", Integer.toString(entries.size()));*/
 		}
 
 		int concatDataLength = results.size() / 15 + 1; // Get the required length of new array where 5 represents every 15 minutes we concatenate
@@ -245,9 +252,9 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			}
 
 			avg = amt / 15.0;
-			Log.d("Avg", Double.toString(avg));
+			/*Log.d("Avg", Double.toString(avg));
 			Log.d("Amt", Integer.toString(amt));
-			Log.d("Max", Integer.toString(max));
+			Log.d("Max", Integer.toString(max));*/
 
 			/*motion.add(amt);
 			entries.add(new Entry(amt + 30, i++));*/

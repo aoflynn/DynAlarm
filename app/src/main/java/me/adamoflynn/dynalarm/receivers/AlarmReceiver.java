@@ -30,6 +30,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		Intent intentToActivity = new Intent(context, MainActivity.class);
 		intentToActivity.putExtra("isAlarmRinging", true);
+		intentToActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 101, intentToActivity, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Notification not = new Notification.Builder(context)
@@ -44,9 +45,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 		Intent startAlarmSound = new Intent(context, AlarmSound.class);
 		context.startService(startAlarmSound);
 
+
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.notify(0, not);
-
 	}
 
 }

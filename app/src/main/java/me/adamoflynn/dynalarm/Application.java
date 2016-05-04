@@ -24,7 +24,7 @@ public class Application extends android.app.Application {
 	public static AtomicInteger sleepIDValue;
 	public static AtomicInteger routineID;
 	public static AtomicInteger locationID;
- // Set up Stetho Debugging and Set up Realm DB for application
+	// Set up Stetho Debugging and Set up Realm DB for application
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -56,23 +56,28 @@ public class Application extends android.app.Application {
 			db.commitTransaction();
 		}
 
-		Number query = db.where(Sleep.class).max("id");
-		Number query2 = db.where(Routine.class).max("id");
+		Number sleep  = db.where(Sleep.class).max("id");
+		Number routine = db.where(Routine.class).max("id");
 		Number location = db.where(Location.class).max("id");
-		if(query == null ){
-			sleepIDValue = new AtomicInteger(0);
+
+		if(sleep == null ){
+			sleepIDValue = new AtomicInteger(1);
+		} else {
+			sleepIDValue = new AtomicInteger(sleep.intValue());
 		}
-		else if(query2 == null){
-			routineID = new AtomicInteger(0);
+
+		if(routine == null){
+			routineID = new AtomicInteger(1);
+		} else {
+			routineID = new AtomicInteger(routine.intValue());
 		}
-		else{
-			sleepIDValue = new AtomicInteger(query.intValue());
-			routineID = new AtomicInteger(query2.intValue());
-		}
+
 
 		if(location == null){
 			locationID = new AtomicInteger(1);
-		} else {
+		}
+
+		else {
 			locationID = new AtomicInteger(location.intValue());
 		}
 

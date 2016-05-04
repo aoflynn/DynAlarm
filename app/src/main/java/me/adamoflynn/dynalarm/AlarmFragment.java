@@ -224,8 +224,14 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 		checkDifference();
 		Realm realm = Realm.getDefaultInstance();
+
 		Number newestData = realm.where(AccelerometerData.class).max("sleepId");
-		sleepId = newestData.intValue();
+		if(newestData == null){
+			sleepId = -1;
+		} else {
+			sleepId = newestData.intValue();
+		}
+
 		sleepId += 1;
 
 		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);

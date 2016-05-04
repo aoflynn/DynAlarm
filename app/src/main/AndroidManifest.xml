@@ -14,8 +14,12 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
 
+
+    <uses-feature android:name="android.hardware.sensor.accelerometer"
+                  android:required="true" />
+
     <application
-        android:name=".Application"
+        android:name="me.adamoflynn.dynalarm.Application"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -24,7 +28,8 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/DynAlarmTheme">
+            android:theme="@style/DynAlarmTheme"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <action android:name="me.adamoflynn.dynalarm.action.WAKEUP"></action>

@@ -194,8 +194,8 @@ public class AccelerometerService extends Service implements SensorEventListener
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void createPersistentNotification(){
 		Intent intent = new Intent(this, MainActivity.class);
-		intent.putExtra("isAccelerometer", true);
-		//intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		//intent.putExtra("isAccelerometer", true);
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 113, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Notification not = new Notification.Builder(this)
