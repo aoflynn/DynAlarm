@@ -21,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start Time to End Time"
-        android:id="@+id/time"
+        android:id="@+id/duration"
         android:layout_gravity="center"
         android:padding="10dp"
         android:textSize="16dp"/>

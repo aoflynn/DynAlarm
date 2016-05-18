@@ -1,10 +1,12 @@
 package me.adamoflynn.dynalarm;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 //import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,7 +66,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		View v = inflater.inflate(R.layout.fragment_analysis, container, false);
 		chart = (LineChart) v.findViewById(R.id.chart);
 		realm = Realm.getDefaultInstance();
-
+		CardView sleepCard = (CardView) v.findViewById(R.id.card_view_sleep_avg);
+		sleepCard.setOnClickListener(this);
 		/*Number newestData = realm.where(AccelerometerData.class).max("sleepId");
 		int lastId = newestData.intValue();*/
 		//Log.d("Newest ID", String.valueOf(newestData.intValue()));
@@ -72,6 +75,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		if(!Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){
 			Log.d("Delete sleep", " no service running...");
 			deleteBadDates();
+			//deleteShortSleeps();
 		} else{
 			Log.d("Delete sleep", " denied - accelerometer running...");
 		}
@@ -93,6 +97,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		return v;
 	}
 
+
 	private ArrayList<Sleep> getAllSleep() {
 		RealmResults<Sleep> allSleep = realm.where(Sleep.class).findAll();
 		allSleep.sort("id");
@@ -105,15 +110,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			}
 		}
 		return sleepIds;
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		if (realm != null) {
-			realm.close();
-			realm = null;
-		}
 	}
 
 
@@ -207,10 +203,13 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		results.sort("timestamp");
 
 		if(checkDateAfter(sleep.getStartTime())){
-			Log.d("SIZE before", Integer.toString(results.size()));
-			Log.d("AFTER","true");
-			int concatDataLength = results.size() / 5 + 1; // Get the required length of new array where 5 represents every 5 minutes we concatenate
-			for (int j = 0, k = 0; j < concatDataLength; j++ ){
+			int concatDataLength;
+
+			if(results.size() % 5 == 0) concatDataLength = results.size() / 5;
+			else concatDataLength = results.size() / 5 + 1; // Get the required length of new array where 5 represents every 5 minutes we concatenate
+
+			for (int j = 0, k = 0; j < concatDataLength || k < results.size(); j++ ){
+
 				labels.add(format.format(results.get(k).getTimestamp()));
 				int amt = 0;
 				int count = 0;
@@ -222,9 +221,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				entries.add(new Entry(amt + 30, i++));
 			}
 
-			/*Log.d("Motion ", motion.toString());
-			Log.d("Labels ", labels.toString());
-			Log.d("Sleep size", Integer.toString(entries.size()));*/
 		}
 		else {
 			Log.d("BEFORE","true");
@@ -234,11 +230,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				entries.add(new Entry(a.getAmtMotion() + 30, i++));
 				labels.add(format.format(a.getTimestamp()));
 			}
-
-			/*Log.d("Motion ", motion.toString());
-			Log.d("Labels ", labels.toString());
-			Log.d("Max Var", maxVar.toString());
-			Log.d("Sleep size", Integer.toString(entries.size()));*/
 		}
 
 		int concatDataLength = results.size() / 15 + 1; // Get the required length of new array where 5 represents every 15 minutes we concatenate
@@ -252,12 +243,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			}
 
 			avg = amt / 15.0;
-			/*Log.d("Avg", Double.toString(avg));
-			Log.d("Amt", Integer.toString(amt));
-			Log.d("Max", Integer.toString(max));*/
-
-			/*motion.add(amt);
-			entries.add(new Entry(amt + 30, i++));*/
 		}
 
 	}
@@ -298,6 +283,10 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 					Log.d("State: ", " next sleep cycle...");
 					break;
 				}
+			case R.id.card_view_sleep_avg:
+				Intent intent = new Intent(getActivity(), SleepActivity.class);
+				startActivity(intent);
+				break;
 			default:
 					Log.d("State: ", " not set up.");
 		}

@@ -46,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -380,6 +381,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private class LatLngToString extends AsyncTask<LatLng, Void, String> {
 		ProgressDialog dialog;
 		Context mContext;
+		String errorMessage;
 
 		LatLngToString(Context context){
 			mContext = context;
@@ -404,7 +406,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			try {
 				addresses = geocoder.getFromLocation(latitude, longitude, 1);
 			} catch (IOException e) {
-				e.printStackTrace();
+				errorMessage = "Service not available. Please check network connectivity.";
+				Log.e("Geocoder:", errorMessage);
 			}
 
 			if(addresses != null && addresses.size() > 0 ){
@@ -414,21 +417,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 						address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
 						address.getLocality() == null ? "" : address.getLocality(),
 						address.getCountryName());
+				return addressText;
+			} else {
+				return null;
 			}
-
-			return addressText;
 		}
 
 		@Override
 		protected void onPostExecute(String s) {
 			super.onPostExecute(s);
-			toEditText.setText(s);
-			dialog.dismiss();
-			Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
+			if(s != null){
+				fromEditText.setText(s);
+				dialog.dismiss();
+				Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
+			} else {
+				dialog.dismiss();
+				Toast.makeText(mContext, "Error in getting address. Check network status.", Toast.LENGTH_SHORT).show();
+			}
 		}
 	}
 
 	private class LatLngToStringFrom extends AsyncTask<LatLng, Void, String> {
+		String errorMessage = "";
 		ProgressDialog dialog;
 		Context mContext;
 
@@ -445,7 +455,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 		@Override
 		protected String doInBackground(LatLng... params) {
-			Geocoder geocoder = new Geocoder(mContext);
+			Geocoder geocoder = new Geocoder(mContext, Locale.UK);
 			double latitude = params[0].latitude;
 			double longitude = params[0].longitude;
 
@@ -455,7 +465,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			try {
 				addresses = geocoder.getFromLocation(latitude, longitude, 1);
 			} catch (IOException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				errorMessage = "Service not available. Please check network connectivity.";
+				Log.e("Geocoder:", errorMessage);
 			}
 
 			if(addresses != null && addresses.size() > 0 ){
@@ -465,18 +477,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 						address.getMaxAddressLineIndex() > 0 ? address.getAddressLine(0) : "",
 						address.getLocality() == null ? "" : address.getLocality(),
 						address.getCountryName());
+				return addressText;
+			} else {
+				return null;
 			}
 
-			return addressText;
 		}
 
 		@Override
 		protected void onPostExecute(String s) {
 			super.onPostExecute(s);
-			fromEditText.setText(s);
-			dialog.dismiss();
-			Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
-			//fromMarker.setSnippet(s + "\n"+SNIP);
+			if(s != null){
+				fromEditText.setText(s);
+				dialog.dismiss();
+				Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
+			} else {
+				dialog.dismiss();
+				Toast.makeText(mContext, "Error in getting address. Check network status.", Toast.LENGTH_SHORT).show();
+			}
 		}
 	}
 }

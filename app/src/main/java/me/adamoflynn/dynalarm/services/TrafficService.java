@@ -154,7 +154,7 @@ public class TrafficService extends IntentService {
 		RealmResults<AccelerometerData> sleep = realm.where(AccelerometerData.class).equalTo("sleepId", sleepId).findAll();
 		sleep.sort("timestamp", Sort.DESCENDING);
 		if(sleep.size() == 0){
-			Log.d("No sleep", "nya");
+			Log.d("No sleep", " don't do anything.");
 		} else{
 			accelerometerData = sleep;
 			wakeUpCheck(sleepId);

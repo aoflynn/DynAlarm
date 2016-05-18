@@ -54,13 +54,17 @@
             android:layout_height="match_parent"
             android:persistent="true"/>
 
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:key="user"
-        android:title="User Details"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        <ListPreference
+            android:key="desiredSleep"
+            android:title="Desired Sleep Time"
+            android:summary="Choose how much sleep you ideally want to get."
+            android:dialogTitle="Pick an amount"
+            android:defaultValue="07:00"
+            android:entries="@array/sleep_desired_entries"
+            android:entryValues="@array/sleep_desired_values"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:persistent="true"/>
 
     </PreferenceCategory>
 

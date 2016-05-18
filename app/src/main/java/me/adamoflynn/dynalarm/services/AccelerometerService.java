@@ -107,7 +107,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 			RealmResults<AccelerometerData> accData = db.where(AccelerometerData.class).equalTo("sleepId", sleepId).findAll();
 			List<AccelerometerData> accDataDeleteable = accData;
 			for (int i = 0; i < accData.size(); i++){
-				accDataDeleteable.get(0).removeFromRealm();
+				accDataDeleteable.get(i).removeFromRealm();
 			}
 			sleep.removeFromRealm();
 			sleepId--;

@@ -75,9 +75,7 @@ public class Application extends android.app.Application {
 
 		if(location == null){
 			locationID = new AtomicInteger(1);
-		}
-
-		else {
+		} else {
 			locationID = new AtomicInteger(location.intValue());
 		}
 

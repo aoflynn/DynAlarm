@@ -22,8 +22,6 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.facebook.stetho.common.Util;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -37,8 +35,6 @@ import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 import me.adamoflynn.dynalarm.receivers.WakeUpReceiver;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.AlarmSound;
-import me.adamoflynn.dynalarm.services.TrafficService;
-import me.adamoflynn.dynalarm.services.WakeUpService;
 import me.adamoflynn.dynalarm.utils.Utils;
 
 public class AlarmFragment extends Fragment implements View.OnClickListener {
@@ -88,7 +84,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	}
 
 	private void initializeTime(View v){
-		currentTime = (TextView) v.findViewById(R.id.time);
+		currentTime = (TextView) v.findViewById(R.id.duration);
 		wakeUpTime = (TextView) v.findViewById(R.id.wakeUp);
 		Date curTime = Calendar.getInstance().getTime();
 
@@ -120,7 +116,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	public void onClick(View v){
 		switch(v.getId()){
-			case R.id.time:
+			case R.id.duration:
 				timePicker();
 				break;
 			case R.id.start:
@@ -171,7 +167,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 		LayoutInflater li = LayoutInflater.from(getActivity());
 		View dialogView = li.inflate(R.layout.confirm_alarm, null);
-		final TextView time = (TextView) dialogView.findViewById(R.id.time);
+		final TextView time = (TextView) dialogView.findViewById(R.id.duration);
 		final TextView timeframe = (TextView) dialogView.findViewById(R.id.timeframe);
 		final TextView options = (TextView) dialogView.findViewById(R.id.options);
 		time.setText(sdf.format(timeSet.getTime()) + " to " + sdf.format(alarmTime.getTime()));

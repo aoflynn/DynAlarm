@@ -14,7 +14,7 @@
         android:id="@+id/routines"
         android:backgroundTint="@color/colorAccent"
         android:layout_marginTop="32dp"
-        android:layout_below="@+id/time"
+        android:layout_below="@+id/duration"
         android:layout_alignParentStart="true"
         android:layout_marginLeft="48dp"/>
 
@@ -32,7 +32,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Current Time"
-        android:id="@+id/time"
+        android:id="@+id/duration"
         android:layout_alignParentTop="true"
         android:textColor="#ffffff"
         android:textSize="48sp"

@@ -11,7 +11,7 @@ public class RoutineOnItemSelectedListener implements AdapterView.OnItemSelected
 
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-		Toast.makeText(parent.getContext(), "OnItemSelected " + parent.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show();
+		//Toast.makeText(parent.getContext(), "OnItemSelected " + parent.getItemAtPosition(position).toString(), Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
