@@ -121,6 +121,7 @@ public class WakeUpService extends IntentService {
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void updateAlarm(){
 		Intent intent = new Intent(this, AlarmReceiver.class);
+		intent.putExtra("MESSAGE", "You seem to be moving, so we decided to wake you up a bit earlier");
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), pendingIntent);

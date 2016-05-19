@@ -187,11 +187,16 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		Sleep sleep = allSleepReq.get(sleepId);
 		Log.d("Data", String.valueOf(sleepId));
 		Log.d("Data", sleep.toString());
+		ArrayList<Float> maxVar = new ArrayList<>();
+
+		for (AccelerometerData a : sleep.getSleepData()) {
+			Log.d("Sleep Data:", String.valueOf(a.getAmtMotion()));
+		}
 
 		entries = new ArrayList<>();
 		labels = new ArrayList<>();
 		ArrayList<Integer> motion = new ArrayList<>();
-		ArrayList<Float> maxVar = new ArrayList<>();
+		//ArrayList<Float> maxVar = new ArrayList<>();
 		RealmResults<AccelerometerData> results = realm.where(AccelerometerData.class)
 				.equalTo("sleepId", sleep.getId()).findAll();
 
@@ -219,8 +224,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 				motion.add(amt);
 				entries.add(new Entry(amt + 30, i++));
 			}
-
 		}
+
 		else {
 			for (AccelerometerData a: results) {
 				motion.add(a.getAmtMotion());

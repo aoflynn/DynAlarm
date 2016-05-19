@@ -8,8 +8,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 /*import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;*/
@@ -39,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
 	private Context context;
 	private boolean isAlarm = false;
 	private boolean isDialogShowing = false;
+	private SharedPreferences prefs;
+	private AlertDialog alertDialog = null;
 
 	private int[] tabsIcons = {
 		R.drawable.ic_alarm_white_48dp,
@@ -55,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 		onNewIntent(getIntent());
 
 		db = Realm.getDefaultInstance();
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
 
@@ -72,7 +77,9 @@ public class MainActivity extends AppCompatActivity {
 	protected void onNewIntent(Intent intent){
 		super.onNewIntent(intent);
 		isAlarm = intent.getBooleanExtra("isAlarmRinging", false);
-		showAlarmDialog();
+		if(Utils.isMyServiceRunning(AlarmSound.class, context)){
+			showAlarmDialog();
+		}
 	}
 
 	private void setupViewPager(ViewPager viewPager) {
@@ -93,21 +100,19 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Log.d("On resume", "true");
+		if(Utils.isMyServiceRunning(AlarmSound.class, context) && isDialogShowing == false){
+			Log.d("Running: ", "TRUE");
+			showAlarmDialog();
+		}
 	}
 
 	@Override
 	protected void onRestart() {
 		super.onRestart();
 		Log.d("On restart", "true");
-		if(!isDialogShowing){
-			Log.d("Restart alarm bool", String.valueOf(isAlarm));
-			Log.d("Restart alarm sound", String.valueOf(Utils.isMyServiceRunning(AlarmSound.class, context)));
-			if(isAlarm || Utils.isMyServiceRunning(AlarmSound.class, context)){
-				showAlarmDialog();
-			} else {
-				isAlarm = false;
-			}
+		if(Utils.isMyServiceRunning(AlarmSound.class, context) && isDialogShowing == false){
+			Log.d("Running: ", "TRUE");
+			showAlarmDialog();
 		}
 	}
 
@@ -126,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void showAlarmDialog(){
-		if(isAlarm){
 			isDialogShowing = true;
 			final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 			builder.setTitle("Create A Routine");
@@ -139,31 +143,33 @@ public class MainActivity extends AppCompatActivity {
 			builder.setPositiveButton("Stop Alarm", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-
 					cancelAlarm();
-
 					NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 					notificationManager.cancel(0);
 					isAlarm = false;
 					isDialogShowing = false;
+					dismissAlarmDialog();
 				}
 			});
 
 			builder.setNegativeButton("Snooze Alarm", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					Log.d("Snooze", " like a bitch");
 					Intent i = new Intent(context, AlarmSound.class);
 					context.stopService(i);
 					snoozeAlarms(context);
 					NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 					notificationManager.cancel(0);
 					isDialogShowing = false;
+					dismissAlarmDialog();
 				}
 			});
 
-			final AlertDialog dialog = builder.show();
-		}
+			alertDialog = builder.show();
+	}
+
+	private void dismissAlarmDialog() {
+		alertDialog.dismiss();
 	}
 
 	private void cancelAlarm(){
@@ -217,10 +223,10 @@ public class MainActivity extends AppCompatActivity {
 		Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-		long SNOOZE_TIME = 60000;
+    int snoozePrefs = Integer.parseInt(prefs.getString("snoozeTime", "1"));
+		Log.d("SNOOZE", Integer.toString(snoozePrefs));
+		long SNOOZE_TIME = 60000 * snoozePrefs;
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + SNOOZE_TIME, pendingIntent);
-		Log.d("Alarm set", "for 1 min in future");
 	}
-
 }
 

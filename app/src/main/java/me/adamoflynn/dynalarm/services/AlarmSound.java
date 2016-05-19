@@ -2,12 +2,14 @@ package me.adamoflynn.dynalarm.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -24,6 +26,7 @@ public class AlarmSound extends Service {
 	private PowerManager.WakeLock wakeLock;
 	private long[] vibPattern = {600, 600, 600};
 	private boolean isPlaying, isVibrateOn = false;
+	private SharedPreferences prefs;
 
 	@Nullable
 	@Override
@@ -33,27 +36,29 @@ public class AlarmSound extends Service {
 
 	@Override
 	public void onCreate(){
-		Log.d("ALARM SOUND", " created service..");
+
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "RINGTONE");
-		Log.d("ALARM WAKE LOCK -before", wakeLock.toString());
 		wakeLock.acquire();
-		Log.d("ALARM WAKE LOCK", " acquired...");
-		Log.d("ALARM WAKE LOCK -after", wakeLock.toString());
+
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 
-		boolean isVibrateEnabled = true;
+		boolean isVibrateEnabled = prefs.getBoolean("Vibration", true);
 		if(isVibrateEnabled){
 			vibrator.vibrate(vibPattern, 0);
 			isVibrateOn = true;
 		}
-		Uri alarmNoise = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-		try {
 
+		String ringtone = prefs.getString("alarmTone", "Default alarm sound");
+		Uri alarmNoise = Uri.parse(ringtone);
+
+		try {
 			mediaPlayer = new MediaPlayer();
 			mediaPlayer.setDataSource(this, alarmNoise);
 			mediaPlayer.setLooping(true);

@@ -44,6 +44,7 @@ public class TrafficService extends IntentService {
 	private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private final DateFormat hh = new SimpleDateFormat("HH:mm");
 	private List<AccelerometerData> accelerometerData;
+	private TrafficInfo trafficInfo;
 
 	public TrafficService(String name) {
 		super(name);
@@ -94,7 +95,7 @@ public class TrafficService extends IntentService {
 
 				bufferedReader.close();
 				urlConnection.disconnect();
-				analyseData(stringBuilder.toString(), realm, sleepId, routineTime);
+				analyseData(stringBuilder.toString(), realm, sleepId, routineTime, wake_time);
 				Log.d("Traffic service ", "trying to stop...");
 				realm.close();
 				WakefulBroadcastReceiver.completeWakefulIntent(intent);
@@ -110,7 +111,7 @@ public class TrafficService extends IntentService {
 	}
 
 
-	public void analyseData(String response, Realm realm, int sleepId, int routineTime) {
+	public void analyseData(String response, Realm realm, int sleepId, int routineTime, Calendar wake_time) {
 
 		try{
 
@@ -130,9 +131,11 @@ public class TrafficService extends IntentService {
 			int historicTravelTime = summary.getInt("historicTrafficTravelTimeInSeconds");
 			int liveIncidents = summary.getInt("liveTrafficIncidentsTravelTimeInSeconds");
 
-			TrafficInfo trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
+			trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
 			Log.d("Data", trafficInfo.toString());
-			getAccelerometerReadings(realm, sleepId, routineTime);
+			if(trafficCheck(routineTime, wake_time)){
+				updateAlarm();
+			} else getAccelerometerReadings(realm, sleepId);
 		}catch (JSONException e) {
 			Log.e("JSON parse exception", e.getMessage());
 		}
@@ -150,7 +153,25 @@ public class TrafficService extends IntentService {
 		return d;
 	}
 
-	public void getAccelerometerReadings(Realm realm, int sleepId, int routineTime){
+
+	private boolean trafficCheck(int routineTime, Calendar wake_time) {
+		Date departureTime = trafficInfo.getDepartureTime();
+		Log.d("DEP TIME", departureTime.toString());
+
+		wake_time.add(Calendar.MINUTE, routineTime);
+		Date calculatedTime = wake_time.getTime();
+		Log.d("CALC TIME", calculatedTime.toString());
+
+		if(calculatedTime.after(departureTime)){
+			Log.d("ALARM", " WAKE UP, YOU ARE GOING TO BE LATE");
+			return true;
+		}
+
+		return false;
+	}
+
+	private void getAccelerometerReadings(Realm realm, int sleepId){
+
 		RealmResults<AccelerometerData> sleep = realm.where(AccelerometerData.class).equalTo("sleepId", sleepId).findAll();
 		sleep.sort("timestamp", Sort.DESCENDING);
 		if(sleep.size() == 0){
@@ -160,6 +181,7 @@ public class TrafficService extends IntentService {
 			wakeUpCheck(sleepId);
 		}
 	}
+
 
 	private void wakeUpCheck(int sleepId) {
 		Realm realm = Realm.getDefaultInstance();
@@ -198,6 +220,7 @@ public class TrafficService extends IntentService {
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void updateAlarm(){
 		Intent intent = new Intent(this, AlarmReceiver.class);
+		intent.putExtra("MESSAGE", "It looks like you might be late due to delays. Better wake up!");
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), pendingIntent);

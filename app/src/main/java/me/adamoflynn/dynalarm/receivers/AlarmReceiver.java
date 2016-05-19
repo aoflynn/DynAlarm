@@ -23,19 +23,18 @@ import me.adamoflynn.dynalarm.services.AlarmSound;
  */
 public class AlarmReceiver extends BroadcastReceiver {
 
-	private final long SNOOZE_TIME = 60000;
-
 	@Override
 	public void onReceive(Context context, Intent intent) {
-
+		String reasonForWaking = intent.getStringExtra("MESSAGE");
 		Intent intentToActivity = new Intent(context, MainActivity.class);
 		intentToActivity.putExtra("isAlarmRinging", true);
 		intentToActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 101, intentToActivity, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		Notification not = new Notification.Builder(context)
-		  .setContentTitle("Alarm! Wake Up!")
-			.setContentText("Click here to go to Alarm.")
+		  .setContentTitle("DynAlarm")
+			.setContentText("Alarm! Wake Up!")
+			.setContentInfo(reasonForWaking + "\nClick here to go to Alarm.")
 			.setContentIntent(pendingIntent)
 			.setSmallIcon(R.drawable.ic_alarm_white_48dp)
 			.setAutoCancel(false)

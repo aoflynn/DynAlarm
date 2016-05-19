@@ -9,9 +9,11 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 //import android.support.v4.app.Fragment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,13 +53,14 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private final DateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy", Locale.ENGLISH);
 	private HashSet<Integer> routinesChecked = new HashSet<>();
 	private String fromA, toB, time;
-	private long timeframe = 20 * 60 * 1000;
+	private long timeframe;
 	private boolean isTimeSet, isMaps = false;
 	private final long POLLING_TIME = 120000;
 	private final long POLLING_TIME_NO_TRAFFIC = 60000;
 	private int sleepId;
 	private int routineTime = 0;
 	private Realm realm;
+	private SharedPreferences prefs;
 
 
 	public AlarmFragment() {
@@ -68,6 +71,11 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_alarm, container, false);
 		realm = Realm.getDefaultInstance();
+		prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+		int tf = Integer.parseInt(prefs.getString("timeframe", "20"));
+		timeframe = tf * 60000;
+
 		initializeTime(v);
 		initializeButtons(v);
 		initializeExtras(v);
@@ -90,6 +98,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		wakeUpTime = (TextView) v.findViewById(R.id.wakeUp);
 		Date curTime = Calendar.getInstance().getTime();
 
+		Log.d("NN", Long.toString(timeframe));
 		wkUpServiceTime.setTimeInMillis(curTime.getTime() - timeframe);
 
 		currentTime.setText(sdf.format(curTime));
@@ -170,10 +179,10 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		LayoutInflater li = LayoutInflater.from(getActivity());
 		View dialogView = li.inflate(R.layout.confirm_alarm, null);
 		final TextView time = (TextView) dialogView.findViewById(R.id.duration);
-		final TextView timeframe = (TextView) dialogView.findViewById(R.id.timeframe);
+		final TextView timeframeText = (TextView) dialogView.findViewById(R.id.timeframe);
 		final TextView options = (TextView) dialogView.findViewById(R.id.options);
 		time.setText(sdf.format(timeSet.getTime()) + " to " + sdf.format(alarmTime.getTime()));
-		timeframe.setText("with a wake timeframe of 20 minutes");
+		timeframeText.setText("with a wake timeframe of " + Long.toString(timeframe/60000L) + " minutes");
 
 		final boolean usingMaps = isMaps && trafficCheck.isChecked();
 		final boolean usingRoutines = routinesChecked.size() > 0 && routineCheck.isChecked();
@@ -235,9 +244,11 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		sleepId += 1;
 
 		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
+		intent.putExtra("MESSAGE", "Wake Up!");
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime.getTimeInMillis(), pendingIntent);
+
 		Toast.makeText(getActivity(), "Alarm set!", Toast.LENGTH_SHORT).show();
 		Log.d("Accelerometer Service", " Should Start with Sleep Id" + Integer.toString(sleepId));
 		Intent goToAccel = new Intent(getActivity(), AccelerometerService.class);
