@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 
 import io.realm.Realm;
 import me.adamoflynn.dynalarm.model.AccelerometerData;
@@ -47,15 +48,16 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private Calendar wkUpServiceTime = Calendar.getInstance();
 	private Calendar timeSet = Calendar.getInstance();
 	private final DateFormat sdf = new SimpleDateFormat("HH:mm");
+	private final DateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd, yyyy", Locale.ENGLISH);
 	private HashSet<Integer> routinesChecked = new HashSet<>();
 	private String fromA, toB, time;
 	private long timeframe = 20 * 60 * 1000;
 	private boolean isTimeSet, isMaps = false;
 	private final long POLLING_TIME = 120000;
+	private final long POLLING_TIME_NO_TRAFFIC = 60000;
 	private int sleepId;
 	private int routineTime = 0;
 	private Realm realm;
-	private final int WAKEUP = 400, TRAFFIC = 401;
 
 
 	public AlarmFragment() {
@@ -218,7 +220,9 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			return;
 		}
 
-		checkDifference();
+		alarmTime = checkDifference(alarmTime);
+		wkUpServiceTime = checkDifference(wkUpServiceTime);
+
 		Realm realm = Realm.getDefaultInstance();
 
 		Number newestData = realm.where(AccelerometerData.class).max("sleepId");
@@ -249,7 +253,8 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			return;
 		}
 
-		checkDifference();
+		alarmTime = checkDifference(alarmTime);
+		wkUpServiceTime = checkDifference(wkUpServiceTime);
 
 		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
 		intent.setAction(WakeUpReceiver.TRAFFIC);
@@ -259,15 +264,13 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		intent.putExtra("time", time);
 		intent.putExtra("id", Integer.toString(sleepId));
 		intent.putExtra("wake_time", alarmTime);
-
-		if(routinesChecked.size() > 0) {
-			intent.putExtra("routines", getRoutineTime());
-		} else intent.putExtra("routines", 0);
+		intent.putExtra("routines", getRoutineTime());
 
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
 		// Set an inexact repeating alarm that goes off at *timeframe* mins before alarm goes off every 2 minutes repeats
+		Log.d("ALARM:", Long.toString(wkUpServiceTime.getTimeInMillis()));
 		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, wkUpServiceTime.getTimeInMillis(), POLLING_TIME, pendingIntent);
 		Log.d("Traffic Service", "should start at " + sdf.format(wkUpServiceTime.getTime()));
 	}
@@ -281,21 +284,24 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			return;
 		}
 
-		checkDifference();
+		alarmTime = checkDifference(alarmTime);
+		wkUpServiceTime = checkDifference(wkUpServiceTime);
 
 		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
 		intent.setAction(WakeUpReceiver.WAKEUP);
 		intent.putExtra("id", Integer.toString(sleepId));
 		intent.putExtra("routines", getRoutineTime());
 		intent.putExtra("wake_time", alarmTime);
+		Log.d("ROUTINES:", Integer.toString(getRoutineTime()));
 
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
 
-		// Set an inexact repeating alarm that goes off at *timeframe* mins before alarm goes off every 2 minutes repeats
-		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, wkUpServiceTime.getTimeInMillis(), POLLING_TIME, pendingIntent);
+		// Set an inexact repeating alarm that goes off at *timeframe* mins before alarm goes off every 1 minute repeats
+		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, wkUpServiceTime.getTimeInMillis(), POLLING_TIME_NO_TRAFFIC, pendingIntent);
 		Log.d("Wake up Service", "should start at " + sdf.format(wkUpServiceTime.getTime()));
+		Log.d("Wake up Service", "should start at " + dateFormat.format(wkUpServiceTime.getTime()));
 	}
 
 	private void cancelAlarm(){
@@ -364,11 +370,12 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	}
 
-	private void checkDifference(){
+	private Calendar checkDifference(Calendar alarmTime){
 		long differenceInTime = Calendar.getInstance().getTimeInMillis() - alarmTime.getTimeInMillis();
 		if(differenceInTime > 0){
 			alarmTime.add(Calendar.HOUR_OF_DAY, 24);
 		}
+		return alarmTime;
 	}
 
 	private int getRoutineTime(){
@@ -378,8 +385,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 				Routine selectedRoutines = realm.where(Routine.class).equalTo("id", id).findFirst();
 				routineTime += Integer.parseInt(selectedRoutines.getDesc());
 			}
-		} else {
-			routineTime = 0;
 		}
 
 		return routineTime;

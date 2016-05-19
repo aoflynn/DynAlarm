@@ -97,7 +97,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		return v;
 	}
 
-
 	private ArrayList<Sleep> getAllSleep() {
 		RealmResults<Sleep> allSleep = realm.where(Sleep.class).findAll();
 		allSleep.sort("id");
@@ -223,7 +222,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		}
 		else {
-			Log.d("BEFORE","true");
 			for (AccelerometerData a: results) {
 				motion.add(a.getAmtMotion());
 				maxVar.add(a.getMaxAccel());
@@ -253,6 +251,9 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 		Button next = (Button) v.findViewById(R.id.next);
 		next.setOnClickListener(this);
+
+		Button deleteSleep = (Button) v.findViewById(R.id.deleteSleep);
+		deleteSleep.setOnClickListener(this);
 	}
 
 	public void onClick(View v){

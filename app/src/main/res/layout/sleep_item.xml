@@ -24,10 +24,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Medium Text"
+            android:text="Thu May 17"
             android:id="@+id/date"
             android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"/>
+            android:layout_alignParentStart="true"
+            android:textStyle="bold"/>
 
         <ProgressBar
             style="?android:attr/progressBarStyleHorizontal"
@@ -46,20 +47,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="40%"
-            android:id="@+id/percent"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="20dp"/>
+            android:text="Time"
+            android:id="@+id/time"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"/>
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:id="@+id/starIcon"
+            android:src="@drawable/abc_btn_rating_star_on_mtrl_alpha"
+            android:tint="@color/colorAccent"
+            android:layout_alignBottom="@+id/duration"
+            android:layout_toStartOf="@+id/percent"
+            android:layout_marginEnd="11dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Time"
-            android:id="@+id/time"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"/>
+            android:text="40%"
+            android:id="@+id/percent"
+            android:textStyle="bold"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="9dp"/>
 
     </RelativeLayout>
 

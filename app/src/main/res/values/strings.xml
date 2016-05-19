@@ -27,7 +27,7 @@
 
 
     <string-array name="routine_time_list">
-        <item>5 minutes</item>
+        <item>05 minutes</item>
         <item>10 minutes</item>
         <item>15 minutes</item>
         <item>20 minutes</item>

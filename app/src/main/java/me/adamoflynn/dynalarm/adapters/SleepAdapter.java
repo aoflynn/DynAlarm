@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -31,6 +32,7 @@ public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter
 	public TextView time;
 	public ProgressBar sleepDesired;
 	public TextView sleepPercent;
+	public ImageView starIcon;
 	private final DateFormat format = new SimpleDateFormat("HH:mm");
 	private final DateFormat formatGMT = new SimpleDateFormat("HH:mm");
 	private final DateFormat dateFormat = new SimpleDateFormat("E MMM dd", Locale.ENGLISH);
@@ -43,6 +45,7 @@ public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter
 		TextView duration;
 		TextView sleepPercent;
 		ProgressBar sleepDesired;
+		ImageView starIcon;
 	}
 
 
@@ -62,8 +65,8 @@ public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter
 			viewHolder.sleepPercent = (TextView) convertView.findViewById(R.id.percent);
 			viewHolder.sleepDesired = (ProgressBar) convertView.findViewById(R.id.sleepDesired);
 			viewHolder.duration = (TextView) convertView.findViewById(R.id.duration);
+			viewHolder.starIcon = (ImageView) convertView.findViewById(R.id.starIcon);
 			convertView.setTag(viewHolder);
-			//convertView.setLongClickable(true);
 		} else {
 			viewHolder = (ViewHolder) convertView.getTag();
 		}
@@ -89,8 +92,14 @@ public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter
 			int progress = (int) Math.round(percent);
 			viewHolder.sleepDesired.setMax(100);
 			viewHolder.sleepDesired.setProgress(progress);
-			if(progress >= 100) viewHolder.sleepPercent.setText("100%");
-			else viewHolder.sleepPercent.setText(Integer.toString(progress)+"%");
+			if(progress >= 100){
+				viewHolder.sleepPercent.setText("100%");
+				viewHolder.starIcon.setVisibility(View.VISIBLE);
+			}
+			else {
+				viewHolder.sleepPercent.setText(" "+Integer.toString(progress)+"%");
+				viewHolder.starIcon.setVisibility(View.INVISIBLE);
+			}
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}

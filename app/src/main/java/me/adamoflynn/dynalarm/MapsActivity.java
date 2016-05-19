@@ -375,6 +375,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		realm.copyToRealm(location);
 		realm.commitTransaction();
 		locationId++;
+		updateSpinner();
 	}
 
 
@@ -427,7 +428,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		protected void onPostExecute(String s) {
 			super.onPostExecute(s);
 			if(s != null){
-				fromEditText.setText(s);
+				toEditText.setText(s);
 				dialog.dismiss();
 				Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
 			} else {
