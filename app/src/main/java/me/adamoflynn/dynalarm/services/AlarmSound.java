@@ -49,12 +49,14 @@ public class AlarmSound extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 
+		// Get vibration settings from preferences
 		boolean isVibrateEnabled = prefs.getBoolean("Vibration", true);
 		if(isVibrateEnabled){
 			vibrator.vibrate(vibPattern, 0);
 			isVibrateOn = true;
 		}
 
+		// Get ringtone from prefs
 		String ringtone = prefs.getString("alarmTone", "Default alarm sound");
 		Uri alarmNoise = Uri.parse(ringtone);
 

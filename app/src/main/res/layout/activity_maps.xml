@@ -97,12 +97,13 @@
                         android:spinnerMode="dropdown"
                         android:layout_alignParentEnd="true"
                         android:layout_alignTop="@+id/fromEdit"
-                        android:layout_alignBottom="@+id/fromEdit"/>
+                        android:layout_alignBottom="@+id/fromEdit"
+                        android:layout_alignStart="@+id/add_location_from"/>
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Add"
+                        android:text="Add Location"
                         android:id="@+id/add_location_from"
                         android:layout_gravity="right"
                         android:backgroundTint="@color/colorAccent"
@@ -171,12 +172,13 @@
                         android:spinnerMode="dropdown"
                         android:layout_below="@+id/toText"
                         android:layout_alignParentEnd="true"
-                        android:layout_alignBottom="@+id/toEdit"/>
+                        android:layout_alignBottom="@+id/toEdit"
+                        android:layout_alignStart="@+id/add_location_to"/>
 
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Add"
+                        android:text="Add Location"
                         android:id="@+id/add_location_to"
                         android:layout_gravity="right"
                         android:backgroundTint="@color/colorAccent"

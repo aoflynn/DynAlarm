@@ -73,9 +73,11 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		realm = Realm.getDefaultInstance();
 		prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
+		// Get timeframe from settings
 		int tf = Integer.parseInt(prefs.getString("timeframe", "20"));
 		timeframe = tf * 60000;
 
+		// Set up views for fragment
 		initializeTime(v);
 		initializeButtons(v);
 		initializeExtras(v);
@@ -98,7 +100,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		wakeUpTime = (TextView) v.findViewById(R.id.wakeUp);
 		Date curTime = Calendar.getInstance().getTime();
 
-		Log.d("NN", Long.toString(timeframe));
 		wkUpServiceTime.setTimeInMillis(curTime.getTime() - timeframe);
 
 		currentTime.setText(sdf.format(curTime));
@@ -132,8 +133,11 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 				break;
 			case R.id.start:
 				if(!Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){
-					timeSet = Calendar.getInstance();
-					showAlarmConfirmation();
+					if(!isTimeSet) showNoTimeSet();
+					else {
+						timeSet = Calendar.getInstance();
+						showAlarmConfirmation();
+					}
 				} else Toast.makeText(getActivity(), "Alarm currently on, please cancel it to set another alarm.", Toast.LENGTH_LONG).show();
 				break;
 			case R.id.stop:
@@ -176,17 +180,24 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle("Set Alarm");
 
+		// Inflate layout from my custom file confirm_alarm
 		LayoutInflater li = LayoutInflater.from(getActivity());
 		View dialogView = li.inflate(R.layout.confirm_alarm, null);
+
+		// Set up UI resources in dialog
 		final TextView time = (TextView) dialogView.findViewById(R.id.duration);
 		final TextView timeframeText = (TextView) dialogView.findViewById(R.id.timeframe);
 		final TextView options = (TextView) dialogView.findViewById(R.id.options);
+
+		// Show times they specified
 		time.setText(sdf.format(timeSet.getTime()) + " to " + sdf.format(alarmTime.getTime()));
 		timeframeText.setText("with a wake timeframe of " + Long.toString(timeframe/60000L) + " minutes");
 
+		// Check what the user has selected RE: wake up methods
 		final boolean usingMaps = isMaps && trafficCheck.isChecked();
 		final boolean usingRoutines = routinesChecked.size() > 0 && routineCheck.isChecked();
 
+		// Set the text that correlates to what the user selected
 		if(usingMaps && usingRoutines) {
 			options.setText("You are using journey, routine, and sleep data to wake up.");
 		} else if (usingMaps) {
@@ -197,16 +208,16 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			options.setText("You are only using sleep data to wake up.");
 		}
 
-
+		// Set up view and action buttons
 		builder.setView(dialogView);
 		builder.setPositiveButton("Set Alarm", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				setWakeUpAlarm();
+				setWakeUpAlarm(); // Set general alarm to go off at time specified
 				if (usingMaps) {
-					setUpTrafficService();
+					setUpTrafficService(); // If they're using maps, set up traffic service to go off
 				} else {
-					setUpWakeService();
+					setUpWakeService(); // Else, just set up wake service (movement only)
 				}
 			}
 		});
@@ -218,7 +229,6 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		});
 
 		final AlertDialog dialog = builder.show();
-
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
@@ -229,28 +239,39 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			return;
 		}
 
+		// If alarm times are in future, we need to add 24 hours to them so they don't fire immediately
+		// as if they were in the past. e.g. time is 23:12. User sets time to 7:30. The time selected as in the past unless
+		// we add 24 hours.
+
 		alarmTime = checkDifference(alarmTime);
 		wkUpServiceTime = checkDifference(wkUpServiceTime);
 
 		Realm realm = Realm.getDefaultInstance();
 
+		// Get latest sleep ID so no conflicts
 		Number newestData = realm.where(AccelerometerData.class).max("sleepId");
 		if(newestData == null){
-			sleepId = -1;
+			sleepId = -1; // If no data in DB, give a base ID.
 		} else {
 			sleepId = newestData.intValue();
 		}
 
-		sleepId += 1;
+		sleepId += 1; // Increment latest ID so we get a unique id
 
+		// This sets up the base alarm that will wake the user depending on the situation
 		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
 		intent.putExtra("MESSAGE", "Wake Up!");
+
+		// This pending intent will trigger AlarmReceiver - a broadcast receiver
+		// The alarm manager sets the exact time when the pendingintent should trigger - i.e. our wake time
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime.getTimeInMillis(), pendingIntent);
 
 		Toast.makeText(getActivity(), "Alarm set!", Toast.LENGTH_SHORT).show();
 		Log.d("Accelerometer Service", " Should Start with Sleep Id" + Integer.toString(sleepId));
+
+		// This intent will then start the accelerometer service which will read the required data and commit it to DB.
 		Intent goToAccel = new Intent(getActivity(), AccelerometerService.class);
 		goToAccel.putExtra("sleepId", sleepId);
 		getActivity().startService(goToAccel);
@@ -267,6 +288,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		alarmTime = checkDifference(alarmTime);
 		wkUpServiceTime = checkDifference(wkUpServiceTime);
 
+		// This intent will send the required data to the wake up receiver class
 		Intent intent = new Intent(getActivity().getApplicationContext(), WakeUpReceiver.class);
 		intent.setAction(WakeUpReceiver.TRAFFIC);
 
@@ -277,10 +299,11 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		intent.putExtra("wake_time", alarmTime);
 		intent.putExtra("routines", getRoutineTime());
 
+		// This pending intent and alarm will set the intent above to go off at wake up time - timeframe
 		PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity().getApplicationContext(), 369, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
-		// Set an inexact repeating alarm that goes off at *timeframe* mins before alarm goes off every 2 minutes repeats
+		// Once it goes off, I set it to repeat every 2 minutes until alarm is cancelled.
 		Log.d("ALARM:", Long.toString(wkUpServiceTime.getTimeInMillis()));
 		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, wkUpServiceTime.getTimeInMillis(), POLLING_TIME, pendingIntent);
 		Log.d("Traffic Service", "should start at " + sdf.format(wkUpServiceTime.getTime()));
@@ -291,7 +314,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	private void setUpWakeService(){
 
 		if(!isTimeSet){
-			Toast.makeText(getActivity(), "No Alarm Set!", Toast.LENGTH_SHORT).show();
+			showNoTimeSet();
 			return;
 		}
 
@@ -316,10 +339,13 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	}
 
 	private void cancelAlarm(){
+		// Cancel all alarms - normal, movement based, and traffic based
 		cancelWkAlarm();
 		cancelWakeService();
 		cancelTrafficService();
 
+		// This method checks to see if my service is running on the device. If it is, I know to stop
+		// the ringtone alarm and vibrations etc.
 		if(Utils.isMyServiceRunning(AlarmSound.class, getActivity())) {
 			Log.d("Alarm sound", " is running... stopping");
 			Intent stopAlarm = new Intent(getActivity(), AlarmSound.class);
@@ -381,6 +407,23 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	}
 
+	private void showNoTimeSet()  {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle("No Time Set!");
+		builder.setMessage("You haven't set a time yet, please specify a time to wake up before setting the alarm.");
+
+		builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+
+		builder.show();
+	}
+
+	// This method makes sure that all "past" times are future times. This stops alarms going off
+	// immediately because the system thought they were set for earlier in the current day, rather than the next day
 	private Calendar checkDifference(Calendar alarmTime){
 		long differenceInTime = Calendar.getInstance().getTimeInMillis() - alarmTime.getTimeInMillis();
 		if(differenceInTime > 0){
@@ -390,21 +433,25 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 	}
 
 	private int getRoutineTime(){
-		int routineTime = 0;
 		if(routinesChecked.size() > 0){
 			for (int id : routinesChecked){
 				Routine selectedRoutines = realm.where(Routine.class).equalTo("id", id).findFirst();
 				routineTime += Integer.parseInt(selectedRoutines.getDesc());
 			}
+			return routineTime;
 		}
 
-		return routineTime;
+		return 0;
 	}
 
+	// This method allows the app to get results from the user inputting routines and maps data
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data){
+
+		// Routine Activity
 		if(requestCode == 1) {
 
+			// User didn't do anything in the activity
 			if(data == null){
 				Log.d("BACK BUTTON", "pressed");
 				setRoutineCheckboxes(false);
@@ -421,6 +468,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			}
 		}
 
+		// Maps Activity
 		else if(requestCode == 2) {
 			if(data == null){
 				Log.d("BACK BUTTON", "pressed");
@@ -440,6 +488,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		}
 	}
 
+	// Methods to set the check boxes depending on user input
 	private void setRoutineCheckboxes(Boolean state){
 		if(state){
 			routineCheck.setChecked(true);

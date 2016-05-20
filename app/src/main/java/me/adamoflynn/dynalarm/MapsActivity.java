@@ -18,11 +18,13 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -52,7 +54,8 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.model.Location;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnInfoWindowClickListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener,
+		View.OnClickListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnInfoWindowClickListener {
 
 	private GoogleMap mMap;
 	private LatLng to, from = null;
@@ -69,6 +72,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private Realm realm;
 	private Spinner spinnerFrom, spinnerTo;
 	private final String SNIP = "Tap here to remove this location!";
+	private ArrayList<String> locationSpinner;
+	private ArrayList<Integer> locationIDs;
 
 
 	@Override
@@ -110,6 +115,33 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		spinnerFrom = (Spinner) findViewById(R.id.spinnerFrom);
 		spinnerTo = (Spinner) findViewById(R.id.spinnerTo);
 		updateSpinner();
+
+		spinnerFrom.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+				updateMapFrom(i);
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> adapterView) {
+				return;
+			}
+
+		});
+
+		spinnerTo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+				updateMapTo(i);
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> adapterView) {
+				return;
+			}
+
+		});
+
 		add_from.setOnClickListener(this);
 		add_to.setOnClickListener(this);
 		arriveAt.setOnClickListener(this);
@@ -125,16 +157,61 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		mapFragment.getMapAsync(this);
 	}
 
+	private void updateMapFrom(int i) {
+
+		Log.d("SPINNER",locationSpinner.get(i) + Integer.toString(locationIDs.get(i)));
+
+		if(locationIDs.get(i) < 0){
+			return; // Do nothing...
+		}
+
+		if(fromLocationSet){
+			fromMarker.remove();
+		}
+
+		ProgressDialog progressDialog = ProgressDialog.show(this, "Loading Location", "Please Wait", true);
+		Location locationSelected = realm.where(Location.class).equalTo("id", locationIDs.get(i)).findFirst();
+		Log.d("Location:", locationSelected.toString());
+
+		from = new LatLng(locationSelected.getLocLat(), locationSelected.getLocLon());
+		fromMarker = mMap.addMarker(new MarkerOptions().position(from).title(FROM_TITLE).snippet("Tap here to remove this location!").draggable(true));
+		fromMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+		fromLocationSet = true;
+		new LatLngToStringFrom(this).execute(from);
+
+		progressDialog.dismiss();
+	}
+
+	private void updateMapTo(int i) {
+
+		Log.d("SPINNER", locationSpinner.get(i) + Integer.toString(locationIDs.get(i)));
+
+		if(locationIDs.get(i) < 0){
+			return; // Do nothing...
+		}
+
+		if(toLocationSet){
+			toMarker.remove();
+		}
+
+		ProgressDialog progressDialog = ProgressDialog.show(this, "Loading Location", "Please Wait", true);
+		Location locationSelected = realm.where(Location.class).equalTo("id", locationIDs.get(i)).findFirst();
+		Log.d("Location:", locationSelected.toString());
+
+		to = new LatLng(locationSelected.getLocLat(), locationSelected.getLocLon());
+		toMarker = mMap.addMarker(new MarkerOptions().position(to).title(TO_TITLE).snippet("Tap here to remove this location!").draggable(true));
+		toMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+		toLocationSet = true;
+		new LatLngToString(this).execute(to);
+
+		progressDialog.dismiss();
+	}
+
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		mMap = googleMap;
 		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 10));
-		/*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-				&& ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// No location services so go to Dublin City Centre, else go to current location.
-			mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 16));
-			return;
-		}*/
+
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 			// TODO: Consider calling
 			//    ActivityCompat#requestPermissions
@@ -182,10 +259,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 				sendData();
 				break;
 			case R.id.add_location_from:
-				buildAndShowInputDialog("from");
+				if(TextUtils.isEmpty(fromEditText.getText())) {
+					Toast.makeText(this, "No From Location Specified!", Toast.LENGTH_SHORT).show();
+				} else {
+					buildAndShowInputDialog("from");
+				}
 				break;
 			case R.id.add_location_to:
-				buildAndShowInputDialog("to");
+				if(TextUtils.isEmpty(toEditText.getText())){
+					Toast.makeText(this, "No To Location Specified!", Toast.LENGTH_SHORT).show();
+				} else {
+					buildAndShowInputDialog("to");
+				}
 				break;
 		}
 	}
@@ -220,13 +305,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		List<Location> locationList = locations;
 
 		Log.d("Locations", locationList.toString());
-		ArrayList<String> loca = new ArrayList<>();
-		loca.add(0, "");
+		locationSpinner = new ArrayList<>();
+		locationIDs = new ArrayList<>();
+		locationSpinner.add(0, "");
+		locationIDs.add(0, -1);
 		for (Location l:locationList){
-			loca.add(l.getLocation());
+			locationSpinner.add(l.getLocation());
+			locationIDs.add(l.getId());
 		}
 
-		ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, loca);
+		ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, locationSpinner);
 		spinnerFrom.setAdapter(arrayAdapter);
 		spinnerTo.setAdapter(arrayAdapter);
 	}
@@ -263,7 +351,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	}
 
 	private void sendData(){
-		if(from == null | to == null | !timeSet ){
+		if(!fromLocationSet || !toLocationSet || !timeSet ){
 			showErrorDialog();
 		} else{
 			String fromA = Double.toString(from.latitude) + "," + Double.toString(from.longitude);
@@ -297,15 +385,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	@Override
 	public void onInfoWindowClick(Marker marker) {
 		if (fromMarker.equals(marker)){
-			Log.e("This is", "from marker");
 			fromMarker.remove();
 			fromEditText.setText("");
 			fromLocationSet = false;
+			from = null;
 		} else{
 			toMarker.remove();
 			toEditText.setText("");
 			toLocationSet = false;
-			Log.e("This is", "to marker");
+			to = null;
 		}
 	}
 
@@ -317,7 +405,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		View dialogView = li.inflate(R.layout.map_add_location, null);
 
 		final EditText locationName = (EditText) dialogView.findViewById(R.id.locationName);
-		final EditText address = (EditText) dialogView.findViewById(R.id.address);
+		final TextView address = (TextView) dialogView.findViewById(R.id.address);
 		if(dest.equals("from"))
 			address.setText(fromEditText.getText().toString());
 		else address.setText(toEditText.getText().toString());
@@ -379,6 +467,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	}
 
 
+	/**
+	 *  AsyncTasks to get background geocode information
+	 */
+
 	private class LatLngToString extends AsyncTask<LatLng, Void, String> {
 		ProgressDialog dialog;
 		Context mContext;
@@ -430,7 +522,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			if(s != null){
 				toEditText.setText(s);
 				dialog.dismiss();
-				Toast.makeText(mContext, s, Toast.LENGTH_SHORT).show();
 			} else {
 				dialog.dismiss();
 				Toast.makeText(mContext, "Error in getting address. Check network status.", Toast.LENGTH_SHORT).show();
@@ -466,7 +557,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			try {
 				addresses = geocoder.getFromLocation(latitude, longitude, 1);
 			} catch (IOException e) {
-				//e.printStackTrace();
 				errorMessage = "Service not available. Please check network connectivity.";
 				Log.e("Geocoder:", errorMessage);
 			}

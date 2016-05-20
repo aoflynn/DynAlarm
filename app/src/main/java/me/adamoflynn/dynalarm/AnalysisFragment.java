@@ -1,6 +1,8 @@
 package me.adamoflynn.dynalarm;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -68,10 +70,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		realm = Realm.getDefaultInstance();
 		CardView sleepCard = (CardView) v.findViewById(R.id.card_view_sleep_avg);
 		sleepCard.setOnClickListener(this);
-		/*Number newestData = realm.where(AccelerometerData.class).max("sleepId");
-		int lastId = newestData.intValue();*/
-		//Log.d("Newest ID", String.valueOf(newestData.intValue()));
 
+		// Debugging purposes
 		if(!Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){
 			Log.d("Delete sleep", " no service running...");
 			deleteBadDates();
@@ -111,7 +111,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		return sleepIds;
 	}
 
-
 	private void initializeLineChart(){
 		dataSet = new LineDataSet(entries, "Movements");
 
@@ -120,9 +119,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		dataSet.setDrawFilled(false);
 		dataSet.setDrawValues(false);
 		dataSet.setHighlightEnabled(false);
-		dataSet.setFillColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
-		dataSet.setFillAlpha(195);
-
 
 		chart.setTouchEnabled(true);
 		chart.setDragEnabled(true);
@@ -141,7 +137,10 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		leftAxis.setStartAtZero(true);
 		leftAxis.setDrawGridLines(false); // no grid lineschart.setData(data);
 		leftAxis.setTextColor(Color.WHITE);
-		leftAxis.setAxisMaxValue(dataSet.getYMax());
+
+		if(dataSet.getYMax() > 140.00) leftAxis.setAxisMaxValue(130);
+		else leftAxis.setAxisMaxValue(dataSet.getYMax());
+
 
 		YAxis rightAxis = chart.getAxisRight();
 		rightAxis.setEnabled(false);
@@ -152,8 +151,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		xAxis.setDrawAxisLine(true);
 		xAxis.setDrawGridLines(false);
 		xAxis.setTextColor(Color.WHITE);
-
-
 
 		LineData data = new LineData(labels, dataSet);
 		chart.setData(data);
@@ -176,6 +173,76 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		Date d = s.getDate();
 		if(d == null) date.setText("No date");
 		date.setText(dateFormat.format(d));
+	}
+
+	private void initializeButtons(View v){
+		Button previous = (Button) v.findViewById(R.id.previous);
+		previous.setOnClickListener(this);
+
+		Button next = (Button) v.findViewById(R.id.next);
+		next.setOnClickListener(this);
+
+		Button deleteSleep = (Button) v.findViewById(R.id.deleteSleep);
+		deleteSleep.setOnClickListener(this);
+
+		Button info = (Button) v.findViewById(R.id.info);
+		info.setOnClickListener(this);
+	}
+
+	public void onClick(View v){
+		switch(v.getId()){
+			case R.id.previous:
+				if(sleepIndex == 0) {
+					Toast.makeText(getActivity(), "This is the oldest sleep!", Toast.LENGTH_SHORT).show();
+					break;
+				}
+				else {
+					Log.d("State: ", " previous sleep cycle...");
+					getData(sleepIndex - 1);
+					sleepIndex--;
+					updateData();
+					break;
+				}
+			case R.id.next:
+				if(sleepIndex == allSleepReq.size() - 1) {
+					Toast.makeText(getActivity(), "Already at Newest Sleep!", Toast.LENGTH_SHORT).show();
+					break;
+				}
+				else{
+					getData(sleepIndex + 1);
+					sleepIndex++;
+					updateData();
+					Log.d("State: ", " next sleep cycle...");
+					break;
+				}
+			case R.id.card_view_sleep_avg:
+				Intent intent = new Intent(getActivity(), SleepActivity.class);
+				startActivity(intent);
+				break;
+			case R.id.info:
+				showInfoDialog();
+				break;
+			default:
+				Log.d("State: ", " not set up.");
+		}
+	}
+
+	private void showInfoDialog() {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		builder.setTitle("Graph Information");
+		builder.setMessage("The graph shown here shows your varying amount of movement as you slept throughout the night. \n\n" +
+				"The spikes in the graphs represent areas of a lot of movement. These correlate to you being more awake, and coming out of a sleep cycle." +
+				" Periods of little movement indicate deep sleep.");
+
+		builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+
+		final AlertDialog dialog = builder.show();
+
 	}
 
 	private void getData(int sleepId){
@@ -250,53 +317,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	}
 
-	private void initializeButtons(View v){
-		Button previous = (Button) v.findViewById(R.id.previous);
-		previous.setOnClickListener(this);
-
-		Button next = (Button) v.findViewById(R.id.next);
-		next.setOnClickListener(this);
-
-		Button deleteSleep = (Button) v.findViewById(R.id.deleteSleep);
-		deleteSleep.setOnClickListener(this);
-	}
-
-	public void onClick(View v){
-		switch(v.getId()){
-			case R.id.previous:
-				if(sleepIndex == 0) {
-					Toast.makeText(getActivity(), "This is the oldest sleep!", Toast.LENGTH_SHORT).show();
-					break;
-				}
-				else {
-					Log.d("State: ", " previous sleep cycle...");
-					getData(sleepIndex - 1);
-					sleepIndex--;
-					updateData();
-					break;
-				}
-			case R.id.next:
-				//newestData = realm.where(Sleep.class).max("id");
-				if(sleepIndex == allSleepReq.size() - 1) {
-					//Log.d("Newest data", Integer.toString(newestData.intValue())) ;
-					Toast.makeText(getActivity(), "Already at Newest Sleep!", Toast.LENGTH_SHORT).show();
-					break;
-				}
-				else{
-					getData(sleepIndex + 1);
-					sleepIndex++;
-					updateData();
-					Log.d("State: ", " next sleep cycle...");
-					break;
-				}
-			case R.id.card_view_sleep_avg:
-				Intent intent = new Intent(getActivity(), SleepActivity.class);
-				startActivity(intent);
-				break;
-			default:
-					Log.d("State: ", " not set up.");
-		}
-	}
 
 	private void updateData(){
 		initializeLineChart();

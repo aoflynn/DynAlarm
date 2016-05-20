@@ -13,12 +13,11 @@
         android:singleLine="true"
         android:imeOptions="actionDone"
         android:inputType="textCapWords"
-        android:textAlignment="center"
         android:layout_marginTop="10dp"
         android:textColorHint="@color/textHint"
         android:textColor="#FFFFFF"/>
 
-    <EditText
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/address"
@@ -29,6 +28,7 @@
         android:inputType="textPostalAddress"
         android:textColorHint="@color/textHint"
         android:textIsSelectable="true"
-        android:textColor="#FFFFFF"/>
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"/>
 
 </LinearLayout>

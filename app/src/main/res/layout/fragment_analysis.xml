@@ -74,15 +74,24 @@
                 android:layout_margin="8dp"/>
 
             <Button
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:id="@+id/deleteSleep"
                 android:background="@drawable/ic_delete_white_48dp"
                 android:backgroundTint="@color/colorAccent"
-                android:layout_alignParentTop="true"
-                android:layout_alignEnd="@+id/chart"
-                android:layout_marginTop="8dp"
-                />
+                android:layout_alignTop="@+id/date"
+                android:layout_alignStart="@+id/chart"
+                android:layout_marginTop="4dp"/>
+
+            <Button
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:id="@+id/info"
+                android:background="@drawable/ic_help_outline_white_48dp"
+                android:backgroundTint="@color/colorAccent"
+                android:layout_alignTop="@+id/date"
+                android:layout_alignEnd="@+id/next"
+                android:layout_marginTop="4dp"/>
 
         </RelativeLayout>
     </android.support.v7.widget.CardView>
