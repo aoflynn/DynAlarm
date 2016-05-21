@@ -201,7 +201,7 @@ public class TrafficService extends IntentService {
 			}
 		}
 
-		Log.d("UPDATE MAX", Integer.toString(max));
+		Log.d("MAX", Integer.toString(max));
 		RealmList<AccelerometerData> acc = new RealmList<>();
 		for (AccelerometerData a: newestData){
 			acc.add(a);

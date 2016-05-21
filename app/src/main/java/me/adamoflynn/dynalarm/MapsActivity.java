@@ -22,6 +22,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
@@ -74,6 +77,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private final String SNIP = "Tap here to remove this location!";
 	private ArrayList<String> locationSpinner;
 	private ArrayList<Integer> locationIDs;
+	List<Location> locationList;
 
 
 	@Override
@@ -157,13 +161,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		mapFragment.getMapAsync(this);
 	}
 
+	@Override
+	public void onResume(){
+		super.onResume();
+		updateSpinner();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.maps_menu, menu);
+		return true;
+	}
+
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle item selection
+		switch (item.getItemId()) {
+			case R.id.manage_locs:
+				Intent intent = new Intent(this, LocationActivity.class);
+				startActivity(intent);
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+		}
+	}
+
 	private void updateMapFrom(int i) {
 
-		Log.d("SPINNER",locationSpinner.get(i) + Integer.toString(locationIDs.get(i)));
-
-		if(locationIDs.get(i) < 0){
+		if(i == -1 || locationIDs.get(i) < 0){
+			spinnerFrom.setSelection(0);
 			return; // Do nothing...
 		}
+
+		Log.d("SPINNER",locationSpinner.get(i) + Integer.toString(locationIDs.get(i)));
 
 		if(fromLocationSet){
 			fromMarker.remove();
@@ -184,11 +216,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 	private void updateMapTo(int i) {
 
-		Log.d("SPINNER", locationSpinner.get(i) + Integer.toString(locationIDs.get(i)));
-
-		if(locationIDs.get(i) < 0){
+		if(i == -1 || locationIDs.get(i) < 0){
+			spinnerTo.setSelection(0);
 			return; // Do nothing...
 		}
+
+		Log.d("SPINNER", locationSpinner.get(i) + Integer.toString(locationIDs.get(i)));
 
 		if(toLocationSet){
 			toMarker.remove();
@@ -302,7 +335,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 	private void updateSpinner(){
 		RealmResults<Location> locations = realm.where(Location.class).findAll();
-		List<Location> locationList = locations;
+		locationList = locations;
 
 		Log.d("Locations", locationList.toString());
 		locationSpinner = new ArrayList<>();
@@ -343,11 +376,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private void updateFromMarker(Marker marker){
 		fromMarker = marker;
 		from = fromMarker.getPosition();
+		updateMapFrom(-1);
 	}
 
 	private void updateToMarker(Marker marker){
 		toMarker = marker;
 		to = toMarker.getPosition();
+		updateMapTo(-1);
 	}
 
 	private void sendData(){
@@ -389,11 +424,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			fromEditText.setText("");
 			fromLocationSet = false;
 			from = null;
+			updateMapFrom(-1);
 		} else{
 			toMarker.remove();
 			toEditText.setText("");
 			toLocationSet = false;
 			to = null;
+			updateMapTo(-1);
 		}
 	}
 

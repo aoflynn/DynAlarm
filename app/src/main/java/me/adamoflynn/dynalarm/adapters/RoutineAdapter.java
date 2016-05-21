@@ -46,7 +46,7 @@ public class RoutineAdapter extends RealmBaseAdapter<Routine> implements ListAda
 		if (convertView == null) {
 			convertView = inflater.inflate(R.layout.routine_item, parent, false);
 			viewHolder = new ViewHolder();
-			viewHolder.name = (TextView) convertView.findViewById(R.id.routine);
+			viewHolder.name = (TextView) convertView.findViewById(R.id.locationName);
 			viewHolder.desc = (TextView) convertView.findViewById(R.id.minutes);
 			viewHolder.checkBox = (CheckBox) convertView.findViewById(R.id.checkBox);
 			convertView.setTag(viewHolder);

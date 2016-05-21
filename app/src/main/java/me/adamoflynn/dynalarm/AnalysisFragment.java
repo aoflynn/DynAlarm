@@ -317,7 +317,6 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	}
 
-
 	private void updateData(){
 		initializeLineChart();
 		changeDate();

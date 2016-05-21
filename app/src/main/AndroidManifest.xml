@@ -97,6 +97,8 @@
 
         <activity android:name=".SleepActivity">
         </activity>
+        <activity android:name=".LocationActivity">
+        </activity>
     </application>
 
 </manifest>

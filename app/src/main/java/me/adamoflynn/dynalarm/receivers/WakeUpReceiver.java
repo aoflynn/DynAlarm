@@ -33,7 +33,7 @@ public class WakeUpReceiver extends WakefulBroadcastReceiver {
 			wakeUpIntent.putExtra("routines", routineTime);
 			wakeUpIntent.putExtra("wake_time", wake_time);
 			startWakefulService(context, wakeUpIntent);
-			Log.d("Wakeup", "started service at " + new Date(System.currentTimeMillis()) + " with ID" + id);
+			Log.d("Wakeup", "started service at " + new Date(System.currentTimeMillis()) + " with ID " + id);
 		}
 
 		else if(action.equals(TRAFFIC)){
@@ -52,7 +52,7 @@ public class WakeUpReceiver extends WakefulBroadcastReceiver {
 			trafficIntent.putExtra("routines", routineTime);
 			trafficIntent.putExtra("wake_time", wake_time);
 			startWakefulService(context, trafficIntent);
-			Log.d("Traffic", "started service at " + new Date(System.currentTimeMillis()) + " with ID" + id);
+			Log.d("Traffic", "started service at " + new Date(System.currentTimeMillis()) + " with ID " + id);
 		}
 	}
 }

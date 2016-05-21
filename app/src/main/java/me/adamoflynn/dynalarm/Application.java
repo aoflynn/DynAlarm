@@ -47,12 +47,7 @@ public class Application extends android.app.Application {
 		if(db.isEmpty()){
 			db.beginTransaction();
 			User user = db.createObject(User.class);
-			Settings userSettings = db.createObject(Settings.class);
-			userSettings.setWake_timeframe(30);
-			userSettings.setWake_tone("beep");
-			userSettings.setVibration(true);
 			user.setId(0);
-			user.setUserSettings(userSettings);
 			db.commitTransaction();
 		}
 

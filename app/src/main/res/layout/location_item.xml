@@ -7,16 +7,16 @@
 
 
     <RelativeLayout
-        android:layout_width="251dp"
-        android:layout_height="47dp"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:layout_weight="0.83">
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Routine"
-            android:id="@+id/locationName"
+            android:text="Location"
+            android:id="@+id/location"
             android:textColor="#ffffff"
             android:layout_gravity="center_vertical"
             android:layout_toStartOf="@+id/checkBox"/>
@@ -25,20 +25,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="- minutes"
-            android:id="@+id/minutes"
+            android:text="Address"
+            android:id="@+id/address"
             android:textColor="#ffffff"
             android:textSize="16sp"
-            android:layout_below="@+id/locationName"
+            android:layout_below="@+id/location"
             android:layout_alignParentStart="true"/>
 
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/checkBox"
-            android:checked="false"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"/>
     </RelativeLayout>
 
 </LinearLayout>

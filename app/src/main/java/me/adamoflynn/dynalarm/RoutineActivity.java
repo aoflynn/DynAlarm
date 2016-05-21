@@ -176,7 +176,7 @@ public class RoutineActivity extends AppCompatActivity {
 		LayoutInflater li = LayoutInflater.from(this);
 		View dialogView = li.inflate(R.layout.routine_delete_item, null);
 		final TextView text = (TextView) dialogView.findViewById(R.id.text);
-		final TextView routine = (TextView) dialogView.findViewById(R.id.routine);
+		final TextView routine = (TextView) dialogView.findViewById(R.id.locationName);
 		routine.setText(routineName);
 
 		builder.setView(dialogView);
