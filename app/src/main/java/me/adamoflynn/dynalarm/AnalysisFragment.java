@@ -190,6 +190,9 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	}
 
 	public void onClick(View v){
+
+		//v.performHapticFeedback(vi);
+
 		switch(v.getId()){
 			case R.id.previous:
 				if(sleepIndex == 0) {
@@ -232,7 +235,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		builder.setTitle("Graph Information");
 		builder.setMessage("The graph shown here shows your varying amount of movement as you slept throughout the night. \n\n" +
 				"The spikes in the graphs represent areas of a lot of movement. These correlate to you being more awake, and coming out of a sleep cycle." +
-				" Periods of little movement indicate deep sleep.");
+				" Periods of little movement indicate deep sleep.\n\n" + "Click the Overall Sleep Stats card below to see a list of your sleeps and how well your sleep was rated!");
 
 		builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			@Override

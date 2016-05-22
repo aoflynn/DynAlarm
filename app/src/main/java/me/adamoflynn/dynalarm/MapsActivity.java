@@ -16,6 +16,7 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -45,17 +46,29 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.model.Location;
+import me.adamoflynn.dynalarm.model.TrafficInfo;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener,
 		View.OnClickListener, GoogleMap.OnMarkerDragListener, GoogleMap.OnInfoWindowClickListener {
@@ -77,8 +90,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private final String SNIP = "Tap here to remove this location!";
 	private ArrayList<String> locationSpinner;
 	private ArrayList<Integer> locationIDs;
-	List<Location> locationList;
-
+	private List<Location> locationList;
+	private TrafficInfo trafficInfo;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -183,9 +196,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 				Intent intent = new Intent(this, LocationActivity.class);
 				startActivity(intent);
 				return true;
+			case R.id.clear_map:
+				showClearDialog();
+				return true;
 			default:
 				return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void clearMap(){
+		clearFrom();
+		clearTo();
 	}
 
 	private void updateMapFrom(int i) {
@@ -389,17 +410,54 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		if(!fromLocationSet || !toLocationSet || !timeSet ){
 			showErrorDialog();
 		} else{
-			String fromA = Double.toString(from.latitude) + "," + Double.toString(from.longitude);
-			String toB = Double.toString(to.latitude) + "," + Double.toString(to.longitude);
+			final String fromA = Double.toString(from.latitude) + "," + Double.toString(from.longitude);
+			final String toB = Double.toString(to.latitude) + "," + Double.toString(to.longitude);
+			Log.d("DEETS", fromA + toB + sdf.format(alarmTime.getTime()));
 			checkDifference();
-
-			Intent intent = new Intent();
-			intent.putExtra("from", fromA);
-			intent.putExtra("to", toB);
-			intent.putExtra("time", sdf.format(alarmTime.getTime()));
-			setResult(2, intent);
-			finish();
+			new GetJourneyDuration(this).execute(fromA, toB, sdf.format(alarmTime.getTime()));
+			//showConfirmationDialog();
 		}
+	}
+
+	private void showConfirmationDialog() {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
+		builder.setTitle("Journey Details");
+
+
+		final String fromA = Double.toString(from.latitude) + "," + Double.toString(from.longitude);
+		final String toB = Double.toString(to.latitude) + "," + Double.toString(to.longitude);
+		checkDifference();
+		int journeyTime = (int) Math.round(trafficInfo.getHistoricTravelTime() / 60.00);
+
+		//Log.d("TRaffic", trafficInfo.toString());
+		builder.setMessage("The journey from " + fromEditText.getText().toString() + " to "
+				+ toEditText.getText().toString() + " will take around " + journeyTime + " minutes if you leave at "
+				+ hh.format(trafficInfo.getDepartureTime()));
+
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+
+				Intent intent = new Intent();
+				intent.putExtra("from", fromA);
+				intent.putExtra("to", toB);
+				intent.putExtra("time", sdf.format(alarmTime.getTime()));
+
+				setResult(2, intent);
+				finish();
+			}
+		});
+
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+				progressDialog.dismiss();
+			}
+		});
+
+		final AlertDialog dialog = builder.show();
 	}
 
 	private void showErrorDialog()  {
@@ -417,21 +475,51 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		final AlertDialog dialog = builder.show();
 	}
 
+	private void showClearDialog()  {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
+		builder.setTitle("Are you sure?");
+
+		builder.setMessage("Do you want to clear the map and your selected locations?");
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				clearMap();
+			}
+		});
+
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+
+		final AlertDialog dialog = builder.show();
+	}
+
 	@Override
 	public void onInfoWindowClick(Marker marker) {
 		if (fromMarker.equals(marker)){
-			fromMarker.remove();
-			fromEditText.setText("");
-			fromLocationSet = false;
-			from = null;
-			updateMapFrom(-1);
+			clearFrom();
 		} else{
-			toMarker.remove();
-			toEditText.setText("");
-			toLocationSet = false;
-			to = null;
-			updateMapTo(-1);
+			clearTo();
 		}
+	}
+
+	private void clearFrom(){
+		fromMarker.remove();
+		fromEditText.setText("");
+		fromLocationSet = false;
+		from = null;
+		updateMapFrom(-1);
+	}
+
+	private void clearTo(){
+		toMarker.remove();
+		toEditText.setText("");
+		toLocationSet = false;
+		to = null;
+		updateMapTo(-1);
 	}
 
 	private void buildAndShowInputDialog(final String dest)  {
@@ -490,16 +578,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 				});
 	}
 
-	private void addLocation(int locationId, String name, String address, LatLng loc){
+	private void addLocation(int locId, String name, String address, LatLng loc){
 		if ( name == null || name.length() == 0) {
 			Toast.makeText(this, "Empty Name! Try Again", Toast.LENGTH_SHORT).show();
 			return;
 		}
-		Location location = new Location(locationId, name, address, loc.latitude, loc.longitude);
+		Log.d("LOC ID BEFORE", Integer.toString(locId));
+		Log.d("LOC ID BEFORE 2", Integer.toString(locationId));
+		Location location = new Location(locId, name, address, loc.latitude, loc.longitude);
 		realm.beginTransaction();
 		realm.copyToRealm(location);
 		realm.commitTransaction();
 		locationId++;
+		Log.d("LOC ID AFTER", Integer.toString(locId));
+		Log.d("LOC ID AFTER 2", Integer.toString(locationId));
 		updateSpinner();
 	}
 
@@ -625,4 +717,123 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			}
 		}
 	}
+
+	private class GetJourneyDuration extends AsyncTask<String, String, String> {
+
+		private ProgressDialog dialog;
+		private Context mContext;
+		private final String BASE_URL = "https://api.tomtom.com/routing/1/calculateRoute/";
+		private final String API_KEY = "nmqjmepdy9ppbp8yekvrsaet";
+		private final String END_URL = "?key="+ API_KEY + "&routeType=fastest&traffic=true&computeTravelTimeFor=all&arriveAt=";
+
+		private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		private final DateFormat hh = new SimpleDateFormat("HH:mm");
+
+
+		GetJourneyDuration(Context context){
+			mContext = context;
+		}
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			dialog = new ProgressDialog(mContext);
+			dialog.setMessage("Getting details about journey...");
+			dialog.show();
+		}
+
+		@Override
+		protected String doInBackground(String... params) {
+
+			InputStream in;
+			String data = "";
+			Log.d("Execute:", params[0] + params[1] + params[2]);
+			String from = params[0];
+			String to = params[1];
+			String time = params[2];
+			Log.d("DEETS", params[0]  +" " + params[1] + " " + sdf.format(alarmTime.getTime()));
+
+			try {
+				URL url = new URL(BASE_URL + from + ":" + to + "/json" + END_URL + time);
+				HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+				int statusCode = urlConnection.getResponseCode();
+
+				if(statusCode == 200){
+					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+					StringBuilder stringBuilder = new StringBuilder();
+					String line;
+
+					while ((line = bufferedReader.readLine()) != null) {
+						stringBuilder.append(line).append("\n");
+					}
+
+					bufferedReader.close();
+					urlConnection.disconnect();
+					return stringBuilder.toString();
+				} else if (statusCode != 200){
+					Log.d("CODE:", Integer.toString(statusCode));
+					return null;
+				} else {throw new Exception("Download Error");}
+
+			} catch (MalformedURLException e){
+				Log.e("MalformedURLException", e.getMessage());
+				return null;
+			} catch (IOException e){
+				Log.e("IOException", e.getMessage());
+				return null;
+			} catch (Exception e){
+				Log.e("Error", e.getMessage());
+				return null;
+			}
+		}
+
+	protected void onPostExecute(String response){
+		if(response == null) {
+			response = "Error...";
+		}
+		parseJSON(response);
+		dialog.dismiss();
+		showConfirmationDialog();
+	}
+
+	public void parseJSON(String response) {
+
+		try{
+
+			JSONObject jsonObject = new JSONObject(response);
+			JSONArray allRoutes = jsonObject.getJSONArray("routes");
+
+			// Only need one route
+			JSONObject route = allRoutes.getJSONObject(0);
+			JSONObject summary = route.getJSONObject("summary");
+
+			int lengthInMeters = summary.getInt("lengthInMeters");
+			int travelTimeInSeconds = summary.getInt("travelTimeInSeconds");
+			int travelDelayInSeconds = summary.getInt("trafficDelayInSeconds");
+			Date dep = removeT(summary.getString("departureTime"));
+			Date arr = removeT(summary.getString("arrivalTime"));
+			int travelTimeNoTraffic = summary.getInt("noTrafficTravelTimeInSeconds");
+			int historicTravelTime = summary.getInt("historicTrafficTravelTimeInSeconds");
+			int liveIncidents = summary.getInt("liveTrafficIncidentsTravelTimeInSeconds");
+
+			trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
+			Log.d("Data", trafficInfo.toString());
+		}catch (JSONException e) {
+			Log.e("JSON parse exception", e.getMessage());
+		}
+
+	}
+
+	public Date removeT(String time){
+		time = time.replace('T',' ');
+		Date d = null;
+		try{
+			d = df.parse(time);
+		}catch (Exception e){
+			Log.d("Error", e.getMessage());
+		}
+		return d;
+	}
+}
+
 }

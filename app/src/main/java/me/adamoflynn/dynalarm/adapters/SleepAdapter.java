@@ -26,6 +26,7 @@ import me.adamoflynn.dynalarm.model.Sleep;
 /**
  * Created by Adam on 18/05/2016.
  */
+
 public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter {
 
 	public TextView date;
@@ -37,7 +38,6 @@ public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter
 	private final DateFormat formatGMT = new SimpleDateFormat("HH:mm");
 	private final DateFormat dateFormat = new SimpleDateFormat("E MMM dd", Locale.ENGLISH);
 	private SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
-
 
 	public static class ViewHolder {
 		TextView date;

@@ -268,7 +268,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 		alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTime.getTimeInMillis(), pendingIntent);
 
-		Toast.makeText(getActivity(), "Alarm set!", Toast.LENGTH_SHORT).show();
+		Toast.makeText(getActivity(), "Alarm set for " + sdf.format(alarmTime.getTime()), Toast.LENGTH_SHORT).show();
 		Log.d("Accelerometer Service", " Should Start with Sleep Id" + Integer.toString(sleepId));
 
 		// This intent will then start the accelerometer service which will read the required data and commit it to DB.

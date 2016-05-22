@@ -29,6 +29,7 @@
         android:textColorHint="@color/textHint"
         android:textIsSelectable="true"
         android:textColor="#FFFFFF"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        android:layout_marginLeft="4dp"/>
 
 </LinearLayout>

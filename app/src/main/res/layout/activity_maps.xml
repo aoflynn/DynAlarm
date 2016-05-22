@@ -88,7 +88,8 @@
                         android:textSize="14sp"
                         android:layout_marginLeft="8dp"
                         android:layout_below="@+id/toText"
-                        android:layout_toStartOf="@+id/spinnerFrom"/>
+                        android:layout_toStartOf="@+id/spinnerFrom"
+                        android:backgroundTint="#007fff"/>
 
                     <Spinner
                         android:layout_width="70dp"
@@ -163,7 +164,7 @@
                         android:layout_alignParentStart="true"
                         android:layout_toStartOf="@+id/spinnerTo"
                         android:layout_marginLeft="8dp"
-                        />
+                        android:backgroundTint="#F90101"/>
 
                     <Spinner
                         android:layout_width="70dp"

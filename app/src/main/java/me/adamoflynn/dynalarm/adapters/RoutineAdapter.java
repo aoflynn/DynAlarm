@@ -60,6 +60,7 @@ public class RoutineAdapter extends RealmBaseAdapter<Routine> implements ListAda
 		viewHolder.desc.setText(item.getDesc() + " minutes");
 		viewHolder.checkBox.setChecked(false);
 		checkedRoutines[position] = false;
+
 		viewHolder.checkBox.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

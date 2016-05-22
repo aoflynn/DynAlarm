@@ -18,6 +18,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -68,6 +69,7 @@ public class RoutineActivity extends AppCompatActivity {
 		routineAdapter = new RoutineAdapter(this, R.id.listView, routines, true);
 		ListView listView = (ListView) findViewById(R.id.listView);
 		listView.setAdapter(routineAdapter);
+
 		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 		Button save = (Button) findViewById(R.id.done);
 
