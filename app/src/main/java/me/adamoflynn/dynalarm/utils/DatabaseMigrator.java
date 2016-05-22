@@ -6,9 +6,6 @@ import io.realm.DynamicRealm;
 import io.realm.RealmMigration;
 import io.realm.RealmSchema;
 
-/**
- * Created by Adam on 15/04/2016.
- */
 public class DatabaseMigrator  implements RealmMigration {
 	@Override
 	public void migrate(DynamicRealm realm, long oldVersion, long newVersion) {

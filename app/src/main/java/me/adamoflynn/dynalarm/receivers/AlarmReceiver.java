@@ -1,18 +1,11 @@
 package me.adamoflynn.dynalarm.receivers;
 
-import android.annotation.TargetApi;
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.util.Log;
-import android.widget.Toast;
-
-import java.util.Calendar;
 
 import me.adamoflynn.dynalarm.MainActivity;
 import me.adamoflynn.dynalarm.R;

@@ -16,9 +16,6 @@ import me.adamoflynn.dynalarm.model.Location;
  */
 public class LocationAdapter extends RealmBaseAdapter<Location> implements ListAdapter {
 
-	public TextView location;
-	public TextView address;
-
 	public static class ViewHolder {
 		TextView location;
 		TextView address;

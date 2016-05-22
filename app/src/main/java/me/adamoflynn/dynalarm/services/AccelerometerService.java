@@ -31,7 +31,7 @@ public class AccelerometerService extends Service implements SensorEventListener
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 
-	private long lastUpdate, lastUpdate5secs = 0;
+	private long lastUpdate, lastUpdateDBCommit = 0;
 	private int motions = 0;
 
 	private float accelCurrent;
@@ -60,12 +60,9 @@ public class AccelerometerService extends Service implements SensorEventListener
 		mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
-		// Get most recent sleep ID + inc to get new unique iD.
-		// sleepId = Application.sleepIDValue.incrementAndGet();
-
 		//Get times
 		lastUpdate = System.currentTimeMillis();
-		lastUpdate5secs = System.currentTimeMillis();
+		lastUpdateDBCommit = System.currentTimeMillis();
 
 		Log.d("Service", " Created");
 
@@ -158,9 +155,9 @@ public class AccelerometerService extends Service implements SensorEventListener
 			}
 
 			//Commit every 5 minute
-			// (curTime - lastUpdate5secs) >= 300000
-			if((curTime - lastUpdate5secs) >= 60000  && !first) {
-				lastUpdate5secs = curTime;
+			// (curTime - lastUpdateDBCommit) >= 300000
+			if((curTime - lastUpdateDBCommit) >= 60000  && !first) {
+				lastUpdateDBCommit = curTime;
 				avgVar = sumVar / motions;
 				writeToDB(Calendar.getInstance().getTimeInMillis(), motions, maxVar, avgVar);
 				Log.d("Motion: ", Integer.toString(motions));
@@ -194,7 +191,6 @@ public class AccelerometerService extends Service implements SensorEventListener
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void createPersistentNotification(){
 		Intent intent = new Intent(this, MainActivity.class);
-		//intent.putExtra("isAccelerometer", true);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 113, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 

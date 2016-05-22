@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -15,16 +14,14 @@ import android.util.Log;
 
 import java.io.IOException;
 
-/**
- * Created by Adam on 17/04/2016.
- */
+
 
 public class AlarmSound extends Service {
 
 	private Vibrator vibrator;
 	private MediaPlayer mediaPlayer;
 	private PowerManager.WakeLock wakeLock;
-	private long[] vibPattern = {600, 600, 600};
+	private final long[] vibPattern = {600, 600, 600};
 	private boolean isPlaying, isVibrateOn = false;
 	private SharedPreferences prefs;
 

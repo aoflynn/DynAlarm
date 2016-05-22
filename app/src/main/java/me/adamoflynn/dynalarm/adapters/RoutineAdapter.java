@@ -20,9 +20,6 @@ import me.adamoflynn.dynalarm.model.Routine;
  */
 public class RoutineAdapter extends RealmBaseAdapter<Routine> implements ListAdapter {
 
-	public TextView name;
-	public TextView desc;
-	public CheckBox checkBox;
 	public Boolean[] checkedRoutines;
 	public HashSet<Integer> checkedIds = new HashSet<>();
 

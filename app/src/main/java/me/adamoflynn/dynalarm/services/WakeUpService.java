@@ -24,9 +24,7 @@ import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
 import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 
-/**
- * Created by Adam on 11/04/2016.
- */
+
 public class WakeUpService extends IntentService {
 
 	private final DateFormat hh = new SimpleDateFormat("HH:mm");

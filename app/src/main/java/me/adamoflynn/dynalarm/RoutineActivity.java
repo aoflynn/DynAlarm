@@ -18,7 +18,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -177,7 +176,6 @@ public class RoutineActivity extends AppCompatActivity {
 
 		LayoutInflater li = LayoutInflater.from(this);
 		View dialogView = li.inflate(R.layout.routine_delete_item, null);
-		final TextView text = (TextView) dialogView.findViewById(R.id.text);
 		final TextView routine = (TextView) dialogView.findViewById(R.id.locationName);
 		routine.setText(routineName);
 

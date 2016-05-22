@@ -3,8 +3,8 @@ package me.adamoflynn.dynalarm;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ListView;
@@ -12,9 +12,7 @@ import android.widget.ListView;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
-import me.adamoflynn.dynalarm.adapters.RoutineAdapter;
 import me.adamoflynn.dynalarm.adapters.SleepAdapter;
-import me.adamoflynn.dynalarm.model.Routine;
 import me.adamoflynn.dynalarm.model.Sleep;
 
 public class SleepActivity extends AppCompatActivity {

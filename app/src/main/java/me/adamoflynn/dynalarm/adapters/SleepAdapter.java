@@ -3,7 +3,6 @@ package me.adamoflynn.dynalarm.adapters;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -29,11 +28,6 @@ import me.adamoflynn.dynalarm.model.Sleep;
 
 public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter {
 
-	public TextView date;
-	public TextView time;
-	public ProgressBar sleepDesired;
-	public TextView sleepPercent;
-	public ImageView starIcon;
 	private final DateFormat format = new SimpleDateFormat("HH:mm");
 	private final DateFormat formatGMT = new SimpleDateFormat("HH:mm");
 	private final DateFormat dateFormat = new SimpleDateFormat("E MMM dd", Locale.ENGLISH);

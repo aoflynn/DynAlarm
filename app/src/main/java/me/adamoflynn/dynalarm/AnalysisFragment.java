@@ -6,8 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-//import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,10 +17,10 @@ import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.components.YAxis;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -33,7 +31,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -43,13 +40,13 @@ import me.adamoflynn.dynalarm.model.Sleep;
 import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.utils.Utils;
 
+//import android.support.v4.app.Fragment;
+
 public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	private ArrayList<Entry> entries;
-	private ArrayList<Integer> max_motion;
-	private ArrayList<String> labels, sleep_stage;
+	private ArrayList<String> labels;
 	private Realm realm;
-	private TextView date;
 	private LineChart chart;
 	private LineDataSet dataSet;
 	private final DateFormat format = new SimpleDateFormat("HH:mm");
@@ -159,7 +156,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	}
 
 	// Initialize the view
-	public void initializeDate(View v){
+	private void initializeDate(View v){
 		TextView date = (TextView) v.findViewById(R.id.date);
 		Sleep s = realm.where(Sleep.class).equalTo("id", allSleepReq.get(sleepIndex).getId()).findFirst();
 		Date d = s.getDate();
@@ -167,7 +164,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	}
 
 	// Have to implement this method to change the date as fragments are weird
-	public void changeDate(){
+	private void changeDate(){
 		TextView date = (TextView) getView().findViewById(R.id.date);
 		Sleep s = realm.where(Sleep.class).equalTo("id", allSleepReq.get(sleepIndex).getId()).findFirst();
 		Date d = s.getDate();

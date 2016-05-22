@@ -2,12 +2,10 @@ package me.adamoflynn.dynalarm;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -16,25 +14,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.adapters.LocationAdapter;
-import me.adamoflynn.dynalarm.adapters.RoutineAdapter;
 import me.adamoflynn.dynalarm.model.Location;
-import me.adamoflynn.dynalarm.model.Routine;
-import me.adamoflynn.dynalarm.utils.RoutineOnItemSelectedListener;
 
-/**
- * Created by Adam on 21/05/2016.
- */
+
 public class LocationActivity  extends AppCompatActivity {
 	private Realm realm;
 	private RealmResults<Location> locations = null;

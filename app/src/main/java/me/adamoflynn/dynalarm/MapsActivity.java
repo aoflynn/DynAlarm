@@ -16,7 +16,6 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.WakefulBroadcastReceiver;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -52,7 +51,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -87,7 +85,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private int locationId;
 	private Realm realm;
 	private Spinner spinnerFrom, spinnerTo;
-	private final String SNIP = "Tap here to remove this location!";
 	private ArrayList<String> locationSpinner;
 	private ArrayList<Integer> locationIDs;
 	private List<Location> locationList;
@@ -267,13 +264,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(53.3441, -6.2675), 10));
 
 		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-			// TODO: Consider calling
-			//    ActivityCompat#requestPermissions
-			// here to request the missing permissions, and then overriding
-			//   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-			//                                          int[] grantResults)
-			// to handle the case where the user grants the permission. See the documentation
-			// for ActivityCompat#requestPermissions for more details.
+			// Required Wrap Around for getting location but actually only needed for Marshmallow.
 			return;
 		}
 		mMap.setMyLocationEnabled(true);
@@ -602,7 +593,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 	private class LatLngToString extends AsyncTask<LatLng, Void, String> {
 		ProgressDialog dialog;
-		Context mContext;
+		final Context mContext;
 		String errorMessage;
 
 		LatLngToString(Context context){
@@ -661,7 +652,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private class LatLngToStringFrom extends AsyncTask<LatLng, Void, String> {
 		String errorMessage = "";
 		ProgressDialog dialog;
-		Context mContext;
+		final Context mContext;
 
 		LatLngToStringFrom(Context context){
 			mContext = context;
@@ -721,14 +712,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	private class GetJourneyDuration extends AsyncTask<String, String, String> {
 
 		private ProgressDialog dialog;
-		private Context mContext;
+		private final Context mContext;
 		private final String BASE_URL = "https://api.tomtom.com/routing/1/calculateRoute/";
 		private final String API_KEY = "nmqjmepdy9ppbp8yekvrsaet";
 		private final String END_URL = "?key="+ API_KEY + "&routeType=fastest&traffic=true&computeTravelTimeFor=all&arriveAt=";
 
 		private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		private final DateFormat hh = new SimpleDateFormat("HH:mm");
-
 
 		GetJourneyDuration(Context context){
 			mContext = context;
@@ -745,8 +734,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		@Override
 		protected String doInBackground(String... params) {
 
-			InputStream in;
-			String data = "";
 			Log.d("Execute:", params[0] + params[1] + params[2]);
 			String from = params[0];
 			String to = params[1];

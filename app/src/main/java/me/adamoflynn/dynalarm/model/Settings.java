@@ -11,7 +11,6 @@ public class Settings extends RealmObject {
 	private Boolean vibration;
 
 	public Settings(){
-
 	}
 
 	public int getWake_timeframe() {

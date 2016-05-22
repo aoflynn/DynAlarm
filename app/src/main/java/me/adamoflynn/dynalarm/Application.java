@@ -11,7 +11,6 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import me.adamoflynn.dynalarm.model.Location;
 import me.adamoflynn.dynalarm.model.Routine;
-import me.adamoflynn.dynalarm.model.Settings;
 import me.adamoflynn.dynalarm.model.Sleep;
 import me.adamoflynn.dynalarm.model.User;
 import me.adamoflynn.dynalarm.utils.DatabaseMigrator;

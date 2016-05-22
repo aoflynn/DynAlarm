@@ -15,7 +15,7 @@
         android:id="@+id/text"
         android:layout_gravity="center_horizontal"
         android:padding="10dp"
-        android:textSize="16dp"/>
+        android:textSize="16sp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -24,7 +24,7 @@
         android:id="@+id/duration"
         android:layout_gravity="center"
         android:padding="10dp"
-        android:textSize="16dp"/>
+        android:textSize="16sp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -33,7 +33,7 @@
         android:id="@+id/timeframe"
         android:layout_gravity="center"
         android:padding="10dp"
-        android:textSize="16dp"/>
+        android:textSize="16sp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -42,6 +42,6 @@
         android:id="@+id/options"
         android:layout_gravity="center"
         android:padding="10dp"
-        android:textSize="16dp"/>
+        android:textSize="16sp"/>
 
 </LinearLayout>

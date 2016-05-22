@@ -1,4 +1,5 @@
 package me.adamoflynn.dynalarm.services;
+
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.IntentService;
@@ -12,6 +13,7 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -42,7 +44,6 @@ public class TrafficService extends IntentService {
 	private final String END_URL = "?key="+ API_KEY + "&routeType=fastest&traffic=true&computeTravelTimeFor=all&arriveAt=";
 
 	private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private final DateFormat hh = new SimpleDateFormat("HH:mm");
 	private List<AccelerometerData> accelerometerData;
 	private TrafficInfo trafficInfo;
 
@@ -111,7 +112,7 @@ public class TrafficService extends IntentService {
 	}
 
 
-	public void analyseData(String response, Realm realm, int sleepId, int routineTime, Calendar wake_time) {
+	private void analyseData(String response, Realm realm, int sleepId, int routineTime, Calendar wake_time) {
 
 		try{
 
@@ -142,7 +143,7 @@ public class TrafficService extends IntentService {
 
 	}
 
-	public Date removeT(String time){
+	private Date removeT(String time){
 		time = time.replace('T',' ');
 		Date d = null;
 		try{
