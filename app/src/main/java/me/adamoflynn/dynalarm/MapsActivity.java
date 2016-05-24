@@ -233,6 +233,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		from = new LatLng(locationSelected.getLocLat(), locationSelected.getLocLon());
 		fromMarker = mMap.addMarker(new MarkerOptions().position(from).title(FROM_TITLE).snippet("Tap here to remove this location!").draggable(true)); // update map marker
 		fromMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(fromMarker.getPosition(), 10));
 		fromLocationSet = true;
 		new LatLngToStringFrom(this).execute(from);
 
@@ -261,6 +262,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		to = new LatLng(locationSelected.getLocLat(), locationSelected.getLocLon());
 		toMarker = mMap.addMarker(new MarkerOptions().position(to).title(TO_TITLE).snippet("Tap here to remove this location!").draggable(true));
 		toMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(toMarker.getPosition(), 10));
 		toLocationSet = true;
 		new LatLngToString(this).execute(to);
 
@@ -426,13 +428,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		} else{
 			final String fromA = Double.toString(from.latitude) + "," + Double.toString(from.longitude);
 			final String toB = Double.toString(to.latitude) + "," + Double.toString(to.longitude);
-			Log.d("DEETS", fromA + toB + sdf.format(alarmTime.getTime()));
+			Log.d("Data", fromA + toB + sdf.format(alarmTime.getTime()));
 			checkDifference();
 			new GetJourneyDuration(this).execute(fromA, toB, sdf.format(alarmTime.getTime()));
-			showConfirmationDialog();
+			//showConfirmationDialog();
 		}
 	}
-
 
 	// Tell user how long it should usually take to go from A to B and arriving at Z
 	private void showConfirmationDialog() {
@@ -445,7 +446,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		checkDifference();
 		int journeyTime = (int) Math.round(trafficInfo.getHistoricTravelTime() / 60.00);
 
-		//Log.d("TRaffic", trafficInfo.toString());
 		builder.setMessage("The journey from " + fromEditText.getText().toString() + " to "
 				+ toEditText.getText().toString() + " will take around " + journeyTime + " minutes if you leave at "
 				+ hh.format(trafficInfo.getDepartureTime()));
@@ -514,6 +514,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 		final AlertDialog dialog = builder.show();
 	}
+
+	private void dataRetrievalError() {
+		final AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
+		builder.setTitle("Error");
+		builder.setMessage("Unable to retrieve journey details. Press OK to use journey details without confirming a departure time and duration.");
+
+		final String fromA = Double.toString(from.latitude) + "," + Double.toString(from.longitude);
+		final String toB = Double.toString(to.latitude) + "," + Double.toString(to.longitude);
+		checkDifference();
+
+		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) { // Send required data back
+				dialog.cancel();
+
+				Intent intent = new Intent();
+				intent.putExtra("from", fromA);
+				intent.putExtra("to", toB);
+				intent.putExtra("time", sdf.format(alarmTime.getTime()));
+
+				setResult(2, intent);
+				finish();
+			}
+		});
+
+		builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+
+		final AlertDialog dialog = builder.show();
+	}
+
 
 	// remove individual markers from map
 	@Override
@@ -816,53 +851,55 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			}
 		}
 
-	protected void onPostExecute(String response){
-		if(response == null) {
-			response = "Error...";
-		}
-		parseJSON(response);
-		dialog.dismiss();
-		showConfirmationDialog();
-	}
-
-	public void parseJSON(String response) {
-
-		try{
-
-			JSONObject jsonObject = new JSONObject(response);
-			JSONArray allRoutes = jsonObject.getJSONArray("routes");
-
-			// Only need one route
-			JSONObject route = allRoutes.getJSONObject(0);
-			JSONObject summary = route.getJSONObject("summary");
-
-			int lengthInMeters = summary.getInt("lengthInMeters");
-			int travelTimeInSeconds = summary.getInt("travelTimeInSeconds");
-			int travelDelayInSeconds = summary.getInt("trafficDelayInSeconds");
-			Date dep = removeT(summary.getString("departureTime"));
-			Date arr = removeT(summary.getString("arrivalTime"));
-			int travelTimeNoTraffic = summary.getInt("noTrafficTravelTimeInSeconds");
-			int historicTravelTime = summary.getInt("historicTrafficTravelTimeInSeconds");
-			int liveIncidents = summary.getInt("liveTrafficIncidentsTravelTimeInSeconds");
-
-			trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
-			Log.d("Data", trafficInfo.toString());
-		}catch (JSONException e) {
-			Log.e("JSON parse exception", e.getMessage());
+		protected void onPostExecute(String response){
+			if(response == null) {
+				response = "Error...";
+				dataRetrievalError();
+				return;
+			}
+			parseJSON(response);
+			dialog.dismiss();
+			showConfirmationDialog();
 		}
 
-	}
+		public void parseJSON(String response) {
 
-	public Date removeT(String time){
-		time = time.replace('T',' ');
-		Date d = null;
-		try{
-			d = df.parse(time);
-		}catch (Exception e){
-			Log.d("Error", e.getMessage());
+			try{
+
+				JSONObject jsonObject = new JSONObject(response);
+				JSONArray allRoutes = jsonObject.getJSONArray("routes");
+
+				// Only need one route
+				JSONObject route = allRoutes.getJSONObject(0);
+				JSONObject summary = route.getJSONObject("summary");
+
+				int lengthInMeters = summary.getInt("lengthInMeters");
+				int travelTimeInSeconds = summary.getInt("travelTimeInSeconds");
+				int travelDelayInSeconds = summary.getInt("trafficDelayInSeconds");
+				Date dep = removeT(summary.getString("departureTime"));
+				Date arr = removeT(summary.getString("arrivalTime"));
+				int travelTimeNoTraffic = summary.getInt("noTrafficTravelTimeInSeconds");
+				int historicTravelTime = summary.getInt("historicTrafficTravelTimeInSeconds");
+				int liveIncidents = summary.getInt("liveTrafficIncidentsTravelTimeInSeconds");
+
+				trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
+				Log.d("Data", trafficInfo.toString());
+			}catch (JSONException e) {
+				Log.e("JSON parse exception", e.getMessage());
+			}
+
 		}
-		return d;
+
+		public Date removeT(String time){
+			time = time.replace('T',' ');
+			Date d = null;
+			try{
+				d = df.parse(time);
+			}catch (Exception e){
+				Log.d("Error", e.getMessage());
+			}
+			return d;
+		}
 	}
-}
 
 }
