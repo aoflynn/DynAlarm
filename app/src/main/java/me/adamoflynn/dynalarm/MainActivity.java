@@ -29,8 +29,6 @@ import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.AlarmSound;
 import me.adamoflynn.dynalarm.utils.Utils;
 
-/*import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.ViewPager;*/
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 	private SharedPreferences prefs;
 	private AlertDialog alertDialog = null;
 
+	// Initialise tab icons
 	private int[] tabsIcons = {
 		R.drawable.ic_alarm_white_48dp,
 		R.drawable.ic_timeline_white_48dp,
@@ -54,14 +53,16 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		context = getApplicationContext();
 
+		// If i receive a new intent, go to this method
 		onNewIntent(getIntent());
 
+		// DB and prefs connections
 		db = Realm.getDefaultInstance();
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
 
-
+		// Implement the tab layout by populating the adapter with the required fragments
 		ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
 		setupViewPager(viewPager);
 
@@ -71,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
 	}
 
+
+	// If intent is sent and the alarm sound is ringing, show cancel and snooze dialog
 	@Override
 	protected void onNewIntent(Intent intent){
 		super.onNewIntent(intent);
@@ -80,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
+	// Add frags to swipe view
 	private void setupViewPager(ViewPager viewPager) {
 		ViewPagerAdapter adapter = new ViewPagerAdapter(getFragmentManager());
 		adapter.addFragment(new AlarmFragment());
@@ -94,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 		tabLayout.getTabAt(2).setIcon(tabsIcons[2]);
 	}
 
-
+	// If alarm sound service is running, show the dialog providing its not already showing.
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -104,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
+	// If alarm sound service is running, show the dialog providing its not already showing.
 	@Override
 	protected void onRestart() {
 		super.onRestart();
@@ -118,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
 		super.onPause();
 	}
 
+	// Close DB
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -128,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
+	// This dialog prompts the user to cancel or snooze an alarm if the alarm sound is goign off
 	private void showAlarmDialog(){
 			isDialogShowing = true;
 			final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -141,8 +148,8 @@ public class MainActivity extends AppCompatActivity {
 			builder.setPositiveButton("Stop Alarm", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					cancelAlarm();
-					NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+					cancelAlarm(); // Cancel Alarms
+					NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE); // Remove notification
 					notificationManager.cancel(0);
 					isAlarm = false;
 					isDialogShowing = false;
@@ -150,14 +157,15 @@ public class MainActivity extends AppCompatActivity {
 				}
 			});
 
+			// Snooze alarm - i.e. set alarm for user snooze value in future
 			builder.setNegativeButton("Snooze Alarm", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					Intent i = new Intent(context, AlarmSound.class);
-					context.stopService(i);
-					snoozeAlarms(context);
+					context.stopService(i); // stop alarm ringing for now
+					snoozeAlarms(context); // snooze
 					NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-					notificationManager.cancel(0);
+					notificationManager.cancel(0); // get rid of the alarm notification keep the persistent one
 					isDialogShowing = false;
 					dismissAlarmDialog();
 				}
@@ -170,17 +178,24 @@ public class MainActivity extends AppCompatActivity {
 		alertDialog.dismiss();
 	}
 
+	// Cancel all alarms in the application
 	private void cancelAlarm(){
 		cancelWkAlarm();
 		cancelWakeService();
 		cancelTrafficService();
 
+		// If alarm sound running, stop it
 		if(Utils.isMyServiceRunning(AlarmSound.class, context)) {
 			Log.d("Alarm sound", " is running... stopping");
 			Intent stopAlarm = new Intent(context, AlarmSound.class);
 			context.stopService(stopAlarm);
 		}
 	}
+
+	/**
+	 *  These three cancel alarms methods are explained very well in the documentation
+	 *  Basis is: have to recreate exact same intent used to intially schedule alarm to cancel it
+	 */
 
 	private void cancelWkAlarm(){
 		Intent intent = new Intent(this, AlarmReceiver.class);
@@ -216,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
 		pendingIntent.cancel();
 	}
 
+	// update the alarm to the user defined snooze time in the future
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void snoozeAlarms(Context context){
 		Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);

@@ -8,9 +8,6 @@ import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-/**
- * Created by Adam on 08/03/2016.
- */
 public class Sleep extends RealmObject {
 	@PrimaryKey
 	private int id;

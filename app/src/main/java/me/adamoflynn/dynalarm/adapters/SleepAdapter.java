@@ -22,15 +22,14 @@ import io.realm.RealmResults;
 import me.adamoflynn.dynalarm.R;
 import me.adamoflynn.dynalarm.model.Sleep;
 
-/**
- * Created by Adam on 18/05/2016.
- */
-
 public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter {
 
+	// Relevant date formats for printing the time and dates correctly
 	private final DateFormat format = new SimpleDateFormat("HH:mm");
 	private final DateFormat formatGMT = new SimpleDateFormat("HH:mm");
 	private final DateFormat dateFormat = new SimpleDateFormat("E MMM dd", Locale.ENGLISH);
+
+	// Get an instance of the user settings
 	private SharedPreferences mSettings = PreferenceManager.getDefaultSharedPreferences(context);
 
 	public static class ViewHolder {
@@ -43,6 +42,7 @@ public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter
 	}
 
 
+	// Constructor to pass the required
 	public SleepAdapter(Context context, int resId, RealmResults<Sleep> realmResults, boolean automaticUpdate) {
 		super(context, realmResults, automaticUpdate);
 	}
@@ -52,8 +52,11 @@ public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		ViewHolder viewHolder;
 		if (convertView == null) {
+			// Load custom layout file
 			convertView = inflater.inflate(R.layout.sleep_item, parent, false);
 			viewHolder = new ViewHolder();
+
+			// Get references to the required UI
 			viewHolder.date = (TextView) convertView.findViewById(R.id.date);
 			viewHolder.time = (TextView) convertView.findViewById(R.id.time);
 			viewHolder.sleepPercent = (TextView) convertView.findViewById(R.id.percent);
@@ -65,25 +68,36 @@ public class SleepAdapter extends RealmBaseAdapter<Sleep> implements ListAdapter
 			viewHolder = (ViewHolder) convertView.getTag();
 		}
 
+		// Get the sleep object from the database results
 		final Sleep s = realmResults.get(position);
 
+		// Calculate the start, end, and duration of the sleep.
 		long start = s.getStartTime();
 		long end = s.getEndTime();
 		long lengthOfsleep = end - start;
 
+		// Print the correct time formats in the list.
 		formatGMT.setTimeZone(TimeZone.getTimeZone("GMT"));
 		viewHolder.time.setText(formatGMT.format(new Date(lengthOfsleep)) + " hrs");
 		viewHolder.duration.setText(format.format(new Date(start)) + " to " + format.format(new Date(end)));
 		viewHolder.date.setText(dateFormat.format(s.getDate()));
 
+		// Get value of desired sleep from settings
 		String desired = mSettings.getString("desiredSleep", "07:00");
 
 		try {
+
+			// Calculate the percentage of the current sleep time over the desired sleep time
 			formatGMT.setTimeZone(TimeZone.getTimeZone("GMT"));
 			Date timeSelected = formatGMT.parse(desired);
 			long desiredTime = timeSelected.getTime();
+
 			double percent = ((double) lengthOfsleep/desiredTime) * 100;
+
+			// Round the score up/down
 			int progress = (int) Math.round(percent);
+
+			// If percent is 100% or over, give a star and only say 100%. Otherwise, print the actual percentage
 			viewHolder.sleepDesired.setMax(100);
 			viewHolder.sleepDesired.setProgress(progress);
 			if(progress >= 100){

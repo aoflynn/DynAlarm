@@ -43,6 +43,9 @@ public class SleepActivity extends AppCompatActivity {
 			}
 		});
 
+
+		// Get all sleep data recorded and send this to adapter to populate the list
+
 		RealmResults<Sleep> sleeps = realm.where(Sleep.class).findAll();
 		sleeps.sort("startTime", Sort.DESCENDING);
 		SleepAdapter sleepAdapter = new SleepAdapter(this, R.id.listView, sleeps, true);

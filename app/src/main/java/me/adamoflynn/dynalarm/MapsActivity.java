@@ -128,12 +128,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		Button add_to = (Button) findViewById(R.id.add_location_to);
 		spinnerFrom = (Spinner) findViewById(R.id.spinnerFrom);
 		spinnerTo = (Spinner) findViewById(R.id.spinnerTo);
-		updateSpinner();
+		updateSpinner(); // populate the spinners with saved locations
 
 		spinnerFrom.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-				updateMapFrom(i);
+				updateMapFrom(i); // update from parts of map i.e. marker and text view
 			}
 
 			@Override
@@ -146,7 +146,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		spinnerTo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-				updateMapTo(i);
+				updateMapTo(i); // update to parts of map i.e. marker and text view
 			}
 
 			@Override
@@ -162,10 +162,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		done.setOnClickListener(this);
 		arriveAt.setText(hh.format(alarmTime.getTime()));
 
+
+		// booleans to track what data there has been set
 		fromLocationSet = false;
 		toLocationSet = false;
 		timeSet = false;
 
+		// Call map
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.map);
 		mapFragment.getMapAsync(this);
@@ -174,33 +177,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	@Override
 	public void onResume(){
 		super.onResume();
-		updateSpinner();
+		updateSpinner(); // When coming back from locations activity, should update spinner
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.maps_menu, menu);
+		inflater.inflate(R.menu.maps_menu, menu); // Add my custom menu to the options menu
 		return true;
 	}
 
-
+	// Menu method to handle clicks
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
 		switch (item.getItemId()) {
 			case R.id.manage_locs:
-				Intent intent = new Intent(this, LocationActivity.class);
+				Intent intent = new Intent(this, LocationActivity.class); // Go to manange location activity
 				startActivity(intent);
 				return true;
 			case R.id.clear_map:
-				showClearDialog();
+				showClearDialog(); // clear all markers
 				return true;
 			default:
 				return super.onOptionsItemSelected(item);
 		}
 	}
 
+	// Clear the map and the required text
 	private void clearMap(){
 		clearFrom();
 		clearTo();
@@ -208,14 +212,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 	private void updateMapFrom(int i) {
 
+		// If my filler value or my flag value for not updating, return spinner to 0
 		if(i == -1 || locationIDs.get(i) < 0){
 			spinnerFrom.setSelection(0);
 			return; // Do nothing...
 		}
 
+		// other wise update map with respects to  the spinner selection of the saved location
 		Log.d("SPINNER",locationSpinner.get(i) + Integer.toString(locationIDs.get(i)));
 
-		if(fromLocationSet){
+		if(fromLocationSet){ // Remove current marker before adding a new one
 			fromMarker.remove();
 		}
 
@@ -223,8 +229,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		Location locationSelected = realm.where(Location.class).equalTo("id", locationIDs.get(i)).findFirst();
 		Log.d("Location:", locationSelected.toString());
 
+		// Assign the selected location to the from values and asynchronously call the geocoder API
 		from = new LatLng(locationSelected.getLocLat(), locationSelected.getLocLon());
-		fromMarker = mMap.addMarker(new MarkerOptions().position(from).title(FROM_TITLE).snippet("Tap here to remove this location!").draggable(true));
+		fromMarker = mMap.addMarker(new MarkerOptions().position(from).title(FROM_TITLE).snippet("Tap here to remove this location!").draggable(true)); // update map marker
 		fromMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 		fromLocationSet = true;
 		new LatLngToStringFrom(this).execute(from);
@@ -232,6 +239,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		progressDialog.dismiss();
 	}
 
+
+	// same as from method but in relation to the to values in the activity
 	private void updateMapTo(int i) {
 
 		if(i == -1 || locationIDs.get(i) < 0){
@@ -258,6 +267,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		progressDialog.dismiss();
 	}
 
+	// When map loads in, animate to Dublin
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		mMap = googleMap;
@@ -267,24 +277,29 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			// Required Wrap Around for getting location but actually only needed for Marshmallow.
 			return;
 		}
+		// Get user location
 		mMap.setMyLocationEnabled(true);
 		mMap.getUiSettings().setZoomControlsEnabled(true);
+
+		// Set required listeners
 		mMap.setOnMapLongClickListener(this);
 		mMap.setOnMarkerDragListener(this);
 		mMap.setOnInfoWindowClickListener(this);
 		progressDialog.dismiss();
 	}
 
+
+	// This method is used to add indiviudual markers to the map and update their respective values
 	@Override
 	public void onMapLongClick(LatLng point) {
 
-		if(!fromLocationSet) {
+		if(!fromLocationSet) { // No From location set yet, so set it
 			fromMarker = mMap.addMarker(new MarkerOptions().position(point).title(FROM_TITLE).snippet("Tap here to remove this location!").draggable(true));
 			fromMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
 			fromLocationSet = true;
 			from = point;
-			new LatLngToStringFrom(this).execute(point);
-		} else if(!toLocationSet) {
+			new LatLngToStringFrom(this).execute(point); //  aynch geocoder call
+		} else if(!toLocationSet) { // from location is set, now do to lcoation
 			toMarker = mMap.addMarker(new MarkerOptions().position(point).title(TO_TITLE).snippet("Tap here to remove this location!").draggable(true));
 			toMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 			toLocationSet = true;
@@ -298,19 +313,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	public void onClick(View v) {
 		switch (v.getId()){
 			case R.id.arriveAt:
-				timePicker();
+				timePicker(); // show time picker
 				break;
 			case R.id.done:
-				sendData();
+				sendData(); // send data back to application
 				break;
-			case R.id.add_location_from:
+			case R.id.add_location_from: // Add location in the from text to the DB
 				if(TextUtils.isEmpty(fromEditText.getText())) {
 					Toast.makeText(this, "No From Location Specified!", Toast.LENGTH_SHORT).show();
 				} else {
 					buildAndShowInputDialog("from");
 				}
 				break;
-			case R.id.add_location_to:
+			case R.id.add_location_to: // Add location in the to text to the DB
 				if(TextUtils.isEmpty(toEditText.getText())){
 					Toast.makeText(this, "No To Location Specified!", Toast.LENGTH_SHORT).show();
 				} else {
@@ -320,6 +335,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		}
 	}
 
+	// Similar to alarmfragment
 	private void timePicker(){
 		Calendar mCurrentTime = Calendar.getInstance();
 		int hour = mCurrentTime.get(Calendar.HOUR_OF_DAY);
@@ -337,6 +353,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		pickerDialog.show();
 	}
 
+	// This method makes sure that all "past" times are future times. This stops alarms going off
+	// immediately because the system thought they were set for earlier in the current day, rather than the next day
 	private void checkDifference(){
 		long differenceInTime = Calendar.getInstance().getTimeInMillis() - alarmTime.getTimeInMillis();
 		if(differenceInTime > 0){
@@ -345,20 +363,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		}
 	}
 
+	// Add the saved locations to the spinner
 	private void updateSpinner(){
 		RealmResults<Location> locations = realm.where(Location.class).findAll();
 		locationList = locations;
 
 		Log.d("Locations", locationList.toString());
-		locationSpinner = new ArrayList<>();
-		locationIDs = new ArrayList<>();
-		locationSpinner.add(0, "");
-		locationIDs.add(0, -1);
+		locationSpinner = new ArrayList<>(); // lcoationName
+		locationIDs = new ArrayList<>(); // locationID
+		locationSpinner.add(0, ""); // Filler value for Name
+		locationIDs.add(0, -1); // Filler value for ID
 		for (Location l:locationList){
 			locationSpinner.add(l.getLocation());
 			locationIDs.add(l.getId());
 		}
 
+		// Set the spinners to the saved locations , while the other array tracks the unique id of the location
 		ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, locationSpinner);
 		spinnerFrom.setAdapter(arrayAdapter);
 		spinnerTo.setAdapter(arrayAdapter);
@@ -374,17 +394,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 	}
 
+	// Drag the marker to specified location and update the required data and map
 	@Override
 	public void onMarkerDragEnd(Marker marker) {
-		if(marker.getTitle().equals(FROM_TITLE)){
+		if(marker.getTitle().equals(FROM_TITLE)){ // If from marker, update that
 			updateFromMarker(marker);
 			new LatLngToStringFrom(this).execute(marker.getPosition());
-		} else {
+		} else { // else, must be to marker, update that
 			updateToMarker(marker);
 			new LatLngToString(this).execute(marker.getPosition());
 		}
 	}
 
+	// Update from data with new marker data
 	private void updateFromMarker(Marker marker){
 		fromMarker = marker;
 		from = fromMarker.getPosition();
@@ -397,6 +419,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		updateMapTo(-1);
 	}
 
+	// When user saves, this will send the data back to the alarm fragment
 	private void sendData(){
 		if(!fromLocationSet || !toLocationSet || !timeSet ){
 			showErrorDialog();
@@ -406,10 +429,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			Log.d("DEETS", fromA + toB + sdf.format(alarmTime.getTime()));
 			checkDifference();
 			new GetJourneyDuration(this).execute(fromA, toB, sdf.format(alarmTime.getTime()));
-			//showConfirmationDialog();
+			showConfirmationDialog();
 		}
 	}
 
+
+	// Tell user how long it should usually take to go from A to B and arriving at Z
 	private void showConfirmationDialog() {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
 		builder.setTitle("Journey Details");
@@ -427,7 +452,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int which) {
+			public void onClick(DialogInterface dialog, int which) { // Send required data back
 				dialog.cancel();
 
 				Intent intent = new Intent();
@@ -451,6 +476,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		final AlertDialog dialog = builder.show();
 	}
 
+	// prompt to show users don't have enough data
 	private void showErrorDialog()  {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
 		builder.setTitle("Enter Required Data");
@@ -466,6 +492,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		final AlertDialog dialog = builder.show();
 	}
 
+	// dialog to clear map
 	private void showClearDialog()  {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
 		builder.setTitle("Are you sure?");
@@ -488,6 +515,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		final AlertDialog dialog = builder.show();
 	}
 
+	// remove individual markers from map
 	@Override
 	public void onInfoWindowClick(Marker marker) {
 		if (fromMarker.equals(marker)){
@@ -513,15 +541,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		updateMapTo(-1);
 	}
 
+	// add location dialog
 	private void buildAndShowInputDialog(final String dest)  {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
 		builder.setTitle("Add Location");
 
 		LayoutInflater li = LayoutInflater.from(this);
+		// custom layout
 		View dialogView = li.inflate(R.layout.map_add_location, null);
 
 		final EditText locationName = (EditText) dialogView.findViewById(R.id.locationName);
 		final TextView address = (TextView) dialogView.findViewById(R.id.address);
+		//depending on the button clicked, get the correct address to show user when saving
 		if(dest.equals("from"))
 			address.setText(fromEditText.getText().toString());
 		else address.setText(toEditText.getText().toString());
@@ -530,7 +561,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				if (dest.equals("from")) {
+				if (dest.equals("from")) { // if from add location button, add the location to that address
 					addLocation(locationId, locationName.getText().toString(), address.getText().toString(), from);
 				} else {
 					addLocation(locationId, locationName.getText().toString(), address.getText().toString(), to);
@@ -547,6 +578,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 		final AlertDialog dialog = builder.show();
 
+
+		// Editor action to dismiss keyboard
 		locationName.setOnEditorActionListener(
 				new EditText.OnEditorActionListener() {
 					@Override
@@ -569,20 +602,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 				});
 	}
 
+	// Add location to database
 	private void addLocation(int locId, String name, String address, LatLng loc){
 		if ( name == null || name.length() == 0) {
 			Toast.makeText(this, "Empty Name! Try Again", Toast.LENGTH_SHORT).show();
 			return;
 		}
-		Log.d("LOC ID BEFORE", Integer.toString(locId));
-		Log.d("LOC ID BEFORE 2", Integer.toString(locationId));
+
 		Location location = new Location(locId, name, address, loc.latitude, loc.longitude);
 		realm.beginTransaction();
 		realm.copyToRealm(location);
 		realm.commitTransaction();
 		locationId++;
-		Log.d("LOC ID AFTER", Integer.toString(locId));
-		Log.d("LOC ID AFTER 2", Integer.toString(locationId));
 		updateSpinner();
 	}
 
@@ -591,6 +622,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 	 *  AsyncTasks to get background geocode information
 	 */
 
+
+	// This method focuses on the "to" values
 	private class LatLngToString extends AsyncTask<LatLng, Void, String> {
 		ProgressDialog dialog;
 		final Context mContext;
@@ -599,6 +632,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		LatLngToString(Context context){
 			mContext = context;
 		}
+
+		// Show progress dialog
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
@@ -616,13 +651,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			List<Address> addresses = null;
 			String addressText="";
 
+			// Try to get the reverse location from geopoints
 			try {
 				addresses = geocoder.getFromLocation(latitude, longitude, 1);
-			} catch (IOException e) {
+			} catch (IOException e) { // Network error catch
 				errorMessage = "Service not available. Please check network connectivity.";
 				Log.e("Geocoder:", errorMessage);
 			}
 
+			// If an address is returned, get the first one and send it back
 			if(addresses != null && addresses.size() > 0 ){
 				Address address = addresses.get(0);
 
@@ -636,6 +673,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 			}
 		}
 
+		// Update the to values on map and text views
 		@Override
 		protected void onPostExecute(String s) {
 			super.onPostExecute(s);
@@ -649,6 +687,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		}
 	}
 
+	// Simialr to above just with from values
 	private class LatLngToStringFrom extends AsyncTask<LatLng, Void, String> {
 		String errorMessage = "";
 		ProgressDialog dialog;
@@ -709,6 +748,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 		}
 	}
 
+
+	// AsyncTask to contact the TomTom API, same implementation to traffic service expect
+	// this isn' a service but an async task
 	private class GetJourneyDuration extends AsyncTask<String, String, String> {
 
 		private ProgressDialog dialog;

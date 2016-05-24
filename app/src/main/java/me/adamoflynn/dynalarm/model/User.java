@@ -5,10 +5,6 @@ import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-/**
- * Created by Adam on 20/02/2016.
- */
-
 public class User extends RealmObject {
   @PrimaryKey
   private int id;
@@ -17,7 +13,7 @@ public class User extends RealmObject {
 	private RealmList<Sleep> userSleepData;
 	private RealmList<Routine> userRoutines;
 
-	// This will be used for data analysis and sleep quality calculations
+	// This will be used for data analysis and sleep quality calculations in future releases
 	private int age;
 	private String gender;
 	private int weight;

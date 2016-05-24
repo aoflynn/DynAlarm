@@ -4,7 +4,8 @@ import android.app.ActivityManager;
 import android.content.Context;
 
 /**
- * Created by Adam on 30/04/2016.
+ * This method is used to check if the specified service is running currently.
+ * Used extensively throughout my application
  */
 public final class Utils {
 

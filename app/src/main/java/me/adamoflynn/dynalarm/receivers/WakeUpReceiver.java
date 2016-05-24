@@ -12,22 +12,34 @@ import me.adamoflynn.dynalarm.services.TrafficService;
 import me.adamoflynn.dynalarm.services.WakeUpService;
 
 /**
- * Created by Adam on 12/04/2016.
+ * This wake up receiver, when triggered by the timeframe alarm, will send data to either of the#
+ * specified wake up services.
  */
 public class WakeUpReceiver extends WakefulBroadcastReceiver {
 
+
+	// Good practice, keep actions final
 	public static final String WAKEUP = "me.adamoflynn.dynalarm.action.WAKEUP";
 	public static final String TRAFFIC = "me.adamoflynn.dynalarm.action.TRAFFIC";
 
+
+	// When triggered, the receiver will go to this method with data i.e. the intent
 	@Override
 	public void onReceive(Context context, Intent intent) {
+
+		// Get action to see what service we must awaken
 		String action = intent.getAction();
 
+		// If its WAKEUP, we should go to the wake up service that only analyses accelerometer data
 		if(action.equals(WAKEUP)){
+
+			//Send on the required data
 			String id = intent.getStringExtra("id");
 			int routineTime = intent.getIntExtra("routines", 0);
 			Calendar wake_time = (Calendar) intent.getSerializableExtra("wake_time");
 
+			// Start the service, by using a wakeful service call. This means the phone will be
+			// awoken if it was asleep.
 			Intent wakeUpIntent = new Intent(context, WakeUpService.class);
 			wakeUpIntent.putExtra("id", id);
 			wakeUpIntent.putExtra("routines", routineTime);
@@ -36,7 +48,10 @@ public class WakeUpReceiver extends WakefulBroadcastReceiver {
 			Log.d("Wakeup", "started service at " + new Date(System.currentTimeMillis()) + " with ID " + id);
 		}
 
+		// Otherwise, start the traffic service to analyse traffic and accelerometer data
 		else if(action.equals(TRAFFIC)){
+
+			// Send on the data
 			String from = intent.getStringExtra("from");
 			String to = intent.getStringExtra("to");
 			String time = intent.getStringExtra("time");
@@ -44,6 +59,7 @@ public class WakeUpReceiver extends WakefulBroadcastReceiver {
 			Calendar wake_time = (Calendar) intent.getSerializableExtra("wake_time");
 			int routineTime = intent.getIntExtra("routines", 0);
 
+			// Start the service like above.
 			Intent trafficIntent = new Intent(context, TrafficService.class);
 			trafficIntent.putExtra("from", from);
 			trafficIntent.putExtra("to", to);

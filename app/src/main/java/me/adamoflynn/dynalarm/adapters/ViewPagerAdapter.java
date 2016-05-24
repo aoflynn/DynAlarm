@@ -9,10 +9,9 @@ import java.util.List;
 
 import me.adamoflynn.dynalarm.SettingsFragment;
 
-/**
- * Created by Adam on 05/03/2016.
- */
 public class ViewPagerAdapter extends FragmentPagerAdapter {
+
+	// Get list of all the fragments to add to the adapter -> Alarm, Analysis, and Settings
 	private final List<Fragment> mFragmentList = new ArrayList<>();
 
 	public ViewPagerAdapter(FragmentManager manager) {
@@ -21,6 +20,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
 
 	@Override
 	public Fragment getItem(int position) {
+		// If user is in the settings fragment, return the settings fragment.
 		if(position == 2){
 			return new SettingsFragment();
 		}
@@ -35,6 +35,8 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
 	public void addFragment(Fragment fragment) {
 		mFragmentList.add(fragment);
 	}
+
+
 	@Override
 	public CharSequence getPageTitle(int position) {
 		return null;

@@ -39,6 +39,8 @@ import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 
 public class TrafficService extends IntentService {
 
+
+	// constants to hold API url
 	private final String BASE_URL = "https://api.tomtom.com/routing/1/calculateRoute/";
 	private final String API_KEY = "nmqjmepdy9ppbp8yekvrsaet";
 	private final String END_URL = "?key="+ API_KEY + "&routeType=fastest&traffic=true&computeTravelTimeFor=all&arriveAt=";
@@ -69,6 +71,8 @@ public class TrafficService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
+
+		// Get data from wake up receiver
 		String from = intent.getStringExtra("from");
 		String to = intent.getStringExtra("to");
 		String time = intent.getStringExtra("time");
@@ -78,13 +82,16 @@ public class TrafficService extends IntentService {
 		Log.d("Accelerometer Sleep ID", id);
 
 		Realm realm = Realm.getDefaultInstance();
-
 		int sleepId = Integer.valueOf(id);
+
+
+		// Try connection to the TomTom API using the specified calls
 		try {
 			URL url = new URL(BASE_URL + from + ":" + to + "/json" + END_URL + time);
 			HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 			int statusCode = urlConnection.getResponseCode();
 
+			// If we get a HTTP OK response, we can successfully read the JSON and traffic data
 			if(statusCode == 200){
 				BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 				StringBuilder stringBuilder = new StringBuilder();
@@ -96,24 +103,39 @@ public class TrafficService extends IntentService {
 
 				bufferedReader.close();
 				urlConnection.disconnect();
+
+				// Pass data to analysis method
 				analyseData(stringBuilder.toString(), realm, sleepId, routineTime, wake_time);
 				Log.d("Traffic service ", "trying to stop...");
+
+				// Close DB and complete the wakeful service
 				realm.close();
 				WakefulBroadcastReceiver.completeWakefulIntent(intent);
-			} else throw new Exception("Download Error");
+			}
 
-		} catch (MalformedURLException e){
+			// If we any error codes, we should do the accelerometer reading only
+			else {
+				getAccelerometerReadings(realm, sleepId);
+			}
+		}
+
+		// If the service has any issues, default back to the accelerometer analysis
+		  catch (MalformedURLException e){
 			Log.e("MalformedURLException", e.getMessage());
+			getAccelerometerReadings(realm, sleepId);
 		} catch (IOException e){
 			Log.e("IOException", e.getMessage());
+			getAccelerometerReadings(realm, sleepId);
 		} catch (Exception e){
 			Log.e("Download Error", e.getMessage());
+			getAccelerometerReadings(realm, sleepId);
 		}
 	}
 
 
 	private void analyseData(String response, Realm realm, int sleepId, int routineTime, Calendar wake_time) {
 
+		// Parse the JSON data from the HTTP response
 		try{
 
 			JSONObject jsonObject = new JSONObject(response);
@@ -134,15 +156,19 @@ public class TrafficService extends IntentService {
 
 			trafficInfo = new TrafficInfo(lengthInMeters, travelTimeInSeconds, travelDelayInSeconds, dep, arr, travelTimeNoTraffic, historicTravelTime, liveIncidents);
 			Log.d("Data", trafficInfo.toString());
+
+			// Check if there is an issue with traffic, if there is, immediately update alarms and wake up user
 			if(trafficCheck(routineTime, wake_time)){
 				updateAlarm();
-			} else getAccelerometerReadings(realm, sleepId);
+			}
+			// No traffic delay? Check accelerometer data
+			else getAccelerometerReadings(realm, sleepId);
 		}catch (JSONException e) {
 			Log.e("JSON parse exception", e.getMessage());
 		}
-
 	}
 
+	// Used to remove the T from the JSON responses
 	private Date removeT(String time){
 		time = time.replace('T',' ');
 		Date d = null;
@@ -154,10 +180,13 @@ public class TrafficService extends IntentService {
 		return d;
 	}
 
-
+  // Simple Algorithm to check if the users calculated depature time (Wake time + routine time)
+  // is later than the the API recommended departure time
+	// If it is, wake up user immediately by updating alarms
 	private boolean trafficCheck(int routineTime, Calendar wake_time) {
 		Date departureTime = trafficInfo.getDepartureTime();
 		Log.d("DEP TIME", departureTime.toString());
+
 
 		wake_time.add(Calendar.MINUTE, routineTime);
 		Date calculatedTime = wake_time.getTime();
@@ -174,7 +203,11 @@ public class TrafficService extends IntentService {
 	private void getAccelerometerReadings(Realm realm, int sleepId){
 
 		RealmResults<AccelerometerData> sleep = realm.where(AccelerometerData.class).equalTo("sleepId", sleepId).findAll();
+
+		// Get newest data first
 		sleep.sort("timestamp", Sort.DESCENDING);
+
+		// Check is used for debugging purposes...
 		if(sleep.size() == 0){
 			Log.d("No sleep", " don't do anything.");
 		} else{
@@ -183,7 +216,13 @@ public class TrafficService extends IntentService {
 		}
 	}
 
-
+  /**
+   * This algorithm is desribed in the documentation
+   * Go through the last ten minutes of data
+   * If the value you’re at is greater than the max, assign max to it.
+   * If at some stage the max value is actually greater than the next value, I check to see how big of a movement the max accelerometer data value was
+   * If it is a bgi enough movement to signify waking up, I update the alarms and wake the user
+	*/
 	private void wakeUpCheck(int sleepId) {
 		Realm realm = Realm.getDefaultInstance();
 		Log.d("WAKE", "CHECK");
@@ -202,6 +241,7 @@ public class TrafficService extends IntentService {
 			}
 		}
 
+		// Testing & Debugging Purposes
 		Log.d("MAX", Integer.toString(max));
 		RealmList<AccelerometerData> acc = new RealmList<>();
 		for (AccelerometerData a: newestData){
@@ -212,12 +252,16 @@ public class TrafficService extends IntentService {
 			Log.d("Acc Data - AVG", String.valueOf(a.getMinAccel()));
 		}
 
+		// Set the last ten minutes of sleep data in sleep table
 		realm.beginTransaction();
 		Sleep sleep = realm.where(Sleep.class).equalTo("id", sleepId).findFirst();
 		sleep.setSleepData(acc);
 		realm.commitTransaction();
 	}
 
+
+	// This method updates the alarms by creating the exact same intent that was used to schedule the alarm
+	// orginally. This will trigger immediately and wake the user by starting the AlarmSound service
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void updateAlarm(){
 		Intent intent = new Intent(this, AlarmReceiver.class);

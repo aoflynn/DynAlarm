@@ -34,13 +34,15 @@ public class AlarmSound extends Service {
 	@Override
 	public void onCreate(){
 
+		// Get our settings and our required system services
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
+
+		// Acquire a wake lock so phone comes and stays awake when waking up user
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "RINGTONE");
 		wakeLock.acquire();
-
 	}
 
 	@Override
@@ -69,9 +71,13 @@ public class AlarmSound extends Service {
 			e.printStackTrace();
 		}
 
+
+		// return this so service can restart itself if killed
 		return START_STICKY;
 	}
 
+
+	// RElease all the required media streams and stop playing music and vibrating
 	@Override
 	public void onDestroy(){
 		if(isPlaying){
@@ -81,11 +87,12 @@ public class AlarmSound extends Service {
 				vibrator.cancel();
 			}
 			Log.d("ALARM WAKE LOCK -before", " released...");
+
+			// Release wake lock so phone can go to sleep again if required
 			wakeLock.release();
 			Log.d("ALARM WAKE LOCK -after", wakeLock.toString());
 			wakeLock = null;
 		}
-
 		Log.v("Alarm","Stopping ringtone service...");
 	}
 }

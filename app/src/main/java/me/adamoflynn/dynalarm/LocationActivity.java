@@ -37,11 +37,13 @@ public class LocationActivity  extends AppCompatActivity {
 		realm = Realm.getDefaultInstance();
 
 
+		// Set up back arrow on toolbar
 		Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
 		tb.setTitle("Locations");
 		setSupportActionBar(tb);
 
 		if(getSupportActionBar() != null){
+			// UI updates ot arrow
 			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 			getSupportActionBar().setDisplayShowHomeEnabled(true);
 			final Drawable upArrow = getResources().getDrawable(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
@@ -50,6 +52,7 @@ public class LocationActivity  extends AppCompatActivity {
 			tb.setTitleTextColor(Color.WHITE);
 		}
 
+		// When arrow is hit, simulate back press.
 		tb.setNavigationOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -57,11 +60,13 @@ public class LocationActivity  extends AppCompatActivity {
 			}
 		});
 
+		// Get all locations in DB and pass them to the LocationAdapter to populate the list view
 		locations = realm.where(Location.class).findAll();
 		locationAdapter = new LocationAdapter(this, locations, true);
 		ListView listView = (ListView) findViewById(R.id.listView);
 		listView.setAdapter(locationAdapter);
 
+		// On long click listener implementation
 		listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { //list is my listView
 			@Override
 			public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
@@ -83,6 +88,8 @@ public class LocationActivity  extends AppCompatActivity {
 		super.onResume();
 	}
 
+
+	// Close DB
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -92,6 +99,8 @@ public class LocationActivity  extends AppCompatActivity {
 		}
 	}
 
+
+	// Create Alert to prompt user to delete or edit location
 	private void showDeleteDialog(final String locationName, final int locationPos, final String locationAddr) {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(LocationActivity.this);
 
@@ -139,6 +148,8 @@ public class LocationActivity  extends AppCompatActivity {
 		builder.show();
 	}
 
+
+	// Dialog to allow user to edit a location and save it to the db
 	private void showEditDialog(final Location location, String locationName, String locationAddr) {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(LocationActivity.this);
 		builder.setTitle("Edit A Location");
@@ -184,6 +195,8 @@ public class LocationActivity  extends AppCompatActivity {
 					}
 				});
 	}
+
+	// Method to update the specified entry in the database
 
 	private void editLocation(Location location, String name, String addr) {
 		if (name == null || name.length() == 0) {

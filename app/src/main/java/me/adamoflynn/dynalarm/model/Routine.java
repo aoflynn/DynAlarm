@@ -3,9 +3,6 @@ package me.adamoflynn.dynalarm.model;
 
 import io.realm.RealmObject;
 
-/**
- * Created by Adam on 08/03/2016.
- */
 public class Routine extends RealmObject{
 	private int id;
 	private String name;

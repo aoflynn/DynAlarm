@@ -40,10 +40,13 @@ public class RoutineActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_routine);
+
+		// Get the newest ID from db
 		routineID = Application.routineID.incrementAndGet();
 		realm = Realm.getDefaultInstance();
 
 
+		// Back arrow implementation
 		Toolbar tb = (Toolbar) findViewById(R.id.toolbar);
 		tb.setTitle("Routines");
 		setSupportActionBar(tb);
@@ -57,6 +60,7 @@ public class RoutineActivity extends AppCompatActivity {
 			tb.setTitleTextColor(Color.WHITE);
 		}
 
+		// Simulate back press
 		tb.setNavigationOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -64,6 +68,7 @@ public class RoutineActivity extends AppCompatActivity {
 			}
 		});
 
+		// Get all routines in db and set the adapter to this RoutineAdapter
 		routines = realm.where(Routine.class).findAll();
 		routineAdapter = new RoutineAdapter(this, R.id.listView, routines, true);
 		ListView listView = (ListView) findViewById(R.id.listView);
@@ -72,6 +77,7 @@ public class RoutineActivity extends AppCompatActivity {
 		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 		Button save = (Button) findViewById(R.id.done);
 
+		// Action button in bottom right of screen allows users to add data
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -79,6 +85,7 @@ public class RoutineActivity extends AppCompatActivity {
 			}
 		});
 
+		// Show dialog to edit and delete routines
 		listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { //list is my listView
 			@Override
 			public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
@@ -88,6 +95,8 @@ public class RoutineActivity extends AppCompatActivity {
 			}
 		});
 
+
+		// Send required data back to alarm fragment
 		save.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -110,6 +119,7 @@ public class RoutineActivity extends AppCompatActivity {
 		super.onResume();
 	}
 
+	// Close DB
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -119,6 +129,8 @@ public class RoutineActivity extends AppCompatActivity {
 		}
 	}
 
+
+	// Prompt for user
 	private void buildAndShowInputDialog()  {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(RoutineActivity.this);
 		builder.setTitle("Create A Routine");
@@ -126,8 +138,11 @@ public class RoutineActivity extends AppCompatActivity {
 		LayoutInflater li = LayoutInflater.from(this);
 		View dialogView = li.inflate(R.layout.routine_add_item, null);
 
+		// Display UI fields in dialog
 		final EditText name = (EditText) dialogView.findViewById(R.id.name);
 		final Spinner desc = (Spinner) dialogView.findViewById(R.id.desc);
+
+		// Read string array values from string.xml file
 		final ArrayAdapter<CharSequence> times = ArrayAdapter.createFromResource(this, R.array.routine_time_list, R.layout.support_simple_spinner_dropdown_item );
 		times.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		desc.setAdapter(times);
@@ -137,6 +152,8 @@ public class RoutineActivity extends AppCompatActivity {
 		builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
+
+				// ADd item, update the size of the boolean array in the adapter that is tracking which routine is being selected
 				addToDoItem(name.getText().toString(), desc.getSelectedItem().toString().substring(0, 2));
 				routines = realm.where(Routine.class).findAll();
 				routineAdapter.updateArraySize(routines.size());
@@ -169,6 +186,7 @@ public class RoutineActivity extends AppCompatActivity {
 				});
 	}
 
+	// Dialog to edit or delete
 	private void showDeleteDialog(final String routineName, final int routinePos, final String routineDesc) {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(RoutineActivity.this);
 
@@ -224,6 +242,7 @@ public class RoutineActivity extends AppCompatActivity {
 		LayoutInflater li = LayoutInflater.from(this);
 		View dialogView = li.inflate(R.layout.routine_add_item, null);
 
+		// Get names and spinner values from routine
 		final EditText name = (EditText) dialogView.findViewById(R.id.name);
 		name.setText(nameText);
 		final Spinner spinner = (Spinner) dialogView.findViewById(R.id.desc);
@@ -270,6 +289,7 @@ public class RoutineActivity extends AppCompatActivity {
 	}
 
 
+	// Add new routine to DB
 	private void addToDoItem(String name, String desc) {
 		if (name == null || name.length() == 0) {
 			Toast.makeText(this, "Empty Routine!", Toast.LENGTH_SHORT).show();
@@ -281,6 +301,8 @@ public class RoutineActivity extends AppCompatActivity {
 		realm.commitTransaction();
 		routineID++;
 	}
+
+	// Edit existing routine to database
 
 	private void editToDoItem(Routine routine, String name, String desc) {
 		if (name == null || name.length() == 0) {

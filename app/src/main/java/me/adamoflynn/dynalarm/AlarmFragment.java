@@ -39,7 +39,6 @@ import me.adamoflynn.dynalarm.services.AccelerometerService;
 import me.adamoflynn.dynalarm.services.AlarmSound;
 import me.adamoflynn.dynalarm.utils.Utils;
 
-
 public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	private TextView currentTime, wakeUpTime;
@@ -69,15 +68,21 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+		// Show custom view
+
 		View v = inflater.inflate(R.layout.fragment_alarm, container, false);
+
+		// Open DB and settings connections
+
 		realm = Realm.getDefaultInstance();
 		prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-		// Get timeframe from settings
+		// Get user defined timeframe from settings
 		int tf = Integer.parseInt(prefs.getString("timeframe", "20"));
 		timeframe = tf * 60000;
 
-		// Set up views for fragment
+		// Set up UI views for fragment
 		initializeTime(v);
 		initializeButtons(v);
 		initializeExtras(v);
@@ -95,6 +100,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		super.onResume();
 	}
 
+	// Display the current times and the wake timeframe
 	private void initializeTime(View v){
 		currentTime = (TextView) v.findViewById(R.id.duration);
 		wakeUpTime = (TextView) v.findViewById(R.id.wakeUp);
@@ -107,6 +113,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		currentTime.setOnClickListener(this);
 	}
 
+	// Set click listensers for buttons
 	private void initializeButtons(View v){
 		Button start = (Button) v.findViewById(R.id.start);
 		start.setOnClickListener(this);
@@ -126,36 +133,39 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		trafficCheck = (CheckBox) v.findViewById(R.id.trafficCheck);
 	}
 
+
+	// Method to check what got clicked
 	public void onClick(View v){
 		switch(v.getId()){
-			case R.id.duration:
+			case R.id.duration: // Time clicked, show time picker
 				timePicker();
 				break;
-			case R.id.start:
-				if(!Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){
-					if(!isTimeSet) showNoTimeSet();
+			case R.id.start: // Start clicked
+				if(!Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){ // Is the accelerometer already running? If it is, show toast
+					if(!isTimeSet) showNoTimeSet(); // If no time set for alarm, should prompt
 					else {
-						timeSet = Calendar.getInstance();
-						showAlarmConfirmation();
+						timeSet = Calendar.getInstance(); // Get when alarm was set
+						showAlarmConfirmation(); // Show prompt
 					}
-				} else Toast.makeText(getActivity(), "Alarm currently on, please cancel it to set another alarm.", Toast.LENGTH_LONG).show();
+				} else Toast.makeText(getActivity(), "Alarm currently on, please cancel it to set another alarm.", Toast.LENGTH_LONG).show(); // Service already running
 				break;
 			case R.id.stop:
-				if(Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){
+				if(Utils.isMyServiceRunning(AccelerometerService.class, getActivity())){ // Alarm running? Cancel it
 					showCancelConfirmation();
 				} else Toast.makeText(getActivity(), "No alarm currently set.", Toast.LENGTH_LONG).show();
 				break;
-			case R.id.routines:
+			case R.id.routines: // Routines clicked, go to new routine activity and wait for result
 				Intent routines = new Intent(getActivity(), RoutineActivity.class);
 				startActivityForResult(routines, 1);
 				break;
-			case R.id.mapsButton:
+			case R.id.mapsButton: // Maps clicked, go to Maps activity
 				Intent maps = new Intent(getActivity(), MapsActivity.class);
 				startActivityForResult(maps, 2);
 				break;
 		}
 	}
 
+	// Show user the time picker dialog to specify alarm time
 	private void timePicker(){
 		Calendar mCurrentTime = Calendar.getInstance();
 		int hour = mCurrentTime.get(Calendar.HOUR_OF_DAY);
@@ -166,9 +176,9 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 					alarmTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
 					alarmTime.set(Calendar.MINUTE, minute);
 					currentTime.setText(sdf.format(alarmTime.getTime()));
-					wkUpServiceTime.setTimeInMillis(alarmTime.getTimeInMillis() - timeframe);
+					wkUpServiceTime.setTimeInMillis(alarmTime.getTimeInMillis() - timeframe); // get the time frame which will be used to set service alarms
 					wakeUpTime.setText("Wake up between " + sdf.format(wkUpServiceTime.getTime()) + " and " + sdf.format(alarmTime.getTime()));
-					isTimeSet = true;
+					isTimeSet = true; // timeSet so we can set alarm now
 				}
 			}, hour, minute, true);
 		pickerDialog.setTitle("Select Time");
@@ -304,8 +314,9 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
 
 		// Once it goes off, I set it to repeat every 2 minutes until alarm is cancelled.
-		Log.d("ALARM:", Long.toString(wkUpServiceTime.getTimeInMillis()));
 		alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, wkUpServiceTime.getTimeInMillis(), POLLING_TIME, pendingIntent);
+
+		Log.d("ALARM:", Long.toString(wkUpServiceTime.getTimeInMillis()));
 		Log.d("Traffic Service", "should start at " + sdf.format(wkUpServiceTime.getTime()));
 	}
 
@@ -352,6 +363,8 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 			getActivity().stopService(stopAlarm);
 		}
 	}
+
+	// These 3 methods are described in detail in the documentation - please consult that
 
 	private void cancelWkAlarm(){
 		Intent intent = new Intent(getActivity().getApplicationContext(), AlarmReceiver.class);
@@ -432,6 +445,7 @@ public class AlarmFragment extends Fragment implements View.OnClickListener {
 		return alarmTime;
 	}
 
+	// Get the cumulative time for all selected routines the user specified
 	private int getRoutineTime(){
 		if(routinesChecked.size() > 0){
 			for (int id : routinesChecked){

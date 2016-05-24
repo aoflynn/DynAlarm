@@ -16,7 +16,8 @@ import me.adamoflynn.dynalarm.model.User;
 import me.adamoflynn.dynalarm.utils.DatabaseMigrator;
 
 /**
- * Created by Adam on 06/03/2016.
+ * Class is always ran before anything else, sets up Realm DB and the configurations and the debugging
+ * framework called Stetho which allowed me to have a view of my database in Google Chrome
  */
 public class Application extends android.app.Application {
 
@@ -50,6 +51,8 @@ public class Application extends android.app.Application {
 			db.commitTransaction();
 		}
 
+
+		// Realm has no AutoIncrementAndGet method so implemented my own at the start of each time app ran
 		Number sleep  = db.where(Sleep.class).max("id");
 		Number routine = db.where(Routine.class).max("id");
 		Number location = db.where(Location.class).max("id");

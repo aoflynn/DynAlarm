@@ -94,6 +94,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		return v;
 	}
 
+	// Get all sleeps in DB
 	private ArrayList<Sleep> getAllSleep() {
 		RealmResults<Sleep> allSleep = realm.where(Sleep.class).findAll();
 		allSleep.sort("id");
@@ -108,9 +109,11 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		return sleepIds;
 	}
 
+	// Create the chart for the sepcified data
 	private void initializeLineChart(){
 		dataSet = new LineDataSet(entries, "Movements");
 
+		// All options for graphs
 		dataSet.setDrawCubic(true);
 		dataSet.setDrawCircles(false);
 		dataSet.setDrawFilled(false);
@@ -152,7 +155,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		LineData data = new LineData(labels, dataSet);
 		chart.setData(data);
 		chart.notifyDataSetChanged();
-		chart.invalidate();
+		chart.invalidate(); // re draw graph with new data
 	}
 
 	// Initialize the view
@@ -188,18 +191,16 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	public void onClick(View v){
 
-		//v.performHapticFeedback(vi);
-
 		switch(v.getId()){
-			case R.id.previous:
+			case R.id.previous: // Go back in time
 				if(sleepIndex == 0) {
 					Toast.makeText(getActivity(), "This is the oldest sleep!", Toast.LENGTH_SHORT).show();
 					break;
 				}
 				else {
 					Log.d("State: ", " previous sleep cycle...");
-					getData(sleepIndex - 1);
-					sleepIndex--;
+					getData(sleepIndex - 1); // Get the data into graph
+					sleepIndex--; // decrement to keep track of where you are
 					updateData();
 					break;
 				}
@@ -215,14 +216,14 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 					Log.d("State: ", " next sleep cycle...");
 					break;
 				}
-			case R.id.card_view_sleep_avg:
+			case R.id.card_view_sleep_avg: // Go to new activity -> Sleep Summaries
 				Intent intent = new Intent(getActivity(), SleepActivity.class);
 				startActivity(intent);
 				break;
-			case R.id.info:
+			case R.id.info: // Show graph info
 				showInfoDialog();
 				break;
-			default:
+			default: // Delete button, not implemented
 				Log.d("State: ", " not set up.");
 		}
 	}
@@ -248,9 +249,12 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 	private void getData(int sleepId){
 		int i = 0;
 
+		// Debugging purposes
 		if(allSleepReq.size() == 0){
 			return;
 		}
+
+		// Get sleep at the sleep index specified in click method
 		Sleep sleep = allSleepReq.get(sleepId);
 		Log.d("Data", String.valueOf(sleepId));
 		Log.d("Data", sleep.toString());
@@ -263,24 +267,29 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		entries = new ArrayList<>();
 		labels = new ArrayList<>();
 		ArrayList<Integer> motion = new ArrayList<>();
-		//ArrayList<Float> maxVar = new ArrayList<>();
 		RealmResults<AccelerometerData> results = realm.where(AccelerometerData.class)
 				.equalTo("sleepId", sleep.getId()).findAll();
 
+		// Debugging purposes
 		if(results.size() == 0){
 			Log.d("Sleep Id", String.valueOf(sleep.getId()) + " no accelerometer data for this date.");
 			return;
 		}
+
 		results.sort("timestamp");
 
+		// Was an issue with older data being in different format, had to fix
 		if(checkDateAfter(sleep.getStartTime())){
 			int concatDataLength;
 
+			// Make a new array where old array is one minute data values and new array needs to be in five minute cumulative values
 			if(results.size() % 5 == 0) concatDataLength = results.size() / 5;
 			else concatDataLength = results.size() / 5 + 1; // Get the required length of new array where 5 represents every 5 minutes we concatenate
 
+			// Concatenate 5 1 minute data values into one 5 minute value
 			for (int j = 0, k = 0; j < concatDataLength || k < results.size(); j++ ){
 
+				// Add labels to graph
 				labels.add(format.format(results.get(k).getTimestamp()));
 				int amt = 0;
 				int count = 0;
@@ -302,6 +311,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 			}
 		}
 
+		// Testing and analysis purposes - future work
 		int concatDataLength = results.size() / 15 + 1; // Get the required length of new array where 5 represents every 15 minutes we concatenate
 		for (int j = 0, k = 0; j < concatDataLength; j++ ){
 			int max = 0, amt = 0, count = 0;
@@ -317,12 +327,14 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	}
 
+	// Refresh the graph with new data and update the UI to reflect this
 	private void updateData(){
 		initializeLineChart();
 		changeDate();
 		updateSleepTime();
 	}
 
+	// Populate UI with times calculated from DB, have to have diff intial and change methods due to fragments
 	private void initializeSleepCard(View v) {
 		TextView sleepLength = (TextView) v.findViewById(R.id.sleepTime);
 		TextView sleepTimeframe = (TextView) v.findViewById(R.id.sleepTimeframe);
@@ -338,6 +350,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		sleepLength.setText(formatGMT.format(new Date(lengthOfsleep)) + " hrs");
 	}
 
+	// Populate UI with times calculated from DB
 	private void updateSleepTime() {
 		TextView sleepLength = (TextView) getView().findViewById(R.id.sleepTime);
 		TextView sleepTimeframe = (TextView) getView().findViewById(R.id.sleepTimeframe);
@@ -350,6 +363,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		sleepTimeframe.setText(format.format(new Date(start)) + " to " + format.format(new Date(end)));
 	}
 
+	// Populate avg time in bed with times calculated from DB
 	private void initializeSleepAvg(View v) {
 		TextView sleepAvg = (TextView) v.findViewById(R.id.sleepAvg);
 		TextView sleepCount = (TextView) v.findViewById(R.id.sleepCount);
@@ -372,6 +386,8 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 
 	}
 
+	// Debugging purposes - was used to remove bad sleeps with no sleep end time
+	// MAinly during early dev w/ services and alarms and bad accelerometer knowledge
 	private void deleteBadDates(){
 		RealmResults<Sleep> sleeps = realm.where(Sleep.class).equalTo("endTime", 0).findAll();
 		Log.d("dirty sleeps", String.valueOf(sleeps.size()));
@@ -394,6 +410,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		realm.commitTransaction();
 	}
 
+	// Same as above
 	private void deleteShortSleeps(){
 		RealmResults<Sleep> sleeps = realm.where(Sleep.class).findAll();
 		Log.d("dirty sleeps", String.valueOf(sleeps.size()));
@@ -416,7 +433,7 @@ public class AnalysisFragment extends Fragment implements View.OnClickListener {
 		realm.commitTransaction();
 	}
 
-
+  // Obsolete now, but was used to concatenate data differently depending on if it was before or after a DB change
 	private boolean checkDateAfter(Long analysisDate){
 		// Day I changed my analysis so want to read differently
 		Calendar analysisChangeDate = new GregorianCalendar(2016, Calendar.APRIL, 26);

@@ -3,7 +3,7 @@ package me.adamoflynn.dynalarm.model;
 import java.util.Date;
 
 /**
- * Created by Adam on 02/04/2016.
+ * This model is used to help with parsing the JSON data from the TomTom API
  */
 public class TrafficInfo {
 

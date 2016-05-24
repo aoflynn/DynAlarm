@@ -12,13 +12,19 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.rule.PowerMockRule;
 import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLog;
+import org.robolectric.shadows.ShadowNotification;
+import org.robolectric.shadows.ShadowNotificationManager;
+
 
 import java.util.List;
 
@@ -56,7 +62,7 @@ public class AlarmReceiverTest {
 		notificationManager = (NotificationManager) ShadowApplication.getInstance().
 				getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
-		/*PowerMockito.mockStatic(Realm.class);
+		PowerMockito.mockStatic(Realm.class);
 		PowerMockito.mockStatic(RealmConfiguration.class);
 		PowerMockito.mockStatic(RealmCore.class);
 
@@ -71,7 +77,7 @@ public class AlarmReceiverTest {
 		PowerMockito.when(Realm.getDefaultInstance()).thenReturn(mockRealm);
 		PowerMockito.when(Realm.getInstance(Matchers.any(RealmConfiguration.class))).thenReturn(mockRealm);
 
-		this.mockRealm = mockRealm;*/
+		this.mockRealm = mockRealm;
 	}
 
 	@Test
@@ -90,7 +96,7 @@ public class AlarmReceiverTest {
 		Assert.assertTrue(receiverFound); //will be false if not found
 	}
 
-	/*
+
 	@Test
 	public void testNotificationBroadcasted(){
 		ShadowNotificationManager manager = Shadows.shadowOf(notificationManager);
@@ -111,7 +117,7 @@ public class AlarmReceiverTest {
 
 		Assert.assertEquals("Click here to go to Alarm.", shadowNotification.getLatestEventInfo().getContentText());
 
-	} */
+	}
 
 	@Test
 	public void testAlarmServiceStarted(){

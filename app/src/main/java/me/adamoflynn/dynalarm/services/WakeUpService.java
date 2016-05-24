@@ -24,6 +24,10 @@ import me.adamoflynn.dynalarm.model.AccelerometerData;
 import me.adamoflynn.dynalarm.model.Sleep;
 import me.adamoflynn.dynalarm.receivers.AlarmReceiver;
 
+/**
+ *  Very similar to traffic service, look up that class for code comments.
+ *
+ */
 
 public class WakeUpService extends IntentService {
 
@@ -53,19 +57,18 @@ public class WakeUpService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		String id = intent.getStringExtra("id");
+
+		// Future uses
 		int routineTime = intent.getIntExtra("routines", 0);
 		Calendar wake_time = (Calendar) intent.getSerializableExtra("wake_time");
-		Log.d("Accelerometer Sleep ID", id);
-		Log.d("Routine Time", String.valueOf(routineTime));
-		Log.d("Accelerometer Sleep ID", id);
 
 		int sleepId = Integer.valueOf(id);
 		Realm realm = Realm.getDefaultInstance();
 
 		RealmResults<AccelerometerData> sleep = realm.where(AccelerometerData.class).equalTo("sleepId", sleepId).findAll();
 		sleep.sort("timestamp", Sort.DESCENDING);
+		// DEBUGGING PURPOSES
 		if(sleep.size() == 0){
-			Log.d("No sleep", "nya");
 			return;
 		} else{
 			accelerometerData = sleep;
@@ -75,9 +78,15 @@ public class WakeUpService extends IntentService {
 		Log.d("Traffic service ", "trying to stop...");
 		realm.close();
 		WakefulBroadcastReceiver.completeWakefulIntent(intent);
-
 	}
 
+	/**
+	 * This algorithm is desribed in the documentation
+	 * Go through the last ten minutes of data
+	 * If the value you’re at is greater than the max, assign max to it.
+	 * If at some stage the max value is actually greater than the next value, I check to see how big of a movement the max accelerometer data value was
+	 * If it is a bgi enough movement to signify waking up, I update the alarms and wake the user
+	 */
 	private void wakeUpCheck(int sleepId) {
 		Realm realm = Realm.getDefaultInstance();
 		Log.d("WAKE", "CHECK");
@@ -97,14 +106,9 @@ public class WakeUpService extends IntentService {
 				}
 			}
 
-			Log.d("UPDATE MAX", Integer.toString(max));
 			RealmList<AccelerometerData> acc = new RealmList<>();
 			for (AccelerometerData a: newestData){
 				acc.add(a);
-				Log.d("Acc Data - TM", String.valueOf(a.getTimestamp()));
-				Log.d("Acc Data - MNT", String.valueOf(a.getAmtMotion()));
-				Log.d("Acc Data - MAX", String.valueOf(a.getMaxAccel()));
-				Log.d("Acc Data - AVG", String.valueOf(a.getMinAccel()));
 			}
 
 			realm.beginTransaction();
@@ -116,6 +120,8 @@ public class WakeUpService extends IntentService {
 		}
 	}
 
+	// This method updates the alarms by creating the exact same intent that was used to schedule the alarm
+	// orginally. This will trigger immediately and wake the user by starting the AlarmSound service
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void updateAlarm(){
 		Intent intent = new Intent(this, AlarmReceiver.class);

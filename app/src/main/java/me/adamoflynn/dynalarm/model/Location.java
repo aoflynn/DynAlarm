@@ -3,9 +3,6 @@ package me.adamoflynn.dynalarm.model;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-/**
- * Created by Adam on 20/02/2016.
- */
 public class Location extends RealmObject {
 
   @PrimaryKey
@@ -16,14 +13,6 @@ public class Location extends RealmObject {
   private double locLon;
 
   public Location(){}
-
-  /**
-   * Constructor to edit saved locations
-   * @param id
-   * @param location
-   * @param locLat
-   * @param locLon
-   */
 
   public Location(int id, String location, double locLat, double locLon){
       this.setId(id);
@@ -81,3 +70,6 @@ public class Location extends RealmObject {
 		this.address = address;
 	}
 }
+
+
+

@@ -3,9 +3,6 @@ package me.adamoflynn.dynalarm.model;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-/**
- * Created by Adam on 29/02/2016.
- */
 public class AccelerometerData extends RealmObject {
 
 	@PrimaryKey

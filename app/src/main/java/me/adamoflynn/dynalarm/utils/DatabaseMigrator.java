@@ -6,6 +6,10 @@ import io.realm.DynamicRealm;
 import io.realm.RealmMigration;
 import io.realm.RealmSchema;
 
+/**
+ *  This class is a utility class to help miograte the database from another version to another
+ *  without the need to delete the schema and lose your data
+ */
 public class DatabaseMigrator  implements RealmMigration {
 	@Override
 	public void migrate(DynamicRealm realm, long oldVersion, long newVersion) {
