@@ -229,16 +229,20 @@ public class TrafficService extends IntentService {
 		ArrayList<AccelerometerData> newestData = new ArrayList<>();
 		int max = 0;
 
-		// Get last ten minutes of sleep data
-		for (int i = 10, j = 0; i > 0; i--, j++){
-			newestData.add(j, accelerometerData.get(i));
-			if(max > newestData.get(j).getAmtMotion() && newestData.get(j).getMaxAccel() > 0.1){
-				Log.d("ALARM", "Update");
-				updateAlarm();
-			} else if(max < newestData.get(j).getAmtMotion()){
-				max = newestData.get(j).getAmtMotion();
-				Log.d("UPDATE MAX", Integer.toString(max));
+		try {
+			// Get last ten minutes of sleep data
+			for (int i = 10, j = 0; i > 0; i--, j++){
+				newestData.add(j, accelerometerData.get(i));
+				if(max > newestData.get(j).getAmtMotion() && newestData.get(j).getMaxAccel() > 0.1){
+					Log.d("ALARM", "Update");
+					updateAlarm();
+				} else if(max < newestData.get(j).getAmtMotion()){
+					max = newestData.get(j).getAmtMotion();
+					Log.d("UPDATE MAX", Integer.toString(max));
+				}
 			}
+		} catch (IndexOutOfBoundsException ioe) {
+			Log.e("ERROR", "Index out of bounds error");
 		}
 
 		// Testing & Debugging Purposes
