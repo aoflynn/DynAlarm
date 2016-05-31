@@ -1,6 +1,6 @@
 # DynAlarm 
 
-DynAlarm is my final year project for Computer Applications in Dublin City University.
+DynAlarm :alarm_clock: is my final year project for Computer Applications in Dublin City University.
 
 ## Idea 
 
