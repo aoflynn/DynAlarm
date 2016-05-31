@@ -15,3 +15,4 @@ DynAlarm is a dynamic alarm clock application made for Android. It analyses traf
 
 ### Screenshots 
 
+![Alarm Screen](DynAlarm/images/alarm_frag.png?raw=true "Alarm Screen")
