@@ -15,9 +15,15 @@ DynAlarm is a dynamic alarm clock application made for Android. It analyses traf
 
 ### Screenshots 
 
-![Alarm Screen](images/alarm_frag.png?raw=true "Alarm Screen")
-![Analysis Screen](images/analysis.png?raw=true "Analysis Screen")
-![Settings Screen](images/settings.png?raw=true "Settings Screen")
-![Time Picker](images/time_picker.png?raw=true "Time Picker")
-![Summaries](images/summaries.png?raw=true "Sleep Summaries")
-![Alarm Wakeup](images/alarm.png?raw=true "Alarm Wakeup Dialog")
+
+
+:-------------------------:|:-------------------------:
+![Alarm Screen](images/alarm_frag.png?raw=true "Alarm Screen")|![Analysis Screen](images/analysis.png?raw=true "Analysis Screen")
+![Settings Screen](images/settings.png?raw=true "Settings Screen")|![Time Picker](images/time_picker.png?raw=true "Time Picker")
+![Summaries](images/summaries.png?raw=true "Sleep Summaries")|![Alarm Wakeup](images/alarm.png?raw=true "Alarm Wakeup Dialog")
+
+
+
+
+
+
